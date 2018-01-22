@@ -1,0 +1,4 @@
+{
+	"input_file": "tcga_data.csv", 
+	"debug":"true"
+}
