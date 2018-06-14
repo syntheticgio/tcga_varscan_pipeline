@@ -121,5 +121,9 @@ if __name__ == "__main__":
         'ExitStatus': 0
     }
 
+    # GET with params in URL
+    # r = requests.get(url, params=test_data)
+    # print("GET, with params: {}".format(r.text))
+
     dp = DatabasePoster()
     dp.PostData(url, test_data)

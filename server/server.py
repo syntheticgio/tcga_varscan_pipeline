@@ -75,6 +75,8 @@ class MpileupHandler(MainHandler):
         v = values[:-2]
         sqlstr = "INSERT INTO MpileUp ({}) VALUES ({})".format(c, v)
         print(sqlstr)
+        results = self.db.execute(sqlstr)
+        print(results)
         self.write(sqlstr)
 
 
@@ -98,6 +100,8 @@ class VarscanSomaticHandler(MainHandler):
         v = values[:-2]
         sqlstr = "INSERT INTO VarscanSomatic ({}) VALUES ({})".format(c, v)
         print(sqlstr)
+        results = self.db.execute(sqlstr)
+        print(results)
         self.write(sqlstr)
 
 
@@ -121,6 +125,8 @@ class VarscanProcessSomaticSnpsHandler(MainHandler):
         v = values[:-2]
         sqlstr = "INSERT INTO VarscanProcessSnps ({}) VALUES ({})".format(c, v)
         print(sqlstr)
+        results = self.db.execute(sqlstr)
+        print(results)
         self.write(sqlstr)
 
 
@@ -144,6 +150,8 @@ class VarscanProcessSomaticIndelsHandler(MainHandler):
         v = values[:-2]
         sqlstr = "INSERT INTO VarscanProcessIndels ({}) VALUES ({})".format(c, v)
         print(sqlstr)
+        results = self.db.execute(sqlstr)
+        print(results)
         self.write(sqlstr)
 
 
