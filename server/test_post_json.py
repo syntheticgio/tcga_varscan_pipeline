@@ -7,10 +7,11 @@ class DatabasePoster:
     def __init__(self):
         pass
 
-    def PostData(self, url, wgs_data):
-        r = requests.post(url, data=json.dumps(wgs_data))
+    @staticmethod
+    def PostData(wgs_url, wgs_data):
+        r = requests.post(wgs_url, data=json.dumps(wgs_data))
         print("POSTed data, return value: {}".format(r.status_code))
-
+        print("POSTed data, return : {}".format(r.text))
 
 
 # url = 'http://127.0.0.1/samtoolssort/'
@@ -63,25 +64,19 @@ class DatabasePoster:
 # r.text
 # r.status_code
 
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Commands for the POSTer.')
     parser.add_argument('--verbose', '-v', dest='verbose', action='store_true', help="Turns on verbosity.")
     parser.add_argument('--url', '-u', dest='url', default="samtoolssort", help='Determines the URL to post to.')
 
-    # parser.add_argument('--sitl', '-s', dest='sitl', action='store_true', help='Turns on the software in a loop')
-    #
-    # parser.add_argument('--latitude', '-lat', dest='latitude', default="38.7509000",
-    #                     help='This is the latitude the drone should be created at, if using a SITL simulation.  By default this will be in Manassas Va')
-    # parser.add_argument('--longitude', '-lon', dest='longitude', default="-77.4753000",
-    #                     help='This is the longitude the drone should be created at, if using a SITL simulation.  By default this will be in Manassas Va')
-
     args = parser.parse_args()
 
     url = 'http://127.0.0.1/' + args.url + '/'
-
+    args.verbose = True
     if args.url == 'samtoolssort':
         if args.verbose:
-            print("Posting to the SamtoolsSort Databse.")
+            print("Posting to the SamtoolsSort databse.")
     elif args.url == 'mpileup':
         if args.verbose:
             print("Posting to the MpileUp database.")
@@ -100,30 +95,30 @@ if __name__ == "__main__":
         url = 'http://127.0.0.1/test/'
 
     test_data = {
-        'CommandLineArguments': 'value1',
-        'AvgSizeUnsharedDataArea_KBs': 'value2',
-        'ElapsedTime_s': 'value',
-        'NumPagesFaults': 'value',
-        'NumFileSystemInputs': 'value',
-        'AvgMemUse_KBs': 'value',
-        'MaxResidentSetSize_KBs': 'value',
-        'NumFileSystemOutputs': 'value',
-        'CPU_Percent': 'value',
-        'NumRecoverablePageFaults': 'value',
-        'CPUUsedInKernelMode_s': 'value',
-        'CPUUsedInUserMode_s': 'value',
-        'TimesProcessSwappedOutOfMainMemory': 'value',
-        'AverageAmountSharedText': 'value',
-        'SystemPageSize_KBs': 'value',
-        'TimesProcessContextSwitched': 'value',
-        'ElapsedRealTimeUsed_s': 'value',
-        'NumSignalsDelivered': 'value',
-        'AverageUnsharedStackSize_KBs': 'value',
-        'NumSocketMessagesReceived': 'value',
-        'NumSocketMessagesSent': 'value',
-        'ResidentSetSize_KBs': 'value',
-        'NumTimesContextSwitchedVoluntarily': 'value',
-        'ExitStatus': 'value'
+        'CommandLineArguments': '\"samtools sort -b test.sam > test.bam\"',
+        'AvgSizeUnsharedDataArea_KBs': 56854,
+        'ElapsedTime_s': "\"365898\"",
+        'NumPageFaults': 7,
+        'NumFileSystemInputs': 12,
+        'AvgMemUse_KBs': 1526,
+        'MaxResidentSetSize_KBs': 1625,
+        'NumFileSystemOutputs': 10,
+        'CPU_Percent': '\"3%\"',
+        'NumRecoverablePageFaults': 1425,
+        'CPUUsedInKernelMode_s': 9283.2345,
+        'CPUUsedInUserMode_s': 7483.332,
+        'TimesProcessSwappedOutOfMainMemory': 92,
+        'AverageAmountSharedText': 2416,
+        'SystemPageSize_KBs': 4026,
+        'TimesProcessContextSwitched': 42,
+        'ElapsedRealTimeUsed_s': 293.25,
+        'NumSignalsDelivered': 62,
+        'AverageUnsharedStackSize_KBs': 72,
+        'NumSocketMessagesReceived': 73,
+        'NumSocketMessagesSent': 92,
+        'ResidentSetSize_KBs': 15,
+        'NumTimesContextSwitchedVoluntarily': 51,
+        'ExitStatus': 0
     }
 
     dp = DatabasePoster()

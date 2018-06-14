@@ -37,7 +37,6 @@ class Connection(object):
     UTF-8 on all connections to avoid time zone and encoding errors.
     """
 
-
     def __init__(self, database="time_keep_database.db", host="localhost", user=None, password=None, max_idle_time=7*3600):
         self.host = host
         self.database = database

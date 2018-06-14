@@ -44,12 +44,14 @@ class SortHandler(MainHandler):
         columns = ''
         values = ''
         for key, value in json.iteritems():
-            columns = columns + key + ', '
-            values = values + value + ', '
+            columns = columns + str(key) + ', '
+            values = values + str(value) + ', '
         c = columns[:-2]
         v = values[:-2]
         sqlstr = "INSERT INTO SamtoolsSort ({}) VALUES ({})".format(c, v)
         print(sqlstr)
+        results = self.db.execute(sqlstr)
+        print(results)
         self.write(sqlstr)
 
 
@@ -67,8 +69,8 @@ class MpileupHandler(MainHandler):
         columns = ''
         values = ''
         for key, value in json.iteritems():
-            columns = columns + key + ', '
-            values = values + value + ', '
+            columns = columns + str(key) + ', '
+            values = values + str(value) + ', '
         c = columns[:-2]
         v = values[:-2]
         sqlstr = "INSERT INTO MpileUp ({}) VALUES ({})".format(c, v)
@@ -90,8 +92,8 @@ class VarscanSomaticHandler(MainHandler):
         columns = ''
         values = ''
         for key, value in json.iteritems():
-            columns = columns + key + ', '
-            values = values + value + ', '
+            columns = columns + str(key) + ', '
+            values = values + str(value) + ', '
         c = columns[:-2]
         v = values[:-2]
         sqlstr = "INSERT INTO VarscanSomatic ({}) VALUES ({})".format(c, v)
@@ -113,8 +115,8 @@ class VarscanProcessSomaticSnpsHandler(MainHandler):
         columns = ''
         values = ''
         for key, value in json.iteritems():
-            columns = columns + key + ', '
-            values = values + value + ', '
+            columns = columns + str(key) + ', '
+            values = values + str(value) + ', '
         c = columns[:-2]
         v = values[:-2]
         sqlstr = "INSERT INTO VarscanProcessSnps ({}) VALUES ({})".format(c, v)
@@ -136,8 +138,8 @@ class VarscanProcessSomaticIndelsHandler(MainHandler):
         columns = ''
         values = ''
         for key, value in json.iteritems():
-            columns = columns + key + ', '
-            values = values + value + ', '
+            columns = columns + str(key) + ', '
+            values = values + str(value) + ', '
         c = columns[:-2]
         v = values[:-2]
         sqlstr = "INSERT INTO VarscanProcessIndels ({}) VALUES ({})".format(c, v)
