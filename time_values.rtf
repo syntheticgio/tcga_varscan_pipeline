@@ -1,0 +1,102 @@
+{\rtf1\ansi\ansicpg1252\cocoartf1561\cocoasubrtf400
+{\fonttbl\f0\fswiss\fcharset0 Helvetica;\f1\fnil\fcharset0 Verdana;}
+{\colortbl;\red255\green255\blue255;\red52\green52\blue52;\red255\green255\blue255;}
+{\*\expandedcolortbl;;\cssrgb\c26667\c26667\c26667;\cssrgb\c100000\c100000\c100000;}
+\margl1440\margr1440\vieww10800\viewh15120\viewkind0
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural\partightenfactor0
+
+\f0\fs24 \cf0 time -f \'93CLI,Average size of the process\'92s unshared data area in kilobytes,Elapsed Time,Number of page faults,Number of file system inputs by process,Average total memory use of the process in kilobytes,maximum resident set size of the process during the lifetime in kilobytes,number of file system outputs by the process, percentage of CPU that the job received, \\n \
+%C,%D,%E,%F,%I ,%K,%M,%O,\
+\
+\
+%E\
+Elapsed real time (in [hours:]minutes:seconds).\
+\
+%e\
+Elapsed real time in seconds\
+\
+%S\
+Total number of CPU-seconds that the process spent in kernel mode\
+\
+%U\
+Total number of CPU seconds that the process spent in user mode\
+\
+%P\
+Percentage of the cPU that this job got, computed as (%U + %S) / %E\
+\
+\pard\pardeftab720\sl380\partightenfactor0
+
+\f1\b\fs32 \cf2 \cb3 \expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec2 %M\
+\pard\pardeftab720\sl380\sa320\partightenfactor0
+
+\b0 \cf2 Maximum resident set size of the process during its lifetime, in Kbytes.\
+\pard\pardeftab720\sl380\sa320\partightenfactor0
+
+\b \cf2 %t
+\b0 \
+(Not in tcsh.) Average resident set size of the process, in Kbytes.\
+
+\b %K
+\b0 \
+Average total (data+stack+text) memory use of the process, in Kbytes.\
+
+\b %D
+\b0 \
+Average size of the process's unshared data area, in Kbytes.\
+
+\b %p
+\b0 \
+(Not in tcsh.) Average size of the process's unshared stack space, in Kbytes.\
+
+\b %X
+\b0 \
+Average size of the process's shared text space, in Kbytes.\
+
+\b %Z
+\b0 \
+(Not in tcsh.) System's page size, in bytes. This is a per-system constant, but varies between systems.\
+
+\b %F
+\b0 \
+Number of major page faults that occurred while the process was running. These are faults where the page has to be read in from disk.\
+
+\b %R
+\b0 \
+Number of minor, or recoverable, page faults. These are faults for pages that are not valid but which have not yet been claimed by other virtual pages. Thus the data in the page is still valid but the system tables must be updated.\
+
+\b %W
+\b0 \
+Number of times the process was swapped out of main memory.\
+
+\b %c
+\b0 \
+Number of times the process was context-switched involuntarily (because the time slice expired).\
+
+\b %w
+\b0 \
+Number of waits: times that the program was context-switched voluntarily, for instance while waiting for an I/O operation to complete.\
+\pard\pardeftab720\sl380\partightenfactor0
+
+\b \cf2 %I\
+\pard\pardeftab720\sl380\sa320\partightenfactor0
+
+\b0 \cf2 Number of file system inputs by the process.\
+\pard\pardeftab720\sl380\sa320\partightenfactor0
+
+\b \cf2 %O
+\b0 \
+Number of file system outputs by the process.\
+
+\b %r
+\b0 \
+Number of socket messages received by the process.\
+
+\b %s
+\b0 \
+Number of socket messages sent by the process.\
+
+\b %k
+\b0 \
+Number of signals delivered to the process.\
+}
