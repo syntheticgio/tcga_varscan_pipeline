@@ -23,13 +23,11 @@ class TestHandler(MainHandler):
         pass
 
     def get(self):
-        sqlstr = 'select * from SamtoolsSort'
-        results = self.db.get(sqlstr)
-        self.write("Test:  %s" % results)
+        self.write("Successful GET test!")
 
     def post(self):
         json = tornado.escape.json_decode(self.request.body)
-        self.write(json["key1"]) # Specific Value - no key for all values
+        self.write(json["key1"])  # Specific Value - no key for all values
 
 
 class SortHandler(MainHandler):
@@ -37,9 +35,9 @@ class SortHandler(MainHandler):
         pass
 
     def get(self):
-        sqlstr = 'select * from SamtoolsSort'
+        sqlstr = 'select * from SamtoolsSort limit 1'
         results = self.db.get(sqlstr)
-        self.write("Hello sort world : {}".format(results))
+        self.write("SamtoolsSort sample : {}".format(results))
 
     def post(self):
         json = tornado.escape.json_decode(self.request.body)
@@ -60,10 +58,22 @@ class MpileupHandler(MainHandler):
         pass
 
     def get(self):
-        pass
+        sqlstr = 'select * from MpileUp limit 1'
+        results = self.db.get(sqlstr)
+        self.write("MpileUp sample : {}".format(results))
 
     def post(self):
-        json = tornado.escape.json_decode(self.response.body)
+        json = tornado.escape.json_decode(self.request.body)
+        columns = ''
+        values = ''
+        for key, value in json.iteritems():
+            columns = columns + key + ', '
+            values = values + value + ', '
+        c = columns[:-2]
+        v = values[:-2]
+        sqlstr = "INSERT INTO MpileUp ({}) VALUES ({})".format(c, v)
+        print(sqlstr)
+        self.write(sqlstr)
 
 
 class VarscanSomaticHandler(MainHandler):
@@ -71,10 +81,22 @@ class VarscanSomaticHandler(MainHandler):
         pass
 
     def get(self):
-        pass
+        sqlstr = 'select * from VarscanSomatic limit 1'
+        results = self.db.get(sqlstr)
+        self.write("VarscanSomatic sample : {}".format(results))
 
     def post(self):
-        json = tornado.escape.json_decode(self.response.body)
+        json = tornado.escape.json_decode(self.request.body)
+        columns = ''
+        values = ''
+        for key, value in json.iteritems():
+            columns = columns + key + ', '
+            values = values + value + ', '
+        c = columns[:-2]
+        v = values[:-2]
+        sqlstr = "INSERT INTO VarscanSomatic ({}) VALUES ({})".format(c, v)
+        print(sqlstr)
+        self.write(sqlstr)
 
 
 class VarscanProcessSomaticSnpsHandler(MainHandler):
@@ -82,10 +104,22 @@ class VarscanProcessSomaticSnpsHandler(MainHandler):
         pass
 
     def get(self):
-        pass
+        sqlstr = 'select * from VarscanProcessSnps limit 1'
+        results = self.db.get(sqlstr)
+        self.write("VarscanProcessSnps sample : {}".format(results))
 
     def post(self):
-        json = tornado.escape.json_decode(self.response.body)
+        json = tornado.escape.json_decode(self.request.body)
+        columns = ''
+        values = ''
+        for key, value in json.iteritems():
+            columns = columns + key + ', '
+            values = values + value + ', '
+        c = columns[:-2]
+        v = values[:-2]
+        sqlstr = "INSERT INTO VarscanProcessSnps ({}) VALUES ({})".format(c, v)
+        print(sqlstr)
+        self.write(sqlstr)
 
 
 class VarscanProcessSomaticIndelsHandler(MainHandler):
@@ -93,22 +127,23 @@ class VarscanProcessSomaticIndelsHandler(MainHandler):
         pass
 
     def get(self):
-        pass
+        sqlstr = 'select * from VarscanProcessIndels limit 1'
+        results = self.db.get(sqlstr)
+        self.write("VarscanProcessIndels sample : {}".format(results))
 
     def post(self):
-        json = tornado.escape.json_decode(self.response.body)
+        json = tornado.escape.json_decode(self.request.body)
+        columns = ''
+        values = ''
+        for key, value in json.iteritems():
+            columns = columns + key + ', '
+            values = values + value + ', '
+        c = columns[:-2]
+        v = values[:-2]
+        sqlstr = "INSERT INTO VarscanProcessIndels ({}) VALUES ({})".format(c, v)
+        print(sqlstr)
+        self.write(sqlstr)
 
-
-# def make_app():
-#    return tornado.web.Application([
-#        url(r"/", MainHandler),
-#        url(r"/samtoolssort", SortHandler, dict(db=db), name="sort"),
-#        url(r"/mpileup", MpileupHandler, dict(db=db), name="mpileup"),
-#        url(r"/varscansomatic", VarscanSomaticHandler, dict(db=db), name="varscansomatic"),
-#        url(r"/varscanprocesssomaticsnps", VarscanProcessSomaticSnpsHandler, dict(db=db), name="varscansomaticprocesssnps"),
-#        url(r"/varscanprocesssomaticindels", VarscanProcessSomaticIndelsHandler, dict(db=db), name="varscanprocesssomaticindels"),
-#        url(r"/story/([0-9]+)", StoryHandler, dict(db=db), name="story")
-#    ])
 
 class Application(tornado.web.Application):
     def __init__(self):
