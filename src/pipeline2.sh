@@ -65,8 +65,10 @@ REFERENCE=$5
 #
 # Run samtools sorting on both of the bam files
 #
-/samtools/bin/bin/samtools sort ${NORMAL_BAM} sorted_${NORMAL_BAM}
-/samtools/bin/bin/samtools sort ${TUMOR_BAM} sorted_${TUMOR_BAM}
+# IN VERSION ON XPS this requires -o for output file
+# Get time: { time <command> 2> cmmd.stderr ; } 2> time.txt
+{ /usr/bin/time --format "%C,%D,%E,%F,%I,%K,%M,%O,%P,%R,%S,%U,%W,%X,%Z,%c%e%k%p%r%s%t%w%x" /samtools/bin/bin/samtools sort ${NORMAL_BAM} -o sorted_${NORMAL_BAM} 1> samtools_sort_normal.stdout 2> samtools_sort_normal.stderr ; } 2> samtools_sort_normal_time.txt
+{ /usr/bin/time --format "%C,%D,%E,%F,%I,%K,%M,%O,%P,%R,%S,%U,%W,%X,%Z,%c%e%k%p%r%s%t%w%x" /samtools/bin/bin/samtools sort ${TUMOR_BAM} -o sorted_${TUMOR_BAM} 1> samtools_sort_tumor.stdout 2> samtools_sort_tumor.stderr ; } 2> samtools_sort_tumor_time.txt
 
 #
 # Run samtools mpileup
