@@ -1,0 +1,4 @@
+server/.idea/
+server/_trial_temp/
+server/database.pyc
+server/time_keep_database.db-journal
