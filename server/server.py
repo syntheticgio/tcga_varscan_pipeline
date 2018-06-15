@@ -44,14 +44,20 @@ class SortHandler(MainHandler):
         columns = ''
         values = ''
         for key, value in json.iteritems():
-            columns = columns + str(key) + ', '
-            values = values + str(value) + ', '
+            columns = columns + '\"' + str(key) + '\", '
+            values = values + '\"' + str(value) + '\", '
         c = columns[:-2]
         v = values[:-2]
         sqlstr = "INSERT INTO SamtoolsSort ({}) VALUES ({})".format(c, v)
         print(sqlstr)
-        results = self.db.execute(sqlstr)
-        print(results)
+        db2 = sqlite3.connect('time_keep_database.db')
+        c = db2.cursor()
+        c.execute(sqlstr)
+        db2.commit()
+        db2.close()
+
+        #results = self.db.execute(sqlstr)
+        #print(results)
         self.write(sqlstr)
 
 

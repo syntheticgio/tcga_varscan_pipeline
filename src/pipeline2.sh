@@ -67,8 +67,14 @@ REFERENCE=$5
 #
 # IN VERSION ON XPS this requires -o for output file
 # Get time: { time <command> 2> cmmd.stderr ; } 2> time.txt
-{ /usr/bin/time --format "%C,%D,%E,%F,%I,%K,%M,%O,%P,%R,%S,%U,%W,%X,%Z,%c%e%k%p%r%s%t%w%x" /samtools/bin/bin/samtools sort ${NORMAL_BAM} -o sorted_${NORMAL_BAM} 1> samtools_sort_normal.stdout 2> samtools_sort_normal.stderr ; } 2> samtools_sort_normal_time.txt
-{ /usr/bin/time --format "%C,%D,%E,%F,%I,%K,%M,%O,%P,%R,%S,%U,%W,%X,%Z,%c%e%k%p%r%s%t%w%x" /samtools/bin/bin/samtools sort ${TUMOR_BAM} -o sorted_${TUMOR_BAM} 1> samtools_sort_tumor.stdout 2> samtools_sort_tumor.stderr ; } 2> samtools_sort_tumor_time.txt
+
+OUTPUT_FORMAT="{\"CommandLineArguments\":\"%C\",\"AvgSizeUnsharedDataArea_KBs\": \"%D\",\"ElapsedTime_s\": \"%E\",\"NumPageFaults\": \"%F\",\"NumFileSystemInputs\": \"%I\",\"AvgMemUse_KBs\": \"%K\",\"MaxResidentSetSize_KBs\": \"%M\",\"NumFileSystemOutputs\": \"%O\",\"CPU_Percent\": \"%P\",\"NumRecoverablePageFaults\": \"%R\",\"CPUUsedInKernelMode_s\": \"%S\",\"CPUUsedInUserMode_s\": \"%U\",\"TimesProcessSwappedOutOfMainMemory\": \"%W\",\"AverageAmountSharedText\": \"%X\",\"SystemPageSize_KBs\": \"%Z\",\"TimesProcessContextSwitched\": \"%c\",\"ElapsedRealTimeUsed_s\": \"%e\",\"NumSignalsDelivered\": \"%k\",\"AverageUnsharedStackSize_KBs\": \"%p\",\"NumSocketMessagesReceived\": \"%r\",\"NumSocketMessagesSent\": \"%s\",\"ResidentSetSize_KBs\": \"%t\",\"NumTimesContextSwitchedVoluntarily\": \"%w\",\"ExitStatus\": \"%x\"}"
+
+# TODO : check to make sure that the stderr redirect doesn't capture time output also.
+
+{ /usr/bin/time --format "${OUTPUT_FORMAT}" /samtools/bin/bin/samtools sort ${NORMAL_BAM} -o sorted_${NORMAL_BAM} 1> samtools_sort_normal.stdout 2> samtools_sort_normal.stderr ; } 2> samtools_sort_normal_time.txt
+
+{ /usr/bin/time --format "${OUTPUT_FORMAT}" /samtools/bin/bin/samtools sort ${TUMOR_BAM} -o sorted_${TUMOR_BAM} 1> samtools_sort_tumor.stdout 2> samtools_sort_tumor.stderr ; } 2> samtools_sort_tumor_time.txt
 
 #
 # Run samtools mpileup

@@ -3,16 +3,17 @@ import argparse
 import json
 
 
-class DatabasePoster:
-    def __init__(self):
-        pass
+def PostData(wgs_url, wgs_data):
+    r = requests.post(wgs_url, data=json.dumps(wgs_data))
+    print("POSTed data, return value: {}".format(r.status_code))
+    print("POSTed data, return : {}".format(r.text))
 
-    @staticmethod
-    def PostData(wgs_url, wgs_data):
-        r = requests.post(wgs_url, data=json.dumps(wgs_data))
-        print("POSTed data, return value: {}".format(r.status_code))
-        print("POSTed data, return : {}".format(r.text))
 
+def ReadDataFromFile(file_handle):
+    print("Json file to open: {}".format(file_handle))
+    with open(file_handle) as json_file:
+        data = json.load(json_file)
+        return data
 
 # url = 'http://127.0.0.1/samtoolssort/'
 # payload = {
@@ -69,6 +70,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Commands for the POSTer.')
     parser.add_argument('--verbose', '-v', dest='verbose', action='store_true', help="Turns on verbosity.")
     parser.add_argument('--url', '-u', dest='url', default="samtoolssort", help='Determines the URL to post to.')
+    parser.add_argument('--file', '-f', dest='file', help='File to read data from.')
 
     args = parser.parse_args()
 
@@ -94,6 +96,7 @@ if __name__ == "__main__":
             print("Posting to the test database.")
         url = 'http://127.0.0.1/test/'
 
+    post_data = ReadDataFromFile(args.file)
     test_data = {
         'CommandLineArguments': '\"samtools sort -b test.sam > test.bam\"',
         'AvgSizeUnsharedDataArea_KBs': 56854,
@@ -125,5 +128,5 @@ if __name__ == "__main__":
     # r = requests.get(url, params=test_data)
     # print("GET, with params: {}".format(r.text))
 
-    dp = DatabasePoster()
-    dp.PostData(url, test_data)
+    print("Data to be posted: {}".format(post_data))
+    PostData(url, post_data)
