@@ -16,6 +16,10 @@ class MainHandler(tornado.web.RequestHandler):
     def db(self):
         return self.application.db
 
+    @property
+    def cursor(self):
+        return self.application.cursor
+
 
 class TestHandler(MainHandler):
     # Example implementation
@@ -50,11 +54,11 @@ class SortHandler(MainHandler):
         v = values[:-2]
         sqlstr = "INSERT INTO SamtoolsSort ({}) VALUES ({})".format(c, v)
         print(sqlstr)
-        db2 = sqlite3.connect('time_keep_database.db')
-        c = db2.cursor()
-        c.execute(sqlstr)
-        db2.commit()
-        db2.close()
+        # db2 = sqlite3.connect('time_keep_database.db')
+        # c = db2.cursor()
+        self.cursor.execute(sqlstr)
+        self.db.commit()
+        # db2.close()
 
         #results = self.db.execute(sqlstr)
         #print(results)
@@ -175,10 +179,10 @@ class Application(tornado.web.Application):
         settings = {}
         tornado.web.Application.__init__(self, handlers, **settings)
 
-        self.db = database.Connection()
-        # self.db.execute('create table users (id integer, name char(20));')
-        # self.db.execute('insert into users (id, name) values (1,"jack");')
-        # self.db.execute('insert into users (id, name) values (2,"jill");')
+        # self.db = database.Connection()
+        self.db = sqlite3.connect('time_keep_database.db')
+        self.cursor = self.db.cursor()
+
 
 
 if __name__ == "__main__":
