@@ -71,10 +71,14 @@ if __name__ == "__main__":
     parser.add_argument('--verbose', '-v', dest='verbose', action='store_true', help="Turns on verbosity.")
     parser.add_argument('--url', '-u', dest='url', default="samtoolssort", help='Determines the URL to post to.')
     parser.add_argument('--file', '-f', dest='file', help='File to read data from.')
+    parser.add_argument('--ip', '-i', dest='ip', help='The IP address of the database.')
 
     args = parser.parse_args()
 
-    url = 'http://127.0.0.1/' + args.url + '/'
+    if args.ip:
+        url = 'http://' + args.ip + '/' + args.url + '/'
+    else:
+        url = 'http://127.0.0.1/' + args.url + '/'
     args.verbose = True
     if args.url == 'samtoolssort':
         if args.verbose:
@@ -97,32 +101,32 @@ if __name__ == "__main__":
         url = 'http://127.0.0.1/test/'
 
     post_data = ReadDataFromFile(args.file)
-    test_data = {
-        'CommandLineArguments': '\"samtools sort -b test.sam > test.bam\"',
-        'AvgSizeUnsharedDataArea_KBs': 56854,
-        'ElapsedTime_s': "\"365898\"",
-        'NumPageFaults': 7,
-        'NumFileSystemInputs': 12,
-        'AvgMemUse_KBs': 1526,
-        'MaxResidentSetSize_KBs': 1625,
-        'NumFileSystemOutputs': 10,
-        'CPU_Percent': '\"3%\"',
-        'NumRecoverablePageFaults': 1425,
-        'CPUUsedInKernelMode_s': 9283.2345,
-        'CPUUsedInUserMode_s': 7483.332,
-        'TimesProcessSwappedOutOfMainMemory': 92,
-        'AverageAmountSharedText': 2416,
-        'SystemPageSize_KBs': 4026,
-        'TimesProcessContextSwitched': 42,
-        'ElapsedRealTimeUsed_s': 293.25,
-        'NumSignalsDelivered': 62,
-        'AverageUnsharedStackSize_KBs': 72,
-        'NumSocketMessagesReceived': 73,
-        'NumSocketMessagesSent': 92,
-        'ResidentSetSize_KBs': 15,
-        'NumTimesContextSwitchedVoluntarily': 51,
-        'ExitStatus': 0
-    }
+    # test_data = {
+    #     'CommandLineArguments': '\"samtools sort -b test.sam > test.bam\"',
+    #     'AvgSizeUnsharedDataArea_KBs': 56854,
+    #     'ElapsedTime_s': "\"365898\"",
+    #     'NumPageFaults': 7,
+    #     'NumFileSystemInputs': 12,
+    #     'AvgMemUse_KBs': 1526,
+    #     'MaxResidentSetSize_KBs': 1625,
+    #     'NumFileSystemOutputs': 10,
+    #     'CPU_Percent': '\"3%\"',
+    #     'NumRecoverablePageFaults': 1425,
+    #     'CPUUsedInKernelMode_s': 9283.2345,
+    #     'CPUUsedInUserMode_s': 7483.332,
+    #     'TimesProcessSwappedOutOfMainMemory': 92,
+    #     'AverageAmountSharedText': 2416,
+    #     'SystemPageSize_KBs': 4026,
+    #     'TimesProcessContextSwitched': 42,
+    #     'ElapsedRealTimeUsed_s': 293.25,
+    #     'NumSignalsDelivered': 62,
+    #     'AverageUnsharedStackSize_KBs': 72,
+    #     'NumSocketMessagesReceived': 73,
+    #     'NumSocketMessagesSent': 92,
+    #     'ResidentSetSize_KBs': 15,
+    #     'NumTimesContextSwitchedVoluntarily': 51,
+    #     'ExitStatus': 0
+    # }
 
     # GET with params in URL
     # r = requests.get(url, params=test_data)

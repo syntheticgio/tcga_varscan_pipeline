@@ -1,18 +1,16 @@
-#!/bin/bash
-
-# Pipeline for Varscan in GDC
+#!/usr/bin/env bash
 
 #
 # Sanity checking for number of arguments
 #
-if [[ $# -lt 4 ]] ; then
-    echo 'The pipeline script requires four arguments:'
-	echo "pipeline.h <gs://.../normal.bam> <gs://.../tumor.bam> <gs://.../reference.fa> <output bucket location (i.e. gs://my-bucket/output)>"
+if [[ $# -lt 6 ]] ; then
+    echo 'The pipeline script requires five arguments:'
+	echo "pipeline.h <gs://.../normal.bam> <gs://.../tumor.bam> <output bucket location (i.e. gs://my-bucket/output)> <output base name> <reference> <ip address of database>"
     exit 1
 fi
-if [[ $# -gt 4 ]] ; then
-    echo 'The pipeline script requires four arguments:'
-	echo "pipeline.h <gs://.../normal.bam> <gs://.../tumor.bam> <gs://.../reference.fa> <output bucket location (i.e. gs://my-bucket/output)>"
+if [[ $# -gt 6 ]] ; then
+    echo 'The pipeline script requires five arguments:'
+	echo "pipeline.h <gs://.../normal.bam> <gs://.../tumor.bam> <output bucket location (i.e. gs://my-bucket/output)> <output base name> <reference> <ip address of database>"
     exit 1
 fi
 
@@ -22,59 +20,107 @@ fi
 if [[ $1 == "-h" ]]; then
 	echo "Help"
 	echo "-------------"
-	echo "pipeline.h <gs://.../normal.bam> <gs://.../tumor.bam> <gs://.../reference.fa> <output bucket location (i.e. gs://my-bucket/output)>"
+	echo "pipeline.h <gs://.../normal.bam> <gs://.../tumor.bam> <output bucket location (i.e. gs://my-bucket/output)> <output base name> <reference>"
 	echo ""
 	echo "The files should be locations the container can access; this script is set up to accept accessible gs:// locations and copy them in using gsutil."
 	echo "For example: gs://my-bucket/normal.bam"
+	echo "Output location should have the complete gs:// path up to (but excluding) the file name"
+	echo "The reference will be autodetected for sequence IDs (chr1 vs 1); Hg19 build"
 	exit 1
 fi
+
+
 
 #
 # Set variables based on user passed in data
 #
 NORMAL_BAM=$1
 TUMOR_BAM=$2
-REFERENCE=$3
-OUTPUT_LOCATION=$4
+OUTPUT_LOCATION=$3
+BASE_OUTPUT_NAME=$4
+REFERENCE=$5
+IP=$6
+
+NORMAL_ID="${NORMAL_BAM%.*}"
+TUMOR_ID="${TUMOR_BAM%.*}"
+
+echo "\tNORMAL_BAM: ${NORMAL_BAM}"
+echo "\tTUMOR_BAM: ${TUMOR_BAM}"
+echo "\tOUTPUT_LOCATION: ${OUTPUT_LOCATION}"
+echo "\tBASE_OUTPUT_NAME: ${BASE_OUTPUT_NAME}"
+echo "\tREFERENCE: ${REFERENCE}"
+echo ""
+echo "\tNORMAL_ID: ${NORMAL_ID}"
+echo "\tTUMOR_ID: ${TUMOR_ID}"
 
 #
-# Copy data over from apporpriate gs bucket (as passed in by user)
+# Create OUTPUT directory, where everything should live for testing purposes
 #
-gsutil cp ${NORMAL_BAM} .
-gsutil cp ${TUMOR_BAM} .
-gsutil cp ${REFERENCE} .
+mkdir -p OUTPUT
+
 
 #
-# Get new local file names from the paths (gs bucket paths)
+# This is the base formating option that all tables take.  This assumes the beginning hasn't been defined yet
 #
-NORMAL_BAM=$(basename "$NORMAL_BAM")
-TUMOR_BAM=$(basename "$TUMOR_BAM")
-REFERENCE=$(basename "$REFERENCE")
+TIME_FORMAT="\"CommandLineArguments\":\"%C\",\"AvgSizeUnsharedDataArea_KBs\":\"%D\",\"ElapsedTime_s\":\"%E\",\"NumPageFaults\":\"%F\",\"NumFileSystemInputs\":\"%I\",\"AvgMemUse_KBs\":\"%K\",\"MaxResidentSetSize_KBs\":\"%M\",\"NumFileSystemOutputs\":\"%O\",\"CPU_Percent\":\"%P\",\"NumRecoverablePageFaults\":\"%R\",\"CPUUsedInKernelMode_s\":\"%S\",\"CPUUsedInUserMode_s\":\"%U\",\"TimesProcessSwappedOutOfMainMemory\":\"%W\",\"AverageAmountSharedText\":\"%X\",\"SystemPageSize_KBs\":\"%Z\",\"TimesProcessContextSwitched\":\"%c\",\"ElapsedRealTimeUsed_s\":\"%e\",\"NumSignalsDelivered\":\"%k\",\"AverageUnsharedStackSize_KBs\":\"%p\",\"NumSocketMessagesReceived\":\"%r\",\"NumSocketMessagesSent\":\"%s\",\"ResidentSetSize_KBs\":\"%t\",\"NumTimesContextSwitchedVoluntarily\":\"%w\",\"ExitStatus\":\"%x\"}"
+
+# TODO : check to make sure that the stderr redirect doesn't capture time output also.
 
 #
-# Run samtools sorting on both of the bam files
+# Create the full format option for the SORT command - prepend sort specific string onto TIME_FORMAT
 #
-/samtools/bin/bin/samtools sort ${NORMAL_BAM} sorted_${NORMAL_BAM}
-/samtools/bin/bin/samtools sort ${TUMOR_BAM} sorted_${TUMOR_BAM}
+SORT_FORMAT="{\"ID\":\"${NORMAL_BAM}\",${TIME_FORMAT}"
+
+#
+# Run the SORT command for NORMAL and then submit the database
+#
+echo "samtools sort ${NORMAL_BAM} -o sorted_${NORMAL_BAM}"
+/usr/bin/time -o OUTPUT/samtools_sort_normal_time.txt --format "${SORT_FORMAT}" samtools/bin/bin/samtools sort ${NORMAL_BAM} -o sorted_${NORMAL_BAM} 1> OUTPUT/samtools_sort_normal.stdout 2> OUTPUT/samtools_sort_normal.stderr
+python test_post_json.py -u samtoolssort -f OUTPUT/samtools_sort_normal_time.txt -v -i ${IP}
+
+#
+# Run the SORT command for TUMOR and submit to the database
+#
+
+echo "samtools sort ${TUMOR_BAM} -o sorted_${TUMOR_BAM}"
+/usr/bin/time -o OUTPUT/samtools_sort_tumor_time.txt --format "${SORT_FORMAT}" samtools/bin/bin/samtools sort ${TUMOR_BAM} -o sorted_${TUMOR_BAM} 1> OUTPUT/samtools_sort_tumor.stdout 2> OUTPUT/samtools_sort_tumor.stderr
+python test_post_json.py -u samtoolssort -f OUTPUT/samtools_sort_tumor_time.txt -v -i ${IP}
+
+
+#
+# Determine MPILEUP time output format
+#
+MPILEUP_FORMAT="{\"NormalID\":\"${NORMAL_BAM}\",\"TumorID\":\"${TUMOR_BAM}\",\"Reference\":\"${REFERENCE}\",${TIME_FORMAT}"
 
 #
 # Run samtools mpileup
 #
-/samtools/bin/bin/samtools mpileup \
+echo "/usr/bin/time -o OUTPUT/mpileup_time.txt --format "${MPILEUP_FORMAT}" samtools mpileup -f ${REFERENCE} -q 1 -B sorted_${NORMAL_BAM} sorted_${TUMOR_BAM} > intermediate_mpileup.pileup 2> OUTPUT/intermediate_mpileup.stderr"
+#echo ""
+#echo ""
+/usr/bin/time -o OUTPUT/mpileup_time.txt --format "${MPILEUP_FORMAT}" \
+    samtools/bin/bin/samtools mpileup \
 	-f ${REFERENCE} \
 	-q 1 \
 	-B \
 	sorted_${NORMAL_BAM} \
 	sorted_${TUMOR_BAM} \
-	> \
-	intermediate_mpileup.pileup
+	1> \
+	intermediate_mpileup.pileup \
+	2> OUTPUT/intermediate_mpileup.stderr
+python test_post_json.py -u mpileup -f OUTPUT/mpileup_time.txt -v -i ${IP}
 
 #
 # Get base somatic mutations
 #
-java -jar varscan/VarScan.jar somatic \
+
+SOMATIC_FORMAT="{\"NormalID\":\"${NORMAL_BAM}\",\"TumorID\":\"${TUMOR_BAM}\",\"Reference\":\"${REFERENCE}\",${TIME_FORMAT}"
+echo "Running VarScan Somatic..."
+echo ""
+/usr/bin/time -o OUTPUT/somatic_varscan_time.txt --format "${SOMATIC_FORMAT}" \
+    java -jar varscan/VarScan.jar somatic \
 	intermediate_mpileup.pileup \
-	. \
+	${BASE_OUTPUT_NAME} \
 	--mpileup      1 \
 	--min-coverage 8 \
 	--min-coverage-normal 8 \
@@ -88,30 +134,40 @@ java -jar varscan/VarScan.jar somatic \
 	--strand-filter 0 \
 	--output-vcf
 
+python test_post_json.py -u varscansomatic -f OUTPUT/somatic_varscan_time.txt -v -i ${IP}
+
 #
 # Process for somatic SNPs
 #
-java -jar varscan/VarScan.jar processSomatic \
-	..snp.vcf \
+/usr/bin/time -o OUTPUT/process_somatic_snp_time.txt --format "${SOMATIC_FORMAT}" \
+    java -jar varscan/VarScan.jar processSomatic \
+	${BASE_OUTPUT_NAME}.snp.vcf \
 	--min-tumor-freq 0.10 \
 	--max-normal-freq 0.05 \
 	--p-value 0.07
-	
+
+python test_post_json.py -u varscanprocesssomaticsnps -f OUTPUT/process_somatic_snp_time.txt -v -i ${IP}
+
 #
 # Process for somatic indels
 #
-java -jar varscan/VarScan.jar processSomatic \
-	..indel.vcf \
+/usr/bin/time -o OUTPUT/process_somatic_indel_time.txt --format "${SOMATIC_FORMAT}" \
+    java -jar varscan/VarScan.jar processSomatic \
+	${BASE_OUTPUT_NAME}.indel.vcf \
 	--min-tumor-freq 0.10 \
 	--max-normal-freq 0.05 \
 	--p-value 0.07
+
+python test_post_json.py -u varscanprocesssomaticindels -f OUTPUT/process_somatic_indel_time.txt -v -i ${IP}
+
 	
 # Need to move the output here from ./output (?) to shared mount
 # What is the prefix we should have so far?
 # Don't need to use volumes since we're using buckets (???)
 # 1. Create output directory based on patient ID / TCGA number
-# 2. Copy appropriate files into that directory (rename here?)
+# 2. Copy appropriate files into that directory 
 
 #mv ..indel                  ..indel.Germline.vcf  ..indel.LOH.vcf         ..indel.Somatic.vcf  ..snp                  ..snp.Germline.vcf  ..snp.LOH.vcf         ..snp.Somatic.vcf
 #..indel.Germline.hc.vcf  ..indel.LOH.hc.vcf    ..indel.Somatic.hc.vcf  ..indel.vcf          ..snp.Germline.hc.vcf  ..snp.LOH.hc.vcf    ..snp.Somatic.hc.vcf  ..snp.vcf
 
+mv ${BASE_OUTPUT_NAME}*.vcf ${OUTPUT_LOCATION}/

@@ -12,6 +12,20 @@ class MainHandler(tornado.web.RequestHandler):
     def post(self):
         self.write("Hello post world")
 
+    @staticmethod
+    def construct_sql(table_name, json_object):
+        print("In the construct sql method...")
+        print("Table name: {}".format(table_name))
+        columns = ''
+        values = ''
+        for key, value in json_object.iteritems():
+            columns = columns + '\"' + str(key) + '\", '
+            values = values + '\"' + str(value) + '\", '
+        c = columns[:-2]
+        v = values[:-2]
+        sqlstr = "INSERT INTO {} ({}) VALUES ({})".format(table_name, c, v)
+        return sqlstr
+
     @property
     def db(self):
         return self.application.db
@@ -45,14 +59,16 @@ class SortHandler(MainHandler):
 
     def post(self):
         json = tornado.escape.json_decode(self.request.body)
-        columns = ''
-        values = ''
-        for key, value in json.iteritems():
-            columns = columns + '\"' + str(key) + '\", '
-            values = values + '\"' + str(value) + '\", '
-        c = columns[:-2]
-        v = values[:-2]
-        sqlstr = "INSERT INTO SamtoolsSort ({}) VALUES ({})".format(c, v)
+        sqlstr = self.construct_sql("SamtoolsSort", json)
+
+        # columns = ''
+        # values = ''
+        # for key, value in json.iteritems():
+        #     columns = columns + '\"' + str(key) + '\", '
+        #     values = values + '\"' + str(value) + '\", '
+        # c = columns[:-2]
+        # v = values[:-2]
+        # sqlstr = "INSERT INTO SamtoolsSort ({}) VALUES ({})".format(c, v)
         print(sqlstr)
         # db2 = sqlite3.connect('time_keep_database.db')
         # c = db2.cursor()
@@ -79,14 +95,16 @@ class MpileupHandler(MainHandler):
         columns = ''
         values = ''
         for key, value in json.iteritems():
-            columns = columns + str(key) + ', '
-            values = values + str(value) + ', '
+            columns = columns + '\"' + str(key) + '\", '
+            values = values + '\"' + str(value) + '\", '
         c = columns[:-2]
         v = values[:-2]
         sqlstr = "INSERT INTO MpileUp ({}) VALUES ({})".format(c, v)
         print(sqlstr)
-        results = self.db.execute(sqlstr)
-        print(results)
+        self.cursor.execute(sqlstr)
+        self.db.commit()
+        # results = self.db.execute(sqlstr)
+        # print(results)
         self.write(sqlstr)
 
 
@@ -104,14 +122,14 @@ class VarscanSomaticHandler(MainHandler):
         columns = ''
         values = ''
         for key, value in json.iteritems():
-            columns = columns + str(key) + ', '
-            values = values + str(value) + ', '
+            columns = columns + '\"' + str(key) + '\", '
+            values = values + '\"' + str(value) + '\", '
         c = columns[:-2]
         v = values[:-2]
         sqlstr = "INSERT INTO VarscanSomatic ({}) VALUES ({})".format(c, v)
         print(sqlstr)
-        results = self.db.execute(sqlstr)
-        print(results)
+        self.cursor.execute(sqlstr)
+        self.db.commit()
         self.write(sqlstr)
 
 
@@ -129,14 +147,14 @@ class VarscanProcessSomaticSnpsHandler(MainHandler):
         columns = ''
         values = ''
         for key, value in json.iteritems():
-            columns = columns + str(key) + ', '
-            values = values + str(value) + ', '
+            columns = columns + '\"' + str(key) + '\", '
+            values = values + '\"' + str(value) + '\", '
         c = columns[:-2]
         v = values[:-2]
         sqlstr = "INSERT INTO VarscanProcessSnps ({}) VALUES ({})".format(c, v)
         print(sqlstr)
-        results = self.db.execute(sqlstr)
-        print(results)
+        self.cursor.execute(sqlstr)
+        self.db.commit()
         self.write(sqlstr)
 
 
@@ -154,14 +172,14 @@ class VarscanProcessSomaticIndelsHandler(MainHandler):
         columns = ''
         values = ''
         for key, value in json.iteritems():
-            columns = columns + str(key) + ', '
-            values = values + str(value) + ', '
+            columns = columns + '\"' + str(key) + '\", '
+            values = values + '\"' + str(value) + '\", '
         c = columns[:-2]
         v = values[:-2]
         sqlstr = "INSERT INTO VarscanProcessIndels ({}) VALUES ({})".format(c, v)
         print(sqlstr)
-        results = self.db.execute(sqlstr)
-        print(results)
+        self.cursor.execute(sqlstr)
+        self.db.commit()
         self.write(sqlstr)
 
 
