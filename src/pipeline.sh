@@ -169,5 +169,9 @@ python test_post_json.py -u varscanprocesssomaticindels -f OUTPUT/process_somati
 
 #mv ..indel                  ..indel.Germline.vcf  ..indel.LOH.vcf         ..indel.Somatic.vcf  ..snp                  ..snp.Germline.vcf  ..snp.LOH.vcf         ..snp.Somatic.vcf
 #..indel.Germline.hc.vcf  ..indel.LOH.hc.vcf    ..indel.Somatic.hc.vcf  ..indel.vcf          ..snp.Germline.hc.vcf  ..snp.LOH.hc.vcf    ..snp.Somatic.hc.vcf  ..snp.vcf
+tar -zcf ${BASE_OUTPUT_NAME}.vcf.tar.gz *.vcf
 
-mv ${BASE_OUTPUT_NAME}*.vcf ${OUTPUT_LOCATION}/
+# How to move into GS bucket?
+# Where to move into bucket?
+
+gsutil cp ${BASE_OUTPUT_NAME}*.vcf.gz ${OUTPUT_LOCATION}/varscan_results/
