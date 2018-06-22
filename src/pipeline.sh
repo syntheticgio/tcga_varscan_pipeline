@@ -44,14 +44,21 @@ IP=$6
 NORMAL_ID="${NORMAL_BAM%.*}"
 TUMOR_ID="${TUMOR_BAM%.*}"
 
-echo "\tNORMAL_BAM: ${NORMAL_BAM}"
-echo "\tTUMOR_BAM: ${TUMOR_BAM}"
-echo "\tOUTPUT_LOCATION: ${OUTPUT_LOCATION}"
-echo "\tBASE_OUTPUT_NAME: ${BASE_OUTPUT_NAME}"
-echo "\tREFERENCE: ${REFERENCE}"
 echo ""
-echo "\tNORMAL_ID: ${NORMAL_ID}"
-echo "\tTUMOR_ID: ${TUMOR_ID}"
+echo -e "\tNORMAL_BAM: ${NORMAL_BAM}"
+echo -e "\tTUMOR_BAM: ${TUMOR_BAM}"
+echo -e "\tOUTPUT_LOCATION: ${OUTPUT_LOCATION}"
+echo -e "\tBASE_OUTPUT_NAME: ${BASE_OUTPUT_NAME}"
+echo -e "\tREFERENCE: ${REFERENCE}"
+echo -e "\tIP: ${IP}"
+echo ""
+echo -e "\tNORMAL_ID: ${NORMAL_ID}"
+echo -e "\tTUMOR_ID: ${TUMOR_ID}"
+echo ""
+/samtools/bin/samtools --version
+echo ""
+
+SAMTOOLS="/samtools/bin/samtools"
 
 #
 # Create OUTPUT directory, where everything should live for testing purposes
@@ -74,18 +81,26 @@ SORT_FORMAT="{\"ID\":\"${NORMAL_BAM}\",${TIME_FORMAT}"
 #
 # Run the SORT command for NORMAL and then submit the database
 #
-echo "samtools sort ${NORMAL_BAM} -o sorted_${NORMAL_BAM}"
-/usr/bin/time -o OUTPUT/samtools_sort_normal_time.txt --format "${SORT_FORMAT}" samtools/bin/bin/samtools sort ${NORMAL_BAM} -o sorted_${NORMAL_BAM} 1> OUTPUT/samtools_sort_normal.stdout 2> OUTPUT/samtools_sort_normal.stderr
-python test_post_json.py -u samtoolssort -f OUTPUT/samtools_sort_normal_time.txt -v -i ${IP}
+echo ""
+echo "1. SORTING:  /usr/bin/time -o OUTPUT/samtools_sort_normal_time.txt --format "${SORT_FORMAT}" ${SAMTOOLS} sort ${NORMAL_BAM} -o sorted_${NORMAL_BAM} 1> OUTPUT/samtools_sort_normal.stdout 2> OUTPUT/samtools_sort_normal.stderr"
+/usr/bin/time -o OUTPUT/samtools_sort_normal_time.txt --format "${SORT_FORMAT}" ${SAMTOOLS} sort ${NORMAL_BAM} -o sorted_${NORMAL_BAM} 1> OUTPUT/samtools_sort_normal.stdout 2> OUTPUT/samtools_sort_normal.stderr
+echo ""
+echo "2. POSTing time data to database: python post_json.py -u samtoolssort -f OUTPUT/samtools_sort_normal_time.txt -v -i ${IP}"
+python post_json.py -u samtoolssort -f OUTPUT/samtools_sort_normal_time.txt -v -i ${IP}
+echo ""
+cat OUTPUT/samtools_sort_normal.stderr
 
 #
 # Run the SORT command for TUMOR and submit to the database
 #
-
-echo "samtools sort ${TUMOR_BAM} -o sorted_${TUMOR_BAM}"
-/usr/bin/time -o OUTPUT/samtools_sort_tumor_time.txt --format "${SORT_FORMAT}" samtools/bin/bin/samtools sort ${TUMOR_BAM} -o sorted_${TUMOR_BAM} 1> OUTPUT/samtools_sort_tumor.stdout 2> OUTPUT/samtools_sort_tumor.stderr
-python test_post_json.py -u samtoolssort -f OUTPUT/samtools_sort_tumor_time.txt -v -i ${IP}
-
+echo ""
+echo "3. SORTING: /usr/bin/time -o OUTPUT/samtools_sort_tumor_time.txt --format "${SORT_FORMAT}" ${SAMTOOLS} sort ${TUMOR_BAM} -o sorted_${TUMOR_BAM} 1> OUTPUT/samtools_sort_tumor.stdout 2> OUTPUT/samtools_sort_tumor.stderr"
+/usr/bin/time -o OUTPUT/samtools_sort_tumor_time.txt --format "${SORT_FORMAT}" ${SAMTOOLS} sort ${TUMOR_BAM} -o sorted_${TUMOR_BAM} 1> OUTPUT/samtools_sort_tumor.stdout 2> OUTPUT/samtools_sort_tumor.stderr
+echo ""
+echo "4. POSTing time data to database: python post_json.py -u samtoolssort -f OUTPUT/samtools_sort_tumor_time.txt -v -i ${IP}"
+python post_json.py -u samtoolssort -f OUTPUT/samtools_sort_tumor_time.txt -v -i ${IP}
+echo ""
+cat OUTPUT/samtools_sort_tumor_time.txt
 
 #
 # Determine MPILEUP time output format
@@ -95,11 +110,10 @@ MPILEUP_FORMAT="{\"NormalID\":\"${NORMAL_BAM}\",\"TumorID\":\"${TUMOR_BAM}\",\"R
 #
 # Run samtools mpileup
 #
-echo "/usr/bin/time -o OUTPUT/mpileup_time.txt --format "${MPILEUP_FORMAT}" samtools mpileup -f ${REFERENCE} -q 1 -B sorted_${NORMAL_BAM} sorted_${TUMOR_BAM} > intermediate_mpileup.pileup 2> OUTPUT/intermediate_mpileup.stderr"
-#echo ""
-#echo ""
+echo ""
+echo "5. MPILEUP: /usr/bin/time -o OUTPUT/mpileup_time.txt --format ${MPILEUP_FORMAT} ${SAMTOOLS} mpileup -f ${REFERENCE} -q 1 -B sorted_${NORMAL_BAM} sorted_${TUMOR_BAM} 1> intermediate_mpileup.pileup 2> OUTPUT/intermediate_mpileup.stderr"
 /usr/bin/time -o OUTPUT/mpileup_time.txt --format "${MPILEUP_FORMAT}" \
-    samtools/bin/bin/samtools mpileup \
+    ${SAMTOOLS} mpileup \
 	-f ${REFERENCE} \
 	-q 1 \
 	-B \
@@ -108,7 +122,9 @@ echo "/usr/bin/time -o OUTPUT/mpileup_time.txt --format "${MPILEUP_FORMAT}" samt
 	1> \
 	intermediate_mpileup.pileup \
 	2> OUTPUT/intermediate_mpileup.stderr
-python test_post_json.py -u mpileup -f OUTPUT/mpileup_time.txt -v -i ${IP}
+python post_json.py -u mpileup -f OUTPUT/mpileup_time.txt -v -i ${IP}
+echo ""
+cat OUTPUT/intermediate_mpileup.stderr
 
 #
 # Get base somatic mutations
@@ -134,7 +150,7 @@ echo ""
 	--strand-filter 0 \
 	--output-vcf
 
-python test_post_json.py -u varscansomatic -f OUTPUT/somatic_varscan_time.txt -v -i ${IP}
+python post_json.py -u varscansomatic -f OUTPUT/somatic_varscan_time.txt -v -i ${IP}
 
 #
 # Process for somatic SNPs
@@ -146,7 +162,7 @@ python test_post_json.py -u varscansomatic -f OUTPUT/somatic_varscan_time.txt -v
 	--max-normal-freq 0.05 \
 	--p-value 0.07
 
-python test_post_json.py -u varscanprocesssomaticsnps -f OUTPUT/process_somatic_snp_time.txt -v -i ${IP}
+python post_json.py -u varscanprocesssomaticsnps -f OUTPUT/process_somatic_snp_time.txt -v -i ${IP}
 
 #
 # Process for somatic indels
@@ -158,7 +174,7 @@ python test_post_json.py -u varscanprocesssomaticsnps -f OUTPUT/process_somatic_
 	--max-normal-freq 0.05 \
 	--p-value 0.07
 
-python test_post_json.py -u varscanprocesssomaticindels -f OUTPUT/process_somatic_indel_time.txt -v -i ${IP}
+python post_json.py -u varscanprocesssomaticindels -f OUTPUT/process_somatic_indel_time.txt -v -i ${IP}
 
 	
 # Need to move the output here from ./output (?) to shared mount

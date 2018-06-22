@@ -76,7 +76,7 @@ SORT_FORMAT="{\"ID\":\"${NORMAL_BAM}\",${TIME_FORMAT}"
 #
 echo "samtools sort ${NORMAL_BAM} -o sorted_${NORMAL_BAM}"
 /usr/bin/time -o OUTPUT/samtools_sort_normal_time.txt --format "${SORT_FORMAT}" samtools sort ${NORMAL_BAM} -o sorted_${NORMAL_BAM} 1> OUTPUT/samtools_sort_normal.stdout 2> OUTPUT/samtools_sort_normal.stderr
-python test_post_json.py -u samtoolssort -f OUTPUT/samtools_sort_normal_time.txt -v -i ${IP}
+python ../src/post_json.py -u samtoolssort -f OUTPUT/samtools_sort_normal_time.txt -v -i ${IP}
 
 #
 # Run the SORT command for TUMOR and submit to the database
@@ -84,7 +84,7 @@ python test_post_json.py -u samtoolssort -f OUTPUT/samtools_sort_normal_time.txt
 
 echo "samtools sort ${TUMOR_BAM} -o sorted_${TUMOR_BAM}"
 /usr/bin/time -o OUTPUT/samtools_sort_tumor_time.txt --format "${SORT_FORMAT}" samtools sort ${TUMOR_BAM} -o sorted_${TUMOR_BAM} 1> OUTPUT/samtools_sort_tumor.stdout 2> OUTPUT/samtools_sort_tumor.stderr
-python test_post_json.py -u samtoolssort -f OUTPUT/samtools_sort_tumor_time.txt -v -i ${IP}
+python ../src/post_json.py -u samtoolssort -f OUTPUT/samtools_sort_tumor_time.txt -v -i ${IP}
 
 
 #
@@ -108,7 +108,7 @@ echo "/usr/bin/time -o OUTPUT/mpileup_time.txt --format "${MPILEUP_FORMAT}" samt
 	1> \
 	intermediate_mpileup.pileup \
 	2> OUTPUT/intermediate_mpileup.stderr
-python test_post_json.py -u mpileup -f OUTPUT/mpileup_time.txt -v -i ${IP}
+python ../src/post_json.py -u mpileup -f OUTPUT/mpileup_time.txt -v -i ${IP}
 
 #
 # Get base somatic mutations
@@ -134,7 +134,7 @@ echo ""
 	--strand-filter 0 \
 	--output-vcf
 
-python test_post_json.py -u varscansomatic -f OUTPUT/somatic_varscan_time.txt -v -i ${IP}
+python ../src/post_json.py -u varscansomatic -f OUTPUT/somatic_varscan_time.txt -v -i ${IP}
 
 #
 # Process for somatic SNPs
@@ -146,7 +146,7 @@ python test_post_json.py -u varscansomatic -f OUTPUT/somatic_varscan_time.txt -v
 	--max-normal-freq 0.05 \
 	--p-value 0.07
 
-python test_post_json.py -u varscanprocesssomaticsnps -f OUTPUT/process_somatic_snp_time.txt -v -i ${IP}
+python ../src/post_json.py -u varscanprocesssomaticsnps -f OUTPUT/process_somatic_snp_time.txt -v -i ${IP}
 
 #
 # Process for somatic indels
@@ -158,4 +158,4 @@ python test_post_json.py -u varscanprocesssomaticsnps -f OUTPUT/process_somatic_
 	--max-normal-freq 0.05 \
 	--p-value 0.07
 
-python test_post_json.py -u varscanprocesssomaticindels -f OUTPUT/process_somatic_indel_time.txt -v -i ${IP}
+python ../src/post_json.py -u varscanprocesssomaticindels -f OUTPUT/process_somatic_indel_time.txt -v -i ${IP}
