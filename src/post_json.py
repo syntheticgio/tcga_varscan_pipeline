@@ -107,6 +107,9 @@ if __name__ == "__main__":
     elif args.url == 'removerunningsample':
         if args.verbose:
             print("Removing from the RunningSample table.")
+    elif args.url == 'rawdata':
+        if args.verbose:
+            print("Getting raw data.")
     else:
         if args.verbose:
             print("Posting to the test database.")

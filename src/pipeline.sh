@@ -282,7 +282,7 @@ gsutil cp OUTPUT/* ${OUTPUT_LOCATION}/varscan_results/${BASE_OUTPUT_NAME}/
 
 
 ERROR_FILES="${OUTPUT_LOCATION}/varscan_results/${BASE_OUTPUT_NAME}/"
-JSON_FINISHED="{\"Normal\":${NORMAL_BAM},\"Tumor\":${TUMOR_BAM},\"errorfiles\":${ERROR_FILES},\"SortNormalError\":${SORT_NORMAL_ERROR_CODE},\"PostSortNormalError\":${POST_NORMAL_ERROR_CODE},\"SortTumorError\":${SORT_TUMOR_ERROR_CODE},\"PostSortTumorError\":${POST_TUMOR_ERROR_CODE},\"MpileupError\":${MPILEUP_ERROR_CODE},\"PostMpileupError\":${POST_MPILEUP_ERROR_CODE},\"VarscanError\":${VARSCAN_ERROR_CODE},\"PostVarscanError\":${POST_VARSCAN_ERROR_CODE},\"VarscanSnpError\":${VARSCAN_SNP_ERROR_CODE},\"PostVarscanSnpError\":${POST_VARSCAN_SNP_ERROR_CODE},\"VarscanIndelError\":${VARSCAN_INDEL_ERROR_CODE},\"PostVarscanIndelError\":${POST_VARSCAN_INDEL_ERROR_CODE}}"
+JSON_FINISHED="{\"Normal\":\"${NORMAL_BAM}\",\"Tumor\":\"${TUMOR_BAM}\",\"errorfiles\":\"${ERROR_FILES}\",\"SortNormalError\":${SORT_NORMAL_ERROR_CODE},\"PostSortNormalError\":${POST_NORMAL_ERROR_CODE},\"SortTumorError\":${SORT_TUMOR_ERROR_CODE},\"PostSortTumorError\":${POST_TUMOR_ERROR_CODE},\"MpileupError\":${MPILEUP_ERROR_CODE},\"PostMpileupError\":${POST_MPILEUP_ERROR_CODE},\"VarscanError\":${VARSCAN_ERROR_CODE},\"PostVarscanError\":${POST_VARSCAN_ERROR_CODE},\"VarscanSnpError\":${VARSCAN_SNP_ERROR_CODE},\"PostVarscanSnpError\":${POST_VARSCAN_SNP_ERROR_CODE},\"VarscanIndelError\":${VARSCAN_INDEL_ERROR_CODE},\"PostVarscanIndelError\":${POST_VARSCAN_INDEL_ERROR_CODE}}"
 echo "============================================="
 echo ${JSON_FINISHED} > OUTPUT/finished.txt
 echo "FINISHED File:"

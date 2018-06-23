@@ -3,6 +3,7 @@ import tornado.web
 import sqlite3
 import os
 import tornado.httpserver
+import json
 
 
 class MainHandler(tornado.web.RequestHandler):
@@ -51,6 +52,10 @@ class MainHandler(tornado.web.RequestHandler):
     def cursor(self):
         return self.application.cursor
 
+    @property
+    def table_style(self):
+        return "<html><head><style>table {font-family: \"Trebuchet MS\", Arial, Helvetica, sans-serif;border-collapse: collapse;width: 100%;}table td, #customers th {border: 1px solid #ddd;padding: 8px;}table tr:nth-child(even){background-color: #f2f2f2;}table tr:hover {background-color: #ddd;}table th {padding-top: 12px;padding-bottom: 12px;text-align: left;background-color: #4CAF50;color: white;}</style></head>"
+
 
 class ProgressHandler(MainHandler):
     def initialize(self):
@@ -61,13 +66,33 @@ class ProgressHandler(MainHandler):
         # print(sqlstr)
         # self.cursor.execute(sqlstr)
         # self.db.commit()
-        rows = "<BR><h2>Running computations</h2><table><tr><th>Normal</th><th>Tumor</th><th>Stage</th></tr>"
+        rows = "<h2>Running computations</h2><table><tr><th>Normal</th><th>Tumor</th><th>Stage</th></tr>"
         for row in self.cursor.execute(sqlstr):
             rows = rows + "<tr><td>{}</td><td>{}</td><td>{}</td></tr>".format(row[1], row[2], row[3])
         # print(rows)
         self.set_header("Content-Type", "text/plain")
         _rws = {"results": rows}
         self.write(_rws)
+
+
+class RawDataHandler(MainHandler):
+    def initialize(self):
+        pass
+
+    def get(self):
+        pass
+
+    def post(self):
+        json_body = tornado.escape.json_decode(self.request.body)
+        table = json_body["table"]
+        print ("TABLE: {}".format(table))
+        self.cursor.execute("SELECT * FROM {}".format(table))
+        r = [dict((self.cursor.description[i][0], value) \
+                  for i, value in enumerate(row)) for row in self.cursor.fetchall()]
+        self.set_header("Content-Type", "text/plain")
+        print(r)
+        json_mylist = json.dumps(r, separators=(',',':'))
+        self.write(json_mylist)
 
 
 class CreateRunningSampleHandler(MainHandler):
@@ -78,8 +103,8 @@ class CreateRunningSampleHandler(MainHandler):
         pass
 
     def post(self):
-        json = tornado.escape.json_decode(self.request.body)
-        sqlstr = self.construct_sql("RunningSamples", json)
+        json_body = tornado.escape.json_decode(self.request.body)
+        sqlstr = self.construct_sql("RunningSamples", json_body)
         print(sqlstr)
         self.cursor.execute(sqlstr)
         self.db.commit()
@@ -94,8 +119,10 @@ class UpdateRunningSampleHandler(MainHandler):
         pass
 
     def post(self):
-        json = tornado.escape.json_decode(self.request.body)
-        sqlstr = "UPDATE RunningSamples SET Stage = {} WHERE Normal = \"{}\" AND Tumor = \"{}\"".format(json['Stage'], json['Normal'], json['Tumor'])
+        json_body = tornado.escape.json_decode(self.request.body)
+        sqlstr = "UPDATE RunningSamples SET Stage = {} WHERE Normal = \"{}\" AND Tumor = \"{}\"".format(json_body['Stage'],
+                                                                                                        json_body['Normal'],
+                                                                                                        json_body['Tumor'])
         print(sqlstr)
         self.cursor.execute(sqlstr)
         self.db.commit()
@@ -110,8 +137,8 @@ class RemoveRunningSampleHandler(MainHandler):
         pass
 
     def post(self):
-        json = tornado.escape.json_decode(self.request.body)
-        sqlstr = "DELETE FROM RunningSamples WHERE Normal = {} AND Tumor = {}".format(json['Normal'], json['Tumor'])
+        json_body = tornado.escape.json_decode(self.request.body)
+        sqlstr = "DELETE FROM RunningSamples WHERE Normal = {} AND Tumor = {}".format(json_body['Normal'], json_body['Tumor'])
         print(sqlstr)
         self.cursor.execute(sqlstr)
         self.db.commit()
@@ -127,8 +154,8 @@ class TestHandler(MainHandler):
         self.write("Successful GET test!")
 
     def post(self):
-        json = tornado.escape.json_decode(self.request.body)
-        self.write(json["key1"])  # Specific Value - no key for all values
+        json_body = tornado.escape.json_decode(self.request.body)
+        self.write(json_body["key1"])  # Specific Value - no key for all values
 
 
 class RecordFinishedHandler(MainHandler):
@@ -137,17 +164,19 @@ class RecordFinishedHandler(MainHandler):
 
     def get(self):
         sqlstr = "SELECT Normal, Tumor, Stage FROM RunningSamples WHERE Stage = 9"
-        rows = "<BR><h2>Varscan Somatic Entries</h2>"
+        rows = self.table_style
+        rows = rows + "<body>"
+        rows = rows + "<h2>Varscan Somatic Entries</h2>"
         rows = rows + "<table><tr><th>Normal</th><th>Tumor</th><th>Stage</th></tr>"
         for row in self.cursor.execute(sqlstr):
-            rows = rows + "<tr><td>{}</td><td>{}</td></tr>".format(row[0], row[1], row[2])
-        self.set_header("Content-Type", "text/plain")
-        _rws = {"results": rows}
-        self.write(_rws)
+            rows = rows + "<tr><td>{}</td><td>{}</td><td>{}</td></tr>".format(row[0], row[1], row[2])
+        rows = rows + "</body></html>"
+        self.set_header("Content-Type", "text/html")
+        self.write(rows)
 
     def post(self):
-        json = tornado.escape.json_decode(self.request.body)
-        sqlstr = self.construct_sql("FinishedSamples", json)
+        json_body = tornado.escape.json_decode(self.request.body)
+        sqlstr = self.construct_sql("FinishedSamples", json_body)
         print(sqlstr)
         self.cursor.execute(sqlstr)
         self.db.commit()
@@ -160,18 +189,20 @@ class SortHandler(MainHandler):
 
     def get(self):
         sqlstr = "SELECT ID, ExitStatus FROM SamtoolsSort"
-        rows = "<BR><h2>Samtools Sort Entries</h2>"
+        rows = self.table_style
+        rows = rows + "<body>"
+        rows = rows + "<h2>Samtools Sort Entries</h2>"
         rows = rows + "<table><tr><th>Sample</th><th>ExitStatus</th></tr>"
         for row in self.cursor.execute(sqlstr):
             rows = rows + "<tr><td>{}</td><td>{}</td></tr>".format(row[0], row[1])
         # print(rows)sq
-        self.set_header("Content-Type", "text/plain")
-        _rws = {"results": rows}
-        self.write(_rws)
+        rows = rows + "</body></html>"
+        self.set_header("Content-Type", "text/html")
+        self.write(rows)
 
     def post(self):
-        json = tornado.escape.json_decode(self.request.body)
-        sqlstr = self.construct_sql("SamtoolsSort", json)
+        json_body = tornado.escape.json_decode(self.request.body)
+        sqlstr = self.construct_sql("SamtoolsSort", json_body)
         print(sqlstr)
         self.cursor.execute(sqlstr)
         self.db.commit()
@@ -184,18 +215,20 @@ class MpileupHandler(MainHandler):
 
     def get(self):
         sqlstr = "SELECT NormalID, TumorID, ExitStatus FROM MpileUp"
-        rows = "<BR><h2>MpileUp Entries</h2>"
+        rows = self.table_style
+        rows = rows + "<body>"
+        rows = rows + "<h2>MpileUp Entries</h2>"
         rows = rows + "<table><tr><th>NormalID</th><th>TumorID</th><th>ExitStatus</th></tr>"
         for row in self.cursor.execute(sqlstr):
             rows = rows + "<tr><td>{}</td><td>{}</td></tr>".format(row[0], row[1], row[2])
         # print(rows)
-        self.set_header("Content-Type", "text/plain")
-        _rws = {"results": rows}
-        self.write(_rws)
+        rows = rows + "</body></html>"
+        self.set_header("Content-Type", "text/html")
+        self.write(rows)
 
     def post(self):
-        json = tornado.escape.json_decode(self.request.body)
-        sqlstr = self.construct_sql("MpileUp", json)
+        json_body = tornado.escape.json_decode(self.request.body)
+        sqlstr = self.construct_sql("MpileUp", json_body)
         print(sqlstr)
         self.cursor.execute(sqlstr)
         self.db.commit()
@@ -208,18 +241,20 @@ class VarscanSomaticHandler(MainHandler):
 
     def get(self):
         sqlstr = "SELECT NormalID, TumorID, ExitStatus FROM VarscanSomatic"
-        rows = "<BR><h2>Varscan Somatic Entries</h2>"
+        rows = self.table_style
+        rows = rows + "<body>"
+        rows = rows + "<h2>Varscan Somatic Entries</h2>"
         rows = rows + "<table><tr><th>NormalID</th><th>TumorID</th><th>ExitStatus</th></tr>"
         for row in self.cursor.execute(sqlstr):
             rows = rows + "<tr><td>{}</td><td>{}</td></tr>".format(row[0], row[1], row[2])
         # print(rows)
-        self.set_header("Content-Type", "text/plain")
-        _rws = {"results": rows}
-        self.write(_rws)
+        rows = rows + "</body></html>"
+        self.set_header("Content-Type", "text/html")
+        self.write(rows)
 
     def post(self):
-        json = tornado.escape.json_decode(self.request.body)
-        sqlstr = self.construct_sql("VarscanSomatic", json)
+        json_body = tornado.escape.json_decode(self.request.body)
+        sqlstr = self.construct_sql("VarscanSomatic", json_body)
         print(sqlstr)
         self.cursor.execute(sqlstr)
         self.db.commit()
@@ -232,18 +267,20 @@ class VarscanProcessSomaticSnpsHandler(MainHandler):
 
     def get(self):
         sqlstr = "SELECT NormalID, TumorID, ExitStatus FROM VarscanProcessSnps"
-        rows = "<BR><h2>Varscan Somatic Entries</h2>"
+        rows = self.table_style
+        rows = rows + "<body>"
+        rows = rows + "<h2>Varscan Somatic Entries</h2>"
         rows = rows + "<table><tr><th>NormalID</th><th>TumorID</th><th>ExitStatus</th></tr>"
         for row in self.cursor.execute(sqlstr):
             rows = rows + "<tr><td>{}</td><td>{}</td></tr>".format(row[0], row[1], row[2])
         # print(rows)
-        self.set_header("Content-Type", "text/plain")
-        _rws = {"results": rows}
-        self.write(_rws)
+        rows = rows + "</body></html>"
+        self.set_header("Content-Type", "text/html")
+        self.write(rows)
 
     def post(self):
-        json = tornado.escape.json_decode(self.request.body)
-        sqlstr = self.construct_sql("VarscanProcessSnps", json)
+        json_body = tornado.escape.json_decode(self.request.body)
+        sqlstr = self.construct_sql("VarscanProcessSnps", json_body)
         print(sqlstr)
         self.cursor.execute(sqlstr)
         self.db.commit()
@@ -256,18 +293,21 @@ class VarscanProcessSomaticIndelsHandler(MainHandler):
 
     def get(self):
         sqlstr = "SELECT NormalID, TumorID, ExitStatus FROM VarscanProcessIndels"
-        rows = "<BR><h2>Varscan Somatic Entries</h2>"
+        rows = self.table_style
+        rows = rows + "<body>"
+        rows = rows + "<BR><h2>Varscan Somatic Entries</h2>"
         rows = rows + "<table><tr><th>Index</th><th>NormalID</th><th>TumorID</th><th>ExitStatus</th></tr>"
         for row in self.cursor.execute(sqlstr):
             rows = rows + "<tr><td>{}</td><td>{}</td><td>{}</td></tr>".format(row[0], row[1], row[2], row[3])
         # print(rows)
-        self.set_header("Content-Type", "text/plain")
-        _rws = {"results": rows}
-        self.write(_rws)
+        rows = rows + "</body></html>"
+        self.set_header("Content-Type", "text/html")
+        # _rws = {"results": rows}
+        self.write(rows)
 
     def post(self):
-        json = tornado.escape.json_decode(self.request.body)
-        sqlstr = self.construct_sql("VarscanProcessIndels", json)
+        json_body = tornado.escape.json_decode(self.request.body)
+        sqlstr = self.construct_sql("VarscanProcessIndels", json_body)
         print(sqlstr)
         self.cursor.execute(sqlstr)
         self.db.commit()
@@ -293,6 +333,7 @@ class Application(tornado.web.Application):
             (r"/createrunningsample/", CreateRunningSampleHandler),
             (r"/updaterunningsample/", UpdateRunningSampleHandler),
             (r"/removerunningsample/", RemoveRunningSampleHandler),
+            (r"/rawdata/", RawDataHandler),
             (r"/test/", TestHandler),
             (r"/js/(.*)", tornado.web.StaticFileHandler,
              dict(path=tornado_settings['static_path'])),
