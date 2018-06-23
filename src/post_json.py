@@ -82,25 +82,40 @@ if __name__ == "__main__":
     args.verbose = True
     if args.url == 'samtoolssort':
         if args.verbose:
-            print("Posting to the SamtoolsSort databse.")
+            print("Posting to the SamtoolsSort table.")
     elif args.url == 'mpileup':
         if args.verbose:
-            print("Posting to the MpileUp database.")
+            print("Posting to the MpileUp table.")
     elif args.url == 'varscansomatic':
         if args.verbose:
-            print("Posting to the VarscanSomatic database.")
+            print("Posting to the VarscanSomatic table.")
     elif args.url == 'varscanprocesssomaticsnps':
         if args.verbose:
-            print("Posting to the VarscanProcessSomaticSnps database.")
+            print("Posting to the VarscanProcessSomaticSnps table.")
     elif args.url == 'varscanprocesssomaticindels':
         if args.verbose:
-            print("Posting to the VarscanProcesssomaticIndels database.")
+            print("Posting to the VarscanProcesssomaticIndels table.")
+    elif args.url == 'recordfinished':
+        if args.verbose:
+            print("Posting to the FinishedSamples table.")
+    elif args.url == 'createrunningsample':
+        if args.verbose:
+            print("Adding to the RunningSample table.")
+    elif args.url == 'updaterunningsample':
+        if args.verbose:
+            print("Updating the RunningSample table.")
+    elif args.url == 'removerunningsample':
+        if args.verbose:
+            print("Removing from the RunningSample table.")
     else:
         if args.verbose:
             print("Posting to the test database.")
         url = 'http://127.0.0.1/test/'
 
     post_data = ReadDataFromFile(args.file)
+    print(post_data)
+    # print(args)
+
     # test_data = {
     #     'CommandLineArguments': '\"samtools sort -b test.sam > test.bam\"',
     #     'AvgSizeUnsharedDataArea_KBs': 56854,
