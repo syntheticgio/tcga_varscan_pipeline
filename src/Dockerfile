@@ -1,4 +1,4 @@
-FROM ubuntu:16.04
+FROM google/cloud-sdk
 
 ENTRYPOINT ["/bin/bash", "pipeline.sh"]
 
@@ -23,7 +23,8 @@ RUN apt-get update && apt-get -y install \
 	libcurl3-dev \
 	time \
 	python2.7 \
-	python-pip
+	python-pip \
+	curl
 
 RUN pip install requests
 

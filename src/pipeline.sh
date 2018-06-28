@@ -34,11 +34,14 @@ fi
 #
 # Set variables based on user passed in data
 #
-NORMAL_BAM=$1
-TUMOR_BAM=$2
+gsutil cp $1 ./
+gsutil cp $2 ./
+gsutil cp $5 ./
+NORMAL_BAM=$(basename "$1")
+TUMOR_BAM=$(basename "$2")
 OUTPUT_LOCATION=$3
 BASE_OUTPUT_NAME=$4
-REFERENCE=$5
+REFERENCE=$(basename "$5")
 IP=$6
 
 NORMAL_ID="${NORMAL_BAM%.*}"
