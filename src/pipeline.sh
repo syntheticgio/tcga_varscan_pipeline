@@ -133,7 +133,7 @@ then
     echo -e "\tERROR CODE: ${SORT_TUMOR_ERROR_CODE}"
 else
     echo "Already sorted.  Simulating stdout and stderr for logging."
-    /usr/bin/time -o OUTPUT/samtools_sort_tumor_time.txt --format ls 1> OUTPUT/samtools_sort_tumor.stdout 2> OUTPUT/samtools_sort_tumor.stderr
+    /usr/bin/time -o OUTPUT/samtools_sort_tumor_time.txt --format "${SORT_FORMAT}" ls 1> OUTPUT/samtools_sort_tumor.stdout 2> OUTPUT/samtools_sort_tumor.stderr
     SORT_TUMOR_ERROR_CODE=$?
     echo -e "\tERROR CODE: ${SORT_TUMOR_ERROR_CODE}"
 fi
