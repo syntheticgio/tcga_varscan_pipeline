@@ -70,7 +70,7 @@ class ProgressHandler(MainHandler):
         for row in self.cursor.execute(sqlstr):
             rows = rows + "<tr><td>{}</td><td>{}</td><td>{}</td></tr>".format(row[1], row[2], row[3])
         # print(rows)
-        self.set_header("Content-Type", "text/plain")
+        self.set_header("Content-Type", "text/html")
         _rws = {"results": rows}
         self.write(_rws)
 
