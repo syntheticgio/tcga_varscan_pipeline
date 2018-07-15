@@ -65,7 +65,8 @@ class ProgressHandler(MainHandler):
         sqlstr = "SELECT * FROM RunningSamples WHERE Stage < 9"
         rows = self.table_style
         rows = rows + "<body>"
-        rows = "<h2>Running computations</h2><table><tr><th>Normal</th><th>Tumor</th><th>Stage</th></tr>"
+        rows = rows + "<h2>Running computations</h2>"
+        rows = rows + "<table><tr><th>Normal</th><th>Tumor</th><th>Stage</th></tr>"
         for row in self.cursor.execute(sqlstr):
             rows = rows + "<tr><td>{}</td><td>{}</td><td>{}</td></tr>".format(row[1], row[2], row[3])
         rows = rows + "</body></html>"
