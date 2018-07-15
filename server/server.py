@@ -63,16 +63,14 @@ class ProgressHandler(MainHandler):
 
     def get(self):
         sqlstr = "SELECT * FROM RunningSamples WHERE Stage < 9"
-        # print(sqlstr)
-        # self.cursor.execute(sqlstr)
-        # self.db.commit()
+        rows = self.table_style
+        rows = rows + "<body>"
         rows = "<h2>Running computations</h2><table><tr><th>Normal</th><th>Tumor</th><th>Stage</th></tr>"
         for row in self.cursor.execute(sqlstr):
             rows = rows + "<tr><td>{}</td><td>{}</td><td>{}</td></tr>".format(row[1], row[2], row[3])
-        # print(rows)
+        rows = rows + "</body></html>"
         self.set_header("Content-Type", "text/html")
-        _rws = {"results": rows}
-        self.write(_rws)
+        self.write(rows)
 
     def post(self):
         sqlstr = "SELECT * FROM RunningSamples WHERE Stage < 9"
