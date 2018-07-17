@@ -1,5 +1,18 @@
 #!/usr/bin/env bash
 
+# ARGUMENTS
+# 1. Normal Bam File Location (i.e. gs://my-bucket/my-bam.bam)
+#   NOTE: In order to avoid sorting if bam is already sorted, the .bam.bai file should also be included there, with the same basename
+# 2. Tumor Bam File Location (i.e. gs://my-bucket/my-bam.bam)
+#   NOTE: In order to avoid sorting if bam is already sorted, the .bam.bai file should also be included there, with the same basename
+# 3. Output Location
+#   This is where the output from the pipeline should be copied to (i.e. gs://my-bucket/output/)
+# 4. Base Output Name
+#	The basename for the output files (i.e. my-output)
+# 5. Reference
+#	The location of the reference file
+# 6. IP address if the server for keeping logs
+
 #
 # Sanity checking for number of arguments
 #
@@ -20,12 +33,11 @@ fi
 if [[ $1 == "-h" ]]; then
 	echo "Help"
 	echo "-------------"
-	echo "pipeline.h <gs://.../normal.bam> <gs://.../tumor.bam> <output bucket location (i.e. gs://my-bucket/output)> <output base name> <reference>"
+	echo "pipeline.h <gs://.../normal.bam> <gs://.../tumor.bam> <output bucket location (i.e. gs://my-bucket/output)> <output base name> <reference> <ip address of database>"
 	echo ""
 	echo "The files should be locations the container can access; this script is set up to accept accessible gs:// locations and copy them in using gsutil."
 	echo "For example: gs://my-bucket/normal.bam"
 	echo "Output location should have the complete gs:// path up to (but excluding) the file name"
-	echo "The reference will be autodetected for sequence IDs (chr1 vs 1); Hg19 build"
 	exit 1
 fi
 

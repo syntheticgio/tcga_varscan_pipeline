@@ -1,6 +1,7 @@
 import csv
 from tcga import TCGAVariantCaller
 import json
+import os
 
 def main():
     json_data=open('config.json').read()
@@ -9,23 +10,28 @@ def main():
     VAR_INDEX = 0
     VAR_CALLERS = []
     HEADER = []
-    
-    with open(config["input_file"], 'rb') as csvfile:
+    MYDIR = os.path.dirname(__file__)
+    MYFILE = os.path.join(MYDIR, config["input_file"])
+    print(MYDIR)
+    with open('full-results-normal.csv', 'rb') as csvfile:
         tcga_reader = csv.reader(csvfile, delimiter=',')
-        i = 0;
+        i = 0
         # This assumes that there is a header in the csv file
         # and that the matches are rows that follow each other
+        # TODO: Check to make sure header is proper (i.e. what is being expected)
         for row in tcga_reader:
             if i == 0:
                 HEADER = row
                 i = i + 1
                 continue
-            if i % 2 == 1: # odd - first entry in group
+            if i % 2 == 1:  # odd - first entry in group
                 # create new var caller object
                 var_caller = TCGAVariantCaller(VAR_INDEX)
 
                 # Get barcode info
+                print(row[3])
                 barcode_info = row[3].split('-')
+
                 barcode = barcode_info[0] + "-" + barcode_info[1] + "-" + barcode_info[2]
                 var_caller.set_barcode(barcode)
 
@@ -80,9 +86,10 @@ def main():
                 # Compare barcodes
                 tumor_barcode = barcode_info[0] + "-" + barcode_info[1] + "-" + barcode_info[2]
                 normal_barcode_info = VAR_CALLERS[VAR_INDEX].normal_barcode.split('-')
+                # print(len(normal_barcode_info))
                 normal_barcode = normal_barcode_info[0] + "-" + normal_barcode_info[1] + "-" + normal_barcode_info[2]
                 if tumor_barcode == normal_barcode:
-                    print("Match")
+                    pass
                 else:
                     print("No Match")
 
@@ -100,11 +107,14 @@ def generate_dsub(callers):
     for caller in callers:
         dsub_instructions = ["dsub", "", "", "", ""]
 
+
 if __name__ == "__main__":
     callers = main()
     f = open('matches.log', 'w')
     for caller in callers:
-        caller.dump_caller_info(f)
+        caller.dump_caller_info_csv(f)
+    
+    f.close()
 
     # Determine reference for each
 

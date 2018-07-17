@@ -97,4 +97,8 @@ class TCGAVariantCaller(object):
         f.write("[ Normal Platform  ] {}\n".format(self.normal_platform))
         f.write("[ Cancer Type      ] {}\n\n".format(self.cancer_type))
         
-f.write()
+    def dump_caller_info_csv(self, f, debug=False):
+        total_size = self.tumor_file_size + self.normal_file_size
+        if debug:
+            print("{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{}\n".format(self.index, self.barcode, self.tumor_barcode, self.tumor_file, self.tumor_gdc_id, self.tumor_file_url, self.tumor_file_size, self.tumor_platform, self.normal_barcode, self.normal_file, self.normal_gdc_id, self.normal_file_url, self.normal_file_size, self.normal_platform, self.cancer_type, total_size))
+        f.write("{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{}\n".format(self.index, self.barcode, self.tumor_barcode, self.tumor_file, self.tumor_gdc_id, self.tumor_file_url, self.tumor_file_size, self.tumor_platform, self.normal_barcode, self.normal_file, self.normal_gdc_id, self.normal_file_url, self.normal_file_size, self.normal_platform, self.cancer_type, total_size))
