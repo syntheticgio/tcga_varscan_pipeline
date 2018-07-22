@@ -14,9 +14,13 @@ class TCGAVariantCaller(object):
     normal_file_size = 0
     normal_platform = ""
     cancer_type = ""
+    total_size = 0
 
 
     def __init__(self, index):
+        self.index = index
+
+    def set_index(self, index):
         self.index = index
 
     def set_barcode(self, barcode):
@@ -60,6 +64,9 @@ class TCGAVariantCaller(object):
 
     def set_cancer_type(self, cancer_type):
         self.cancer_type = cancer_type
+
+    def set_total_size(self, total_size):
+        self.total_size = total_size
 
     def dump_caller_info(self, f):
         print("---=== Debug Dump ===---")
