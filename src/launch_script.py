@@ -3,10 +3,7 @@ from tcga import TCGAVariantCaller
 import json
 import os
 import argparse
-<<<<<<< Updated upstream
 import csv
-=======
->>>>>>> Stashed changes
 
 
 def extract_matches():
@@ -108,7 +105,6 @@ def extract_matches():
     return VAR_CALLERS            
 
 
-<<<<<<< Updated upstream
 def generate_sbatch_scripts(callers):
     # Generate the sbatch instructions
     for caller in callers:
@@ -191,41 +187,5 @@ if __name__ == "__main__":
                 caller.dump_caller_info_csv(f)
         f.close()
         generate_sbatch_scripts(callers)
-=======
-def varscan_pipeline(caller):
-    # Generate slurm job srun command
-    job = "srun  "
-    caller.
-
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description='Commands for the launch script.')
-    parser.add_argument('--verbose', '-v', dest='verbose', action='store_true', help="Turns on verbosity.")
-    parser.add_argument('--match', '-m', dest='match', action='store_true',
-                        help='Turns on the matching algorithm using the base file')
-    parser.add_argument('--match_output_file', '-o', dest='match_output_file', default="matches.csv",
-                        help='Determines the file to write matches out to (csv format).  Only needed with the --match flag.  Default is matches.csv.')
-
-
-
-    # parser.add_argument('--port', '-p', dest='port', default="50051",
-    #                     help='Selects the port for the server to run on.  Defaults to 50051 if not provided.')
-    # parser.add_argument('--latitude', '-lat', dest='latitude', default="38.7509000",
-    #                     help='This is the latitude the drone should be created at, if using a SITL simulation.  By default this will be in Manassas Va')
-    # parser.add_argument('--longitude', '-lon', dest='longitude', default="-77.4753000",
-    #                     help='This is the longitude the drone should be created at, if using a SITL simulation.  By default this will be in Manassas Va')
-
-    args = parser.parse_args()
-    callers = extract_matches()
-
-    if args.match:
-        f = open(args.match_output_file, 'w')
-        for caller in callers:
-            caller.dump_caller_info_csv(f)
-        f.close()
-
-    # Each match needs to be run through the pipeline
-    for caller in callers:
-        varscan_pipeline(caller)
->>>>>>> Stashed changes
 
 
