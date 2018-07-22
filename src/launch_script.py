@@ -5,6 +5,8 @@ import os
 import argparse
 import csv
 
+nodes = ["node1", "node2", "node3"]
+
 
 def extract_matches():
     json_data=open('config.json').read()
@@ -107,6 +109,8 @@ def extract_matches():
 
 def generate_sbatch_scripts(callers):
     # Generate the sbatch instructions
+    node_length = len(nodes)
+    node_indx = 0
     for caller in callers:
         # For each caller we need to:
         #   1. Download the relevant BAM / BAI files
@@ -132,6 +136,12 @@ def generate_sbatch_scripts(callers):
         #   #SBATCH --chdir=<working directory>
         #
         #   srun pipeline.sh ...
+
+        # Submit on nodes[node_indx]
+        
+        node_indx += 1
+        if node_indx > node_length - 1:
+            node_indx = 0
 
 srun hostname
 srun sleep 60
@@ -187,5 +197,3 @@ if __name__ == "__main__":
                 caller.dump_caller_info_csv(f)
         f.close()
         generate_sbatch_scripts(callers)
-
-
