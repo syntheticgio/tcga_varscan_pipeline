@@ -4,9 +4,10 @@ import json
 import os
 import argparse
 import csv
+from slurm import slurm_submitter
 
 nodes = ["node1", "node2", "node3"]
-
+references = []
 
 def extract_matches():
     json_data=open('config.json').read()
@@ -117,27 +118,31 @@ def generate_sbatch_scripts(callers):
         #   2. On completion of #1, we need to then launch 25 jobs (Chrom 1 - 22, Y, X, M)
         #       - On completion of each job, the information is copied over to GS bucket and then cleaned up (removed) from node
         #   3. On completion of all jobs, the downloaded files are cleaned up behind
-        #
-        #  SAMPLE SBATCH
-        #   #!/bin/bash
-        #   #
-        #   #SBATCH --job-name=<TCGA>_<CHR> (or DOWNLOAD or CLEAN)
-        #   #SBATCH --output=<TCGA>_%A_<CHR>.stout
-        #   #SBATCH --error=<TCGA>_%A_<CHR>.sterr
-        #   #
-        #   #SBATCH --mail-type=FAIL,END
-        #   #SBATCH --mail-user=torcivia@gwu.edu
-        #   #
-        #   #SBATCH --nodelist=<node name>
-        #   #
-        #   #SBATCH --ntasks=1
-        #   #SBATCH --mem=1024
-        #   #SBATCH --dependency=afterok:<job id>
-        #   #SBATCH --chdir=<working directory>
-        #
-        #   srun pipeline.sh ...
+        
+        s = slurm_submitter()
+        
+        # Setup Download
+        working_directory = "/home/torcivia/tcga/%s/" % caller.barcode
+        job_type = "DOWNLOAD"
+        node = nodes[node_indx]
+        
+        s.populate_template(caller, node, job_type, working_directory)
+        print s.template
 
-        # Submit on nodes[node_indx]
+        # reference = "HG19"
+
+        # Launch download here
+        job_id = <call for job here>
+
+        # Set new job type
+        job_type = "VARCALL"
+        for ref in references:
+            < call for job here, dependent on job_id >
+            < capture list of job ID returns >
+
+        # Do cleanup
+        job_type = "CLEAN"
+
         
         node_indx += 1
         if node_indx > node_length - 1:
@@ -151,42 +156,44 @@ srun sleep 60
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Commands for launch script.')
     parser.add_argument('--verbose', '-v', dest='verbose', action='store_true', help="Turns on verbosity.")
-    parser.add_argument('--quick', '-q', dest='quick', action='store_true', help='Instead of re-generating the pairing index, reads from matches.csv (if exists).')
-    parser.add_argument('--matches_log', '-l', dest='log', action='store_true', help='Instead of storing matches as CSV, stores them as LOG file with more detailed output.')
-
-    parser.add_argument('--port', '-p', dest='port', default="50051", help='Selects the port for the server to run on.  Defaults to 50051 if not provided.')
-    parser.add_argument('--latitude', '-lat', dest='latitude', default="38.7509000", help='This is the latitude the drone should be created at, if using a SITL simulation.  By default this will be in Manassas Va')
-    parser.add_argument('--longitude', '-lon', dest='longitude', default="-77.4753000", help='This is the longitude the drone should be created at, if using a SITL simulation.  By default this will be in Manassas Va')
+    # parser.add_argument('--quick', '-q', dest='quick', action='store_true', help='Instead of re-generating the pairing index, reads from matches.csv (if exists).')
+    parser.add_argument('--matches_log', '-l', dest='log', action='store_true', help='Instead of storing matches as CSV, stores them as LOG file with more detailed output.  This cannot be used as an input for other functionality in this program.')
+    
+    # parser.add_argument('--port', '-p', dest='port', default="50051", help='Selects the port for the server to run on.  Defaults to 50051 if not provided.')
+    # parser.add_argument('--latitude', '-lat', dest='latitude', default="38.7509000", help='This is the latitude the drone should be created at, if using a SITL simulation.  By default this will be in Manassas Va')
+    # parser.add_argument('--longitude', '-lon', dest='longitude', default="-77.4753000", help='This is the longitude the drone should be created at, if using a SITL simulation.  By default this will be in Manassas Va')
 
     args = parser.parse_args()
 
-    if args.quick:
-        callers = []
+    # if args.quick:
+    callers = []
+    try:
         csv_file = open('matches.csv', 'r')
-            csv_reader = csv.reader(csv_file, delimiter=',')
-            indx = 1
-            for row in csv_reader:
-                caller = TCGAVariantCaller(indx)
-                caller.set_index(indx)
-                caller.set_barcode(row[1])
-                caller.set_tumor_barcode(row[2])
-                caller.set_tumor_file(row[3])
-                caller.set_tumor_gdc_id(row[4])
-                caller.set_tumor_file_url(row[5])
-                caller.set_tumor_file_size(row[6])
-                caller.set_tumor_platform(row[7])   
-                caller.set_normal_barcode(row[8])
-                caller.set_normal_file(row[9])
-                caller.set_normal_gdc_id(row[10])
-                caller.set_normal_file_url(row[11])
-                caller.set_normal_file_size(row[12])
-                caller.set_normal_platform(row[13])
-                caller.set_cancer_type(row[14])
-                caller.set_total_size(row[15])
-                callers.append(caller)
-                indx += 1
-        generate_sbatch_scripts(callers)
-    else:
+        csv_reader = csv.reader(csv_file, delimiter=',')
+        indx = 1
+        for row in csv_reader:
+            caller = TCGAVariantCaller(indx)
+            caller.set_index(indx)
+            caller.set_barcode(row[1])
+            caller.set_tumor_barcode(row[2])
+            caller.set_tumor_file(row[3])
+            caller.set_tumor_gdc_id(row[4])
+            caller.set_tumor_file_url(row[5])
+            caller.set_tumor_file_size(row[6])
+            caller.set_tumor_platform(row[7])   
+            caller.set_normal_barcode(row[8])
+            caller.set_normal_file(row[9])
+            caller.set_normal_gdc_id(row[10])
+            caller.set_normal_file_url(row[11])
+            caller.set_normal_file_size(row[12])
+            caller.set_normal_platform(row[13])
+            caller.set_cancer_type(row[14])
+            caller.set_total_size(row[15])
+            callers.append(caller)
+            indx += 1
+    except IOError:
+        print "matches.csv file doens't appear to exist."
+        print "Regenerating matches.csv"
         callers = main()
         f = open('matches.csv', 'w')
         if args.log:
@@ -196,4 +203,5 @@ if __name__ == "__main__":
             for caller in callers:
                 caller.dump_caller_info_csv(f)
         f.close()
-        generate_sbatch_scripts(callers)
+    
+    generate_sbatch_scripts(callers)
