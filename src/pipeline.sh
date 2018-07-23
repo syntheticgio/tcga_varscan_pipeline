@@ -44,21 +44,59 @@ fi
 #
 # Set variables based on user passed in data
 #
-gsutil cp $1 ./
+# gsutil cp $1 ./
 # If a bai file exists, we know that the file is sorted
-gsutil cp ${1}.bai ./
-NORMAL_SORTED=$?
-gsutil cp $2 ./
+# gsutil cp ${1}.bai ./
+# NORMAL_SORTED=$?
+# gsutil cp $2 ./
 # If a bai file exists, we know that the file is sorted
-gsutil cp ${2}.bai ./
-TUMOR_SORTED=$?
+# gsutil cp ${2}.bai ./
+# TUMOR_SORTED=$?
 # TODO: Needs to be local
-gsutil cp $5 ./
+# gsutil cp $5 ./
+
+
+# Check to make sure files are copied and exist
 NORMAL_BAM=$(basename "$1")
 TUMOR_BAM=$(basename "$2")
+
+# Check if NORMAL BAM file was copied
+if [ ! -e "${NORMAL_BAM}" ]; then
+	echo "Error, Normal BAM not found..."
+	exit 5
+fi
+
+# Check if TUMOR BAM was copied
+if [ ! -e "${TUMOR_BAM}" ]; then
+	echo "Error, Tumor BAM not found..."
+	exit 6
+fi
+
+# Check to see if normal bam index exists to skip sorting
+if [ -e "${NORMAL_BAM}.bai" ]; then
+	NORMAL_SORTED = 0
+else
+	NORMAL_SORTED = 1
+fi
+
+# Check to see if tumor bam index exists to skip sorting
+if [ -e "${TUMOR_BAM}.bai" ]; then
+	TUMOR_SORTED = 0
+else
+	TUMOR_SORTED = 1
+fi
+
 OUTPUT_LOCATION=$3
 BASE_OUTPUT_NAME=$4
-REFERENCE=$(basename "$5")
+REFERENCE=$5
+REFERENCE_NAME=$(basename "$5")
+
+# Check to see if reference file exists
+if [ ! -e "${5}" ]; then
+	echo "Error, Reference file not found..."
+	exit 7
+fi
+
 IP=$6
 
 NORMAL_ID="${NORMAL_BAM%.*}"
@@ -70,6 +108,7 @@ echo -e "\tTUMOR_BAM: ${TUMOR_BAM}"
 echo -e "\tOUTPUT_LOCATION: ${OUTPUT_LOCATION}"
 echo -e "\tBASE_OUTPUT_NAME: ${BASE_OUTPUT_NAME}"
 echo -e "\tREFERENCE: ${REFERENCE}"
+echo -e "\tREFERENCE NAME: ${REFERENCE_NAME}"
 echo -e "\tIP: ${IP}"
 echo ""
 echo -e "\tNORMAL_ID: ${NORMAL_ID}"

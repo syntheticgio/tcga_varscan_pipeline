@@ -7,7 +7,7 @@ import csv
 from slurm import slurm_submitter
 
 nodes = ["node1", "node2", "node3"]
-references = []
+references = ["chr1.fa", "chr2.fa", "chr3.fa", "chr4.fa", "chr5.fa", "chr6.fa", "chr7.fa", "chr8.fa", "chr9.fa", "chr10.fa", "chr11.fa", "chr12.fa", "chr13.fa", "chr14.fa", "chr15.fa", "chr16.fa", "chr17.fa", "chr18.fa", "chr19.fa", "chr20.fa", "chr21.fa", "chr22.fa", "chrX.fa", "chrY.fa", "chrM.fa"]
 
 def extract_matches():
     json_data=open('config.json').read()
@@ -118,39 +118,40 @@ def generate_sbatch_scripts(callers):
         #   2. On completion of #1, we need to then launch 25 jobs (Chrom 1 - 22, Y, X, M)
         #       - On completion of each job, the information is copied over to GS bucket and then cleaned up (removed) from node
         #   3. On completion of all jobs, the downloaded files are cleaned up behind
-        
-        s = slurm_submitter()
+
+        working_directory = "/home/torcivia/tcga/{}/".format(caller.barcode)
+        s = slurm_submitter(working_directory)
         
         # Setup Download
-        working_directory = "/home/torcivia/tcga/%s/" % caller.barcode
         job_type = "DOWNLOAD"
         node = nodes[node_indx]
         
-        s.populate_template(caller, node, job_type, working_directory)
-        print s.template
-
-        # reference = "HG19"
+        s.populate_template(caller, node, job_type)
+        # print s.template
 
         # Launch download here
-        job_id = <call for job here>
+        #job_id = <call for job here>
+        job_id = s.launch_job()
 
         # Set new job type
         job_type = "VARCALL"
+        varcall_job_ids = []
         for ref in references:
-            < call for job here, dependent on job_id >
-            < capture list of job ID returns >
+            s.populate_template(caller, node, job_type, ref, job_id)
+            _job_id = s.launch_job()
+            varcall_job_ids.append(_job_id)
+        
+        # print "VARCALL IDS"
+        # print varcall_job_ids
 
         # Do cleanup
         job_type = "CLEAN"
+        s.populate_template(caller, node, job_type, "cleanup", varcall_job_ids)
+        s.launch_job()
 
-        
         node_indx += 1
         if node_indx > node_length - 1:
             node_indx = 0
-
-srun hostname
-srun sleep 60
-        sbatch_instructions = ["dsub", "", "", "", ""]
 
 
 if __name__ == "__main__":
@@ -169,6 +170,7 @@ if __name__ == "__main__":
     callers = []
     try:
         csv_file = open('matches.csv', 'r')
+        print "Found matches.csv file"
         csv_reader = csv.reader(csv_file, delimiter=',')
         indx = 1
         for row in csv_reader:
@@ -191,17 +193,18 @@ if __name__ == "__main__":
             caller.set_total_size(row[15])
             callers.append(caller)
             indx += 1
+            print caller
     except IOError:
         print "matches.csv file doens't appear to exist."
         print "Regenerating matches.csv"
         callers = main()
-        f = open('matches.csv', 'w')
-        if args.log:
-            for caller in callers:
-                caller.dump_caller_info(f)
-        else:
-            for caller in callers:
-                caller.dump_caller_info_csv(f)
-        f.close()
+        # f = open('matches.csv', 'w')
+        # if args.log:
+        #     for caller in callers:
+        #         caller.dump_caller_info(f)
+        # else:
+        #     for caller in callers:
+        #         caller.dump_caller_info_csv(f)
+        # f.close()
     
     generate_sbatch_scripts(callers)
