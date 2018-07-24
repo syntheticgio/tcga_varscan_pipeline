@@ -6,7 +6,7 @@ import argparse
 import csv
 from slurm import slurm_submitter
 
-nodes = ["node1", "node2", "node3"]
+nodes = ["slurm-child1"]
 references = ["chr1.fa", "chr2.fa", "chr3.fa", "chr4.fa", "chr5.fa", "chr6.fa", "chr7.fa", "chr8.fa", "chr9.fa", "chr10.fa", "chr11.fa", "chr12.fa", "chr13.fa", "chr14.fa", "chr15.fa", "chr16.fa", "chr17.fa", "chr18.fa", "chr19.fa", "chr20.fa", "chr21.fa", "chr22.fa", "chrX.fa", "chrY.fa", "chrM.fa"]
 
 def extract_matches():
@@ -119,8 +119,11 @@ def generate_sbatch_scripts(callers):
         #       - On completion of each job, the information is copied over to GS bucket and then cleaned up (removed) from node
         #   3. On completion of all jobs, the downloaded files are cleaned up behind
 
-        working_directory = "/home/torcivia/tcga/{}/".format(caller.barcode)
-        s = slurm_submitter(working_directory)
+        # working_directory = "/home/torcivia/tcga/{}/".format(caller.barcode)
+        # working_directory = "/Users/Jonny/tmp/test_tcga/{}/".format(caller.barcode)
+        # base_directory = "/Users/Jonny/tmp/test_tcga/"
+        base_directory = "/home/torcivia/tcga/"
+        s = slurm_submitter(base_directory)
         
         # Setup Download
         job_type = "DOWNLOAD"

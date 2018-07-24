@@ -102,7 +102,7 @@ rm -rf {working_directory}
         # Construct output location
         output_location = "gs://iron-eye-6998/tcga_wgs_results/" + barcode + "/"
         self.slurm_file = barcode + "_" + job_type + "_" + reference + ".slurm"
-        working_directory = self.working_directory
+        working_directory = self.base_directory + caller.barcode + "/"
         
 
         if job_type == "DOWNLOAD":
@@ -130,6 +130,7 @@ rm -rf {working_directory}
         # Construct directory.
 
         filename = os.path.join(jobdir, self.slurm_file)
+        print("Filename: {}".format(filename))
         outfile = open(filename, 'w')
         outfile.write(self.template)
         outfile.close()
