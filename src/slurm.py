@@ -139,16 +139,16 @@ rm -rf {working_directory}
         # print "SLURM FILE: %s" % filename
         if self.job_type == "CLEAN":
             _ids = ','.join('afterok:{}'.format(str(c)) for c in self.job_ids)
-            # output = commands.getoutput('sbatch --dependency={} {}'.format(_ids, filename))
-            print ('sbatch --dependency={} {}'.format(_ids, filename))
+            output = commands.getoutput('sbatch --dependency={} {}'.format(_ids, filename))
+            #print ('sbatch --dependency={} {}'.format(_ids, filename))
         else:
-            # output = commands.getoutput('sbatch {}'.format(filename))
-            print('sbatch {}'.format(filename))
+            output = commands.getoutput('sbatch {}'.format(filename))
+            #print('sbatch {}'.format(filename))
         # Submit to PBS
         # output = commands.getoutput('sbatch %(filename)s' % vars())
         # print outputt
 
-        output = 555  # temporary
+        #output = 555  # temporary
         return output
 
         
