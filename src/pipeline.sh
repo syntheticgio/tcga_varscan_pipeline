@@ -74,16 +74,18 @@ fi
 
 # Check to see if normal bam index exists to skip sorting
 if [ -e "${NORMAL_BAM}.bai" ]; then
-	NORMAL_SORTED = 0
+	NORMAL_SORTED=0
 else
-	NORMAL_SORTED = 1
+	NORMAL_SORTED=1
+        echo "NORMAL BAM INDEX DOESN'T EXIST"
 fi
 
 # Check to see if tumor bam index exists to skip sorting
 if [ -e "${TUMOR_BAM}.bai" ]; then
-	TUMOR_SORTED = 0
+	TUMOR_SORTED=0
 else
-	TUMOR_SORTED = 1
+	TUMOR_SORTED=1
+	echo "TUMOR BAM INDEX DOESN'T EXIST"
 fi
 
 OUTPUT_LOCATION=$3
@@ -153,6 +155,8 @@ then
     echo -e "\tERROR CODE: ${SORT_NORMAL_ERROR_CODE}"
 else
     echo "Already sorted.  Simulating stdout and stderr for logging."
+    mv ${NORMAL_BAM} sorted_${NORMAL_BAM}
+    cp ${NORMAL_BAM}.bai sorted_${NORMAL_BAM}.bai
     /usr/bin/time -o OUTPUT/samtools_sort_normal_time.txt --format "${SORT_FORMAT}" ls 1> OUTPUT/samtools_sort_normal.stdout 2> OUTPUT/samtools_sort_normal.stderr
     SORT_NORMAL_ERROR_CODE=$?
     echo -e "\tERROR CODE: ${SORT_NORMAL_ERROR_CODE}"
@@ -184,6 +188,8 @@ then
     echo -e "\tERROR CODE: ${SORT_TUMOR_ERROR_CODE}"
 else
     echo "Already sorted.  Simulating stdout and stderr for logging."
+    mv ${TUMOR_BAM} sorted_${TUMOR_BAM}
+    cp ${TUMOR_BAM}.bai sorted_${TUMOR_BAM}.bai
     /usr/bin/time -o OUTPUT/samtools_sort_tumor_time.txt --format "${SORT_FORMAT}" ls 1> OUTPUT/samtools_sort_tumor.stdout 2> OUTPUT/samtools_sort_tumor.stderr
     SORT_TUMOR_ERROR_CODE=$?
     echo -e "\tERROR CODE: ${SORT_TUMOR_ERROR_CODE}"
