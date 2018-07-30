@@ -57,20 +57,29 @@ pipeline.sh {normal_file} {tumor_file} {output_location} {barcode} {working_dire
 
 #SBATCH --ntasks=1
 #SBATCH --mem=1024
-#SBATCH --chdir={working_directory}
 
+echo "Attempting to make directory..."
 mkdir -p {working_directory}
+
+echo "Moving to directory..."
 cd {working_directory}
 
-gsutil cp {normal} ./
-gsutil cp {tumor} ./
-gsutil cp {normal}.bai ./
-gsutil cp {tumor}.bai ./
+echo "Copying BAM files and indexes..."
+gsutil cp {normal} ./ 2> download_normal.sterr
+gsutil cp {tumor} ./ 2> download_tumor.stderr
+gsutil cp {normal}.bai ./ 2> download_normal_bai.stderr
+gsutil cp {tumor}.bai ./ 2> download_tumor_bai.stderr
 
+echo "Copying script files ..."
 cp /home/torcivia/pipeline/tcga_varscan_pipeline/src/pipeline.sh ./
 cp /home/torcivia/pipeline/tcga_varscan_pipeline/src/post_json.py ./
 cp /home/torcivia/pipeline/tcga_varscan_pipeline/src/split_by_ref.sh ./
 
+echo "Changing permissions..."
+chmod +x split_by_ref.sh
+chmod +x pipeline.sh
+
+echo "Splitting by reference..."
 ./split_by_ref.sh {normal} {tumor} {db_address}
         """
     

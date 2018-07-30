@@ -97,6 +97,7 @@ echo "=========================================================="
 echo "1. SORTING:  /usr/bin/time -o OUTPUT/samtools_sort_normal_time.txt --format "${SORT_FORMAT}" ${SAMTOOLS} sort ${NORMAL_BAM} -o sorted_${NORMAL_BAM} 1> OUTPUT/samtools_sort_normal.stdout 2> OUTPUT/samtools_sort_normal.stderr"
 if [ ${NORMAL_SORTED} -gt 0 ]
 then
+    echo "Normal Not yet sorted, sorting now..."
     /usr/bin/time -o OUTPUT/samtools_sort_normal_time.txt --format "${SORT_FORMAT}" ${SAMTOOLS} sort ${NORMAL_BAM} -o sorted_${NORMAL_BAM} 1> OUTPUT/samtools_sort_normal.stdout 2> OUTPUT/samtools_sort_normal.stderr
     SORT_NORMAL_ERROR_CODE=$?
     echo -e "\tERROR CODE: ${SORT_NORMAL_ERROR_CODE}"
@@ -135,6 +136,7 @@ echo ""
 echo "3. SORTING: /usr/bin/time -o OUTPUT/samtools_sort_tumor_time.txt --format "${SORT_FORMAT}" ${SAMTOOLS} sort ${TUMOR_BAM} -o sorted_${TUMOR_BAM} 1> OUTPUT/samtools_sort_tumor.stdout 2> OUTPUT/samtools_sort_tumor.stderr"
 if [ ${TUMOR_SORTED} -gt 0 ]
 then
+    echo "Tumor not yet sorted, sorting now..."
     /usr/bin/time -o OUTPUT/samtools_sort_tumor_time.txt --format "${SORT_FORMAT}" ${SAMTOOLS} sort ${TUMOR_BAM} -o sorted_${TUMOR_BAM} 1> OUTPUT/samtools_sort_tumor.stdout 2> OUTPUT/samtools_sort_tumor.stderr
     SORT_TUMOR_ERROR_CODE=$?
     echo -e "\tERROR CODE: ${SORT_TUMOR_ERROR_CODE}"
