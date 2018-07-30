@@ -61,32 +61,32 @@ NORMAL_BAM=$(basename "$1")
 TUMOR_BAM=$(basename "$2")
 
 # Check if NORMAL BAM file was copied
-if [ ! -e "${NORMAL_BAM}" ]; then
-	echo "Error, Normal BAM not found..."
-	exit 5
-fi
+# if [ ! -e "${NORMAL_BAM}" ]; then
+# 	echo "Error, Normal BAM not found..."
+# 	exit 5
+# fi
 
-# Check if TUMOR BAM was copied
-if [ ! -e "${TUMOR_BAM}" ]; then
-	echo "Error, Tumor BAM not found..."
-	exit 6
-fi
+# # Check if TUMOR BAM was copied
+# if [ ! -e "${TUMOR_BAM}" ]; then
+# 	echo "Error, Tumor BAM not found..."
+# 	exit 6
+# fi
 
-# Check to see if normal bam index exists to skip sorting
-if [ -e "${NORMAL_BAM}.bai" ]; then
-	NORMAL_SORTED=0
-else
-	NORMAL_SORTED=1
-        echo "NORMAL BAM INDEX DOESN'T EXIST"
-fi
+# # Check to see if normal bam index exists to skip sorting
+# if [ -e "${NORMAL_BAM}.bai" ]; then
+# 	NORMAL_SORTED=0
+# else
+# 	NORMAL_SORTED=1
+#         echo "NORMAL BAM INDEX DOESN'T EXIST"
+# fi
 
-# Check to see if tumor bam index exists to skip sorting
-if [ -e "${TUMOR_BAM}.bai" ]; then
-	TUMOR_SORTED=0
-else
-	TUMOR_SORTED=1
-	echo "TUMOR BAM INDEX DOESN'T EXIST"
-fi
+# # Check to see if tumor bam index exists to skip sorting
+# if [ -e "${TUMOR_BAM}.bai" ]; then
+# 	TUMOR_SORTED=0
+# else
+# 	TUMOR_SORTED=1
+# 	echo "TUMOR BAM INDEX DOESN'T EXIST"
+# fi
 
 OUTPUT_LOCATION=$3
 BASE_OUTPUT_NAME=$4
@@ -104,9 +104,12 @@ IP=$6
 NORMAL_ID="${NORMAL_BAM%.*}"
 TUMOR_ID="${TUMOR_BAM%.*}"
 
+MODIFIED_NORMAL="sorted_${NORMAL_ID}.REF_${REFERENCE_NAME%.*}.bam"
+MODIFIED_TUMOR="sorted_${TUMOR_ID}.REF_${REFERENCE_NAME%.*}.bam"
+
 echo ""
-echo -e "\tNORMAL_BAM: ${NORMAL_BAM}"
-echo -e "\tTUMOR_BAM: ${TUMOR_BAM}"
+echo -e "\tNORMAL_BAM: ${MODIFIED_NORMAL}"
+echo -e "\tTUMOR_BAM: ${MODIFIED_TUMOR}"
 echo -e "\tOUTPUT_LOCATION: ${OUTPUT_LOCATION}"
 echo -e "\tBASE_OUTPUT_NAME: ${BASE_OUTPUT_NAME}"
 echo -e "\tREFERENCE: ${REFERENCE}"
@@ -144,66 +147,66 @@ SORT_FORMAT="{\"ID\":\"${NORMAL_BAM}\",${TIME_FORMAT}"
 # Only run if the bai index is not included
 # Stage 1
 #
-echo "{\"Normal\":\"${NORMAL_BAM}\",\"Tumor\":\"${TUMOR_BAM}\",\"Stage\":1}" > OUTPUT/running_entry.txt
-python post_json.py -u createrunningsample -v -i ${IP} -f OUTPUT/running_entry.txt
-echo "=========================================================="
-echo "1. SORTING:  /usr/bin/time -o OUTPUT/samtools_sort_normal_time.txt --format "${SORT_FORMAT}" ${SAMTOOLS} sort ${NORMAL_BAM} -o sorted_${NORMAL_BAM} 1> OUTPUT/samtools_sort_normal.stdout 2> OUTPUT/samtools_sort_normal.stderr"
-if [ ${NORMAL_SORTED} -gt 0 ]
-then
-    /usr/bin/time -o OUTPUT/samtools_sort_normal_time.txt --format "${SORT_FORMAT}" ${SAMTOOLS} sort ${NORMAL_BAM} -o sorted_${NORMAL_BAM} 1> OUTPUT/samtools_sort_normal.stdout 2> OUTPUT/samtools_sort_normal.stderr
-    SORT_NORMAL_ERROR_CODE=$?
-    echo -e "\tERROR CODE: ${SORT_NORMAL_ERROR_CODE}"
-else
-    echo "Already sorted.  Simulating stdout and stderr for logging."
-    mv ${NORMAL_BAM} sorted_${NORMAL_BAM}
-    cp ${NORMAL_BAM}.bai sorted_${NORMAL_BAM}.bai
-    /usr/bin/time -o OUTPUT/samtools_sort_normal_time.txt --format "${SORT_FORMAT}" ls 1> OUTPUT/samtools_sort_normal.stdout 2> OUTPUT/samtools_sort_normal.stderr
-    SORT_NORMAL_ERROR_CODE=$?
-    echo -e "\tERROR CODE: ${SORT_NORMAL_ERROR_CODE}"
-fi
-echo ""
-echo "2. POSTing time data to database: python post_json.py -u samtoolssort -f OUTPUT/samtools_sort_normal_time.txt -v -i ${IP}"
-python post_json.py -u samtoolssort -f OUTPUT/samtools_sort_normal_time.txt -v -i ${IP}
-POST_NORMAL_ERROR_CODE=$?
-echo -e "\tERROR CODE: ${POST_NORMAL_ERROR_CODE}"
-echo ""
-echo "STDERR"
-echo "------"
-cat OUTPUT/samtools_sort_normal.stderr
-echo "=========================================================="
+# echo "{\"Normal\":\"${NORMAL_BAM}\",\"Tumor\":\"${TUMOR_BAM}\",\"Stage\":1}" > OUTPUT/running_entry.txt
+# python post_json.py -u createrunningsample -v -i ${IP} -f OUTPUT/running_entry.txt
+# echo "=========================================================="
+# echo "1. SORTING:  /usr/bin/time -o OUTPUT/samtools_sort_normal_time.txt --format "${SORT_FORMAT}" ${SAMTOOLS} sort ${NORMAL_BAM} -o sorted_${NORMAL_BAM} 1> OUTPUT/samtools_sort_normal.stdout 2> OUTPUT/samtools_sort_normal.stderr"
+# if [ ${NORMAL_SORTED} -gt 0 ]
+# then
+#     /usr/bin/time -o OUTPUT/samtools_sort_normal_time.txt --format "${SORT_FORMAT}" ${SAMTOOLS} sort ${NORMAL_BAM} -o sorted_${NORMAL_BAM} 1> OUTPUT/samtools_sort_normal.stdout 2> OUTPUT/samtools_sort_normal.stderr
+#     SORT_NORMAL_ERROR_CODE=$?
+#     echo -e "\tERROR CODE: ${SORT_NORMAL_ERROR_CODE}"
+# else
+#     echo "Already sorted.  Simulating stdout and stderr for logging."
+#     mv ${NORMAL_BAM} sorted_${NORMAL_BAM}
+#     cp ${NORMAL_BAM}.bai sorted_${NORMAL_BAM}.bai
+#     /usr/bin/time -o OUTPUT/samtools_sort_normal_time.txt --format "${SORT_FORMAT}" ls 1> OUTPUT/samtools_sort_normal.stdout 2> OUTPUT/samtools_sort_normal.stderr
+#     SORT_NORMAL_ERROR_CODE=$?
+#     echo -e "\tERROR CODE: ${SORT_NORMAL_ERROR_CODE}"
+# fi
+# echo ""
+# echo "2. POSTing time data to database: python post_json.py -u samtoolssort -f OUTPUT/samtools_sort_normal_time.txt -v -i ${IP}"
+# python post_json.py -u samtoolssort -f OUTPUT/samtools_sort_normal_time.txt -v -i ${IP}
+# POST_NORMAL_ERROR_CODE=$?
+# echo -e "\tERROR CODE: ${POST_NORMAL_ERROR_CODE}"
+# echo ""
+# echo "STDERR"
+# echo "------"
+# cat OUTPUT/samtools_sort_normal.stderr
+# echo "=========================================================="
 
 #
 # Run the SORT command for TUMOR and submit to the database
 # Stage 2
 #
-echo "{\"Normal\":\"${NORMAL_BAM}\",\"Tumor\":\"${TUMOR_BAM}\",\"Stage\":2}" > OUTPUT/running_entry.txt
-python post_json.py -u updaterunningsample -v -i ${IP} -f OUTPUT/running_entry.txt
+# echo "{\"Normal\":\"${NORMAL_BAM}\",\"Tumor\":\"${TUMOR_BAM}\",\"Stage\":2}" > OUTPUT/running_entry.txt
+# python post_json.py -u updaterunningsample -v -i ${IP} -f OUTPUT/running_entry.txt
 
-echo ""
-echo "3. SORTING: /usr/bin/time -o OUTPUT/samtools_sort_tumor_time.txt --format "${SORT_FORMAT}" ${SAMTOOLS} sort ${TUMOR_BAM} -o sorted_${TUMOR_BAM} 1> OUTPUT/samtools_sort_tumor.stdout 2> OUTPUT/samtools_sort_tumor.stderr"
-if [ ${TUMOR_SORTED} -gt 0 ]
-then
-    /usr/bin/time -o OUTPUT/samtools_sort_tumor_time.txt --format "${SORT_FORMAT}" ${SAMTOOLS} sort ${TUMOR_BAM} -o sorted_${TUMOR_BAM} 1> OUTPUT/samtools_sort_tumor.stdout 2> OUTPUT/samtools_sort_tumor.stderr
-    SORT_TUMOR_ERROR_CODE=$?
-    echo -e "\tERROR CODE: ${SORT_TUMOR_ERROR_CODE}"
-else
-    echo "Already sorted.  Simulating stdout and stderr for logging."
-    mv ${TUMOR_BAM} sorted_${TUMOR_BAM}
-    cp ${TUMOR_BAM}.bai sorted_${TUMOR_BAM}.bai
-    /usr/bin/time -o OUTPUT/samtools_sort_tumor_time.txt --format "${SORT_FORMAT}" ls 1> OUTPUT/samtools_sort_tumor.stdout 2> OUTPUT/samtools_sort_tumor.stderr
-    SORT_TUMOR_ERROR_CODE=$?
-    echo -e "\tERROR CODE: ${SORT_TUMOR_ERROR_CODE}"
-fi
-echo ""
-echo "4. POSTing time data to database: python post_json.py -u samtoolssort -f OUTPUT/samtools_sort_tumor_time.txt -v -i ${IP}"
-python post_json.py -u samtoolssort -f OUTPUT/samtools_sort_tumor_time.txt -v -i ${IP}
-POST_TUMOR_ERROR_CODE=$?
-echo -e "\tERROR CODE: ${POST_TUMOR_ERROR_CODE}"
-echo ""
-echo "STDERR"
-echo "------"
-cat OUTPUT/samtools_sort_tumor.stderr
-echo "=========================================================="
+# echo ""
+# echo "3. SORTING: /usr/bin/time -o OUTPUT/samtools_sort_tumor_time.txt --format "${SORT_FORMAT}" ${SAMTOOLS} sort ${TUMOR_BAM} -o sorted_${TUMOR_BAM} 1> OUTPUT/samtools_sort_tumor.stdout 2> OUTPUT/samtools_sort_tumor.stderr"
+# if [ ${TUMOR_SORTED} -gt 0 ]
+# then
+#     /usr/bin/time -o OUTPUT/samtools_sort_tumor_time.txt --format "${SORT_FORMAT}" ${SAMTOOLS} sort ${TUMOR_BAM} -o sorted_${TUMOR_BAM} 1> OUTPUT/samtools_sort_tumor.stdout 2> OUTPUT/samtools_sort_tumor.stderr
+#     SORT_TUMOR_ERROR_CODE=$?
+#     echo -e "\tERROR CODE: ${SORT_TUMOR_ERROR_CODE}"
+# else
+#     echo "Already sorted.  Simulating stdout and stderr for logging."
+#     mv ${TUMOR_BAM} sorted_${TUMOR_BAM}
+#     cp ${TUMOR_BAM}.bai sorted_${TUMOR_BAM}.bai
+#     /usr/bin/time -o OUTPUT/samtools_sort_tumor_time.txt --format "${SORT_FORMAT}" ls 1> OUTPUT/samtools_sort_tumor.stdout 2> OUTPUT/samtools_sort_tumor.stderr
+#     SORT_TUMOR_ERROR_CODE=$?
+#     echo -e "\tERROR CODE: ${SORT_TUMOR_ERROR_CODE}"
+# fi
+# echo ""
+# echo "4. POSTing time data to database: python post_json.py -u samtoolssort -f OUTPUT/samtools_sort_tumor_time.txt -v -i ${IP}"
+# python post_json.py -u samtoolssort -f OUTPUT/samtools_sort_tumor_time.txt -v -i ${IP}
+# POST_TUMOR_ERROR_CODE=$?
+# echo -e "\tERROR CODE: ${POST_TUMOR_ERROR_CODE}"
+# echo ""
+# echo "STDERR"
+# echo "------"
+# cat OUTPUT/samtools_sort_tumor.stderr
+# echo "=========================================================="
 
 #
 # Determine MPILEUP time output format
@@ -214,6 +217,7 @@ MPILEUP_FORMAT="{\"NormalID\":\"${NORMAL_BAM}\",\"TumorID\":\"${TUMOR_BAM}\",\"R
 # Run samtools mpileup
 # Stage 3
 #
+# TODO: Need to update here to have the sorted_*BAM files with the proper _REF_xxx appended
 echo "{\"Normal\":\"${NORMAL_BAM}\",\"Tumor\":\"${TUMOR_BAM}\",\"Stage\":3}" > OUTPUT/running_entry.txt
 python post_json.py -u updaterunningsample -v -i ${IP} -f OUTPUT/running_entry.txt
 echo ""
