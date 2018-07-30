@@ -67,8 +67,11 @@ gsutil cp {tumor} ./
 gsutil cp {normal}.bai ./
 gsutil cp {tumor}.bai ./
 
-cp /home/torcivia/pipeline/tcga_varscan_pipeline/src/pipeline.sh ./        
-cp /home/torcivia/pipeline/tcga_varscan_pipeline/src/post_json.py ./        
+cp /home/torcivia/pipeline/tcga_varscan_pipeline/src/pipeline.sh ./
+cp /home/torcivia/pipeline/tcga_varscan_pipeline/src/post_json.py ./
+cp /home/torcivia/pipeline/tcga_varscan_pipeline/src/split_by_ref.sh ./
+
+./split_by_ref.sh {normal} {tumor} {db_address}
         """
     
         self.clean_template = """\

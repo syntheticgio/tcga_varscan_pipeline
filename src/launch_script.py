@@ -139,6 +139,7 @@ def generate_sbatch_scripts(callers):
         # Set new job type
         job_type = "VARCALL"
         varcall_job_ids = []
+        # TODO use references here to determine file name to act on (normal / tumor)
         for ref in references:
             s.populate_template(caller, node, job_type, ref, job_id)
             _job_id = s.launch_job()
