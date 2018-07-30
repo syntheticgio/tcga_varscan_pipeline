@@ -37,10 +37,9 @@ class slurm_submitter():
 #SBATCH --dependency=afterok:{job_ids}
 #SBATCH --chdir={working_directory}
 
-mkdir -p {working_directory}
 cd {working_directory}
 
-pipeline.sh {normal_file} {tumor_file} {output_location} {barcode} {working_directory}/../references/{reference} {db_address}
+./pipeline.sh {normal_file_REF} {tumor_file_REF} {output_location} {barcode} {working_directory}/../references/{reference} {db_address}
         """
 
         self.download_template = """\
@@ -57,6 +56,7 @@ pipeline.sh {normal_file} {tumor_file} {output_location} {barcode} {working_dire
 
 #SBATCH --ntasks=1
 #SBATCH --mem=1024
+#SBATCH --chdir=/home/torcivia/tcga/
 
 echo "Attempting to make directory..."
 mkdir -p {working_directory}
@@ -109,6 +109,7 @@ rm -rf {working_directory}
         tumor = caller.tumor_file_url
         normal_file = caller.normal_file
         tumor_file = caller.tumor_file
+        
         self.tcga_barcode = caller.barcode # set here for other purposes (launching)
         db_address = "35.231.62.194"
         # Construct output location
@@ -120,6 +121,8 @@ rm -rf {working_directory}
         if job_type == "DOWNLOAD":
             self.template = self.download_template.format(**vars())
         elif job_type == "VARCALL":
+            normal_file_REF = normal_file.rsplit(".", 1)[0] + ".REF_" + reference.rsplit(".", 1)[0] + ".bam"
+            tumor_file_REF = tumor_file.rsplit(".", 1)[0] + ".REF_" + reference.rsplit(".", 1)[0] + ".bam"
             self.template = self.varcall_template.format(**vars())
             # print self.template
         elif job_type == "CLEAN":
