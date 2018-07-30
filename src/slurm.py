@@ -16,6 +16,7 @@ class slurm_submitter():
     slurm_file = ""
     job_ids = []
     base_directory = ""
+    download_id = 0
 
     def __init__(self, base_dir):
         self.base_directory = base_dir
@@ -36,11 +37,10 @@ class slurm_submitter():
 #SBATCH --dependency=afterok:{job_ids}
 #SBATCH --chdir={working_directory}
 
-setenv WORKDIR {working_directory}
-mkdir -p $WORKDIR
-cd $WORKDIR
+mkdir -p {working_directory}
+cd {working_directory}
 
-srun pipeline.sh {normal_file} {tumor_file} {output_location} {barcode} {working_directory}/../references/{reference} {db_address}
+pipeline.sh {normal_file} {tumor_file} {output_location} {barcode} {working_directory}/../references/{reference} {db_address}
         """
 
         self.download_template = """\
@@ -59,9 +59,8 @@ srun pipeline.sh {normal_file} {tumor_file} {output_location} {barcode} {working
 #SBATCH --mem=1024
 #SBATCH --chdir={working_directory}
 
-setenv WORKDIR {working_directory}
-mkdir -p $WORKDIR
-cd $WORKDIR
+mkdir -p {working_directory}
+cd {working_directory}
 
 gsutil cp {normal} ./
 gsutil cp {tumor} ./
@@ -144,15 +143,20 @@ rm -rf {working_directory}
         if self.job_type == "CLEAN":
             _ids = ','.join('afterok:{}'.format(str(c)) for c in self.job_ids)
             output = commands.getoutput('sbatch --dependency={} {}'.format(_ids, filename))
-            #print ('sbatch --dependency={} {}'.format(_ids, filename))
+            #print("IDS: {}".format(_ids))
+            #print("filename: {}".format(filename))
+            print ('sbatch --dependency={} {}'.format(_ids, filename))
+            #pass
+        elif self.job_type == "DOWNLOAD":
+            output = commands.getoutput('sbatch --dependency=afterok:{} {}'.format(self.download_id, filename))
+            self.download_id=output.split()[3]
+            print('sbatch --dependency=afterok:{} {}'.format(self.download_id, filename))
+            #print("output: {}".format(output))
         else:
             output = commands.getoutput('sbatch {}'.format(filename))
-            #print('sbatch {}'.format(filename))
-        # Submit to PBS
-        # output = commands.getoutput('sbatch %(filename)s' % vars())
-        # print outputt
+            print('sbatch {}'.format(filename))
 
         #output = 555  # temporary
-        return output
+        return output.split()[3]
 
         
