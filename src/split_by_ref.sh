@@ -110,10 +110,6 @@ else
     echo -e "\tERROR CODE: ${SORT_NORMAL_ERROR_CODE}"
 fi
 
-# split based on reference
-# TODO get time for this
-bamtools split -in sorted_${NORMAL_BAM} -reference
-
 echo ""
 echo "2. POSTing time data to database: python post_json.py -u samtoolssort -f OUTPUT/samtools_sort_normal_time.txt -v -i ${IP}"
 python post_json.py -u samtoolssort -f OUTPUT/samtools_sort_normal_time.txt -v -i ${IP}
@@ -125,6 +121,9 @@ echo "------"
 cat OUTPUT/samtools_sort_normal.stderr
 echo "=========================================================="
 
+# split based on reference
+# TODO get time for this
+bamtools split -in sorted_${NORMAL_BAM} -reference
 #
 # Run the SORT command for TUMOR and submit to the database
 # Stage 2
@@ -147,9 +146,6 @@ else
     SORT_TUMOR_ERROR_CODE=$?
     echo -e "\tERROR CODE: ${SORT_TUMOR_ERROR_CODE}"
 fi
-# split based on reference
-# TODO get time for this
-bamtools split -in sorted_${TUMOR_BAM} -reference
 
 echo ""
 echo "4. POSTing time data to database: python post_json.py -u samtoolssort -f OUTPUT/samtools_sort_tumor_time.txt -v -i ${IP}"
@@ -161,3 +157,7 @@ echo "STDERR"
 echo "------"
 cat OUTPUT/samtools_sort_tumor.stderr
 echo "=========================================================="
+
+# split based on reference
+# TODO get time for this
+bamtools split -in sorted_${TUMOR_BAM} -reference
