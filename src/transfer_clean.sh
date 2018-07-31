@@ -53,11 +53,11 @@ tar -zcf ${BASE_OUTPUT_NAME}.vcf.tar.gz *.vcf
 
 echo ""
 echo "Copying files into the appropriate output location..."
-gsutil cp ${BASE_OUTPUT_NAME}*.vcf.gz ${OUTPUT_LOCATION}/varscan_results/
-gsutil cp OUTPUT/* ${OUTPUT_LOCATION}/varscan_results/${BASE_OUTPUT_NAME}/
+gsutil cp ${BASE_OUTPUT_NAME}.vcf.tar.gz ${OUTPUT_LOCATION}varscan_results/
+gsutil -m cp OUTPUT/* ${OUTPUT_LOCATION}varscan_results/OUTPUT/
 
 
-ERROR_FILES="${OUTPUT_LOCATION}/varscan_results/${BASE_OUTPUT_NAME}/"
+ERROR_FILES="${OUTPUT_LOCATION}varscan_results/OUTPUT/"
 JSON_FINISHED="{\"Normal\":\"${NORMAL_BAM}\",\"Tumor\":\"${TUMOR_BAM}\",\"errorfiles\":\"${ERROR_FILES}\"}"
 echo "============================================="
 echo ${JSON_FINISHED} > OUTPUT/finished.txt

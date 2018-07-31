@@ -15,3 +15,4 @@ src/output.txt
 src/rawdata.txt
 src/slurm.pyc
 src/tcga.pyc
+server/samtools_sort_normal.stderr
