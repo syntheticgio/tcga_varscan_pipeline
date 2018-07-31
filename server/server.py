@@ -180,8 +180,11 @@ class RecordFinishedHandler(MainHandler):
         rows = rows + "<body>"
         rows = rows + "<h2>Varscan Somatic Entries</h2>"
         rows = rows + "<table><tr><th>Normal</th><th>Tumor</th><th>Stage</th></tr>"
+        i = 0
         for row in self.cursor.execute(sqlstr):
+            i = i + 1
             rows = rows + "<tr><td>{}</td><td>{}</td><td>{}</td></tr>".format(row[0], row[1], row[2])
+        rows = rows + "<br><br>Total Records: {}".format(i)
         rows = rows + "</body></html>"
         self.set_header("Content-Type", "text/html")
         self.write(rows)
