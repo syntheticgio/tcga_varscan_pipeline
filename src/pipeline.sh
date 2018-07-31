@@ -252,14 +252,17 @@ echo "=========================================================="
 # Get base somatic mutations
 # Stage 4
 #
+BASE_OUTPUT_NAME="${BASE_OUTPUT_NAME}_${REFERENCE_NAME%.*}"
+VARSCAN_SOMATIC_STDERR="varscan_somatic_${REFERENCE_NAME%.*}.stderr"
+VARSCAN_SOMATIC_TIME="somatic_varscan_time_${REFERENCE_NAME%.*}.txt"
 echo "{\"Normal\":\"${NORMAL_BAM}\",\"Tumor\":\"${TUMOR_BAM}\",\"Stage\":4,\"Reference\":\"${REFERENCE_NAME}\"}" > OUTPUT/running_entry.txt
 python post_json.py -u updaterunningsample -v -i ${IP} -f OUTPUT/running_entry.txt
 SOMATIC_FORMAT="{\"NormalID\":\"${NORMAL_BAM}\",\"TumorID\":\"${TUMOR_BAM}\",\"Reference\":\"${REFERENCE}\",${TIME_FORMAT}"
 echo ""
-echo "7. VARSCAN SOMATIC: /usr/bin/time -o OUTPUT/somatic_varscan_time.txt --format ${SOMATIC_FORMAT} java -jar /varscan/varscan/VarScan.jar somatic intermediate_mpileup.pileup ${BASE_OUTPUT_NAME} --mpileup 1 --min-coverage 8 --min-coverage-normal 8 --min-coverage-tumor 6 --min-var-freq 0.10 --min-freq-for-hom 0.75 --normal-purity 1.0 --tumor-purity 1.00 --p-value 0.99 --somatic-p-value 0.05 --strand-filter 0 --output-vcf 2> OUTPUT/varscan_somatic.stderr"
-/usr/bin/time -o OUTPUT/somatic_varscan_time.txt --format "${SOMATIC_FORMAT}" \
+echo "7. VARSCAN SOMATIC: /usr/bin/time -o OUTPUT/${VARSCAN_SOMATIC_TIME} --format ${SOMATIC_FORMAT} java -jar /varscan/varscan/VarScan.jar somatic ${MPILEUP_OUTPUT_NAME} ${BASE_OUTPUT_NAME} --mpileup 1 --min-coverage 8 --min-coverage-normal 8 --min-coverage-tumor 6 --min-var-freq 0.10 --min-freq-for-hom 0.75 --normal-purity 1.0 --tumor-purity 1.00 --p-value 0.99 --somatic-p-value 0.05 --strand-filter 0 --output-vcf 2> OUTPUT/${VARSCAN_SOMATIC_STDERR}"
+/usr/bin/time -o OUTPUT/${VARSCAN_SOMATIC_TIME} --format "${SOMATIC_FORMAT}" \
     java -jar /varscan/varscan/VarScan.jar somatic \
-	intermediate_mpileup.pileup \
+	${MPILEUP_OUTPUT_NAME} \
 	${BASE_OUTPUT_NAME} \
 	--mpileup      1 \
 	--min-coverage 8 \
@@ -273,74 +276,78 @@ echo "7. VARSCAN SOMATIC: /usr/bin/time -o OUTPUT/somatic_varscan_time.txt --for
 	--somatic-p-value 0.05 \
 	--strand-filter 0 \
 	--output-vcf \
-	2> OUTPUT/varscan_somatic.stderr
+	2> OUTPUT/${VARSCAN_SOMATIC_STDERR}
 VARSCAN_ERROR_CODE=$?
 echo -e "\tERROR CODE: ${VARSCAN_ERROR_CODE}"
 echo ""
-echo "8. POSTing varscan: python post_json.py -u varscansomatic -f OUTPUT/somatic_varscan_time.txt -v -i ${IP}"
-python post_json.py -u varscansomatic -f OUTPUT/somatic_varscan_time.txt -v -i ${IP}
+echo "8. POSTing varscan: python post_json.py -u varscansomatic -f OUTPUT/${VARSCAN_SOMATIC_TIME} -v -i ${IP}"
+python post_json.py -u varscansomatic -f OUTPUT/${VARSCAN_SOMATIC_TIME} -v -i ${IP}
 POST_VARSCAN_ERROR_CODE=$?
 echo -e "\tERROR CODE: ${POST_VARSCAN_ERROR_CODE}"
 echo ""
 echo "STDERR"
 echo "------"
-cat OUTPUT/varscan_somatic.stderr
+cat OUTPUT/${VARSCAN_SOMATIC_STDERR}
 echo "=========================================================="
 
 #
 # Process for somatic SNPs
 # Stage 5
 #
+VARSCAN_SOMATIC_SNP_TIME="process_somatic_snp_time_${REFERENCE_NAME%.*}.txt"
+VARSCAN_SOMATIC_SNP_STDERR="process_somatic_snp_${REFERENCE_NAME%.*}.stderr"
 echo "{\"Normal\":\"${NORMAL_BAM}\",\"Tumor\":\"${TUMOR_BAM}\",\"Stage\":5,\"Reference\":\"${REFERENCE_NAME}\"}" > OUTPUT/running_entry.txt
 python post_json.py -u updaterunningsample -v -i ${IP} -f OUTPUT/running_entry.txt
 echo ""
-echo "9. VARSCAN SOMATIC SNP CALLS: /usr/bin/time -o OUTPUT/process_somatic_snp_time.txt --format ${SOMATIC_FORMAT}java -jar /varscan/varscan/VarScan.jar processSomatic ${BASE_OUTPUT_NAME}.snp.vcf --min-tumor-freq 0.10 --max-normal-freq 0.05 --p-value 0.07 2> varscan_somatic_snp.stderr"
-/usr/bin/time -o OUTPUT/process_somatic_snp_time.txt --format "${SOMATIC_FORMAT}" \
+echo "9. VARSCAN SOMATIC SNP CALLS: /usr/bin/time -o OUTPUT/${VARSCAN_SOMATIC_SNP_TIME} --format ${SOMATIC_FORMAT}java -jar /varscan/varscan/VarScan.jar processSomatic ${BASE_OUTPUT_NAME}.snp.vcf --min-tumor-freq 0.10 --max-normal-freq 0.05 --p-value 0.07 2> ${VARSCAN_SOMATIC_SNP_STDERR}"
+/usr/bin/time -o OUTPUT/${VARSCAN_SOMATIC_SNP_TIME} --format "${SOMATIC_FORMAT}" \
     java -jar /varscan/varscan/VarScan.jar processSomatic \
 	${BASE_OUTPUT_NAME}.snp.vcf \
 	--min-tumor-freq 0.10 \
 	--max-normal-freq 0.05 \
 	--p-value 0.07 \
-	2> varscan_somatic_snp.stderr
+	2> ${VARSCAN_SOMATIC_SNP_STDERR}
 VARSCAN_SNP_ERROR_CODE=$?
 echo -e "\tERROR CODE: ${VARSCAN_SNP_ERROR_CODE}"
 echo ""
-echo "10. POSTing VARSCAN SNP: python post_json.py -u varscanprocesssomaticsnps -f OUTPUT/process_somatic_snp_time.txt -v -i ${IP}"
-python post_json.py -u varscanprocesssomaticsnps -f OUTPUT/process_somatic_snp_time.txt -v -i ${IP}
+echo "10. POSTing VARSCAN SNP: python post_json.py -u varscanprocesssomaticsnps -f OUTPUT/${VARSCAN_SOMATIC_SNP_TIME} -v -i ${IP}"
+python post_json.py -u varscanprocesssomaticsnps -f OUTPUT/${VARSCAN_SOMATIC_SNP_TIME} -v -i ${IP}
 POST_VARSCAN_SNP_ERROR_CODE=$?
 echo -e "\tERROR CODE: ${POST_VARSCAN_SNP_ERROR_CODE}"
 echo ""
 echo "STDERR"
 echo "------"
-cat OUTPUT/varscan_somatic_snp.stderr
+cat OUTPUT/${VARSCAN_SOMATIC_SNP_STDERR}
 echo "=========================================================="
 
 #
 # Process for somatic indels
 # Stage 6
 #
+VARSCAN_SOMATIC_INDEL_TIME="process_somatic_indel_time_${REFERENCE_NAME%.*}.txt"
+VARSCAN_SOMATIC_INDEL_STDERR="process_somatic_indel_${REFERENCE_NAME%.*}.stderr"
 echo "{\"Normal\":\"${NORMAL_BAM}\",\"Tumor\":\"${TUMOR_BAM}\",\"Stage\":6,\"Reference\":\"${REFERENCE_NAME}\"}" > OUTPUT/running_entry.txt
 python post_json.py -u updaterunningsample -v -i ${IP} -f OUTPUT/running_entry.txt
 echo ""
-echo "11. VARSCAN SOMATIC INDEL CALLS: /usr/bin/time -o OUTPUT/process_somatic_indel_time.txt --format ${SOMATIC_FORMAT} java -jar /varscan/varscan/VarScan.jar processSomatic ${BASE_OUTPUT_NAME}.indel.vcf --min-tumor-freq 0.10 --max-normal-freq 0.05 --p-value 0.07 2> OUTPUT/varscan_somatic_indel.stderr"
-/usr/bin/time -o OUTPUT/process_somatic_indel_time.txt --format "${SOMATIC_FORMAT}" \
+echo "11. VARSCAN SOMATIC INDEL CALLS: /usr/bin/time -o OUTPUT/${VARSCAN_SOMATIC_INDEL_TIME} --format ${SOMATIC_FORMAT} java -jar /varscan/varscan/VarScan.jar processSomatic ${BASE_OUTPUT_NAME}.indel.vcf --min-tumor-freq 0.10 --max-normal-freq 0.05 --p-value 0.07 2> OUTPUT/${VARSCAN_SOMATIC_INDEL_STDERR}"
+/usr/bin/time -o OUTPUT/${VARSCAN_SOMATIC_INDEL_TIME} --format "${SOMATIC_FORMAT}" \
     java -jar /varscan/varscan/VarScan.jar processSomatic \
 	${BASE_OUTPUT_NAME}.indel.vcf \
 	--min-tumor-freq 0.10 \
 	--max-normal-freq 0.05 \
 	--p-value 0.07 \
-	2> OUTPUT/varscan_somatic_indel.stderr
+	2> OUTPUT/${VARSCAN_SOMATIC_INDEL_STDERR}
 VARSCAN_INDEL_ERROR_CODE=$?
 echo -e "\tERROR CODE: ${VARSCAN_INDEL_ERROR_CODE}"
 echo ""
-echo "12. POSTing VARSCAN INDEL: python post_json.py -u varscanprocesssomaticindels -f OUTPUT/process_somatic_indel_time.txt -v -i ${IP}"
-python post_json.py -u varscanprocesssomaticindels -f OUTPUT/process_somatic_indel_time.txt -v -i ${IP}
+echo "12. POSTing VARSCAN INDEL: python post_json.py -u varscanprocesssomaticindels -f OUTPUT/${VARSCAN_SOMATIC_INDEL_TIME} -v -i ${IP}"
+python post_json.py -u varscanprocesssomaticindels -f OUTPUT/${VARSCAN_SOMATIC_INDEL_TIME} -v -i ${IP}
 POST_VARSCAN_INDEL_ERROR_CODE=$?
 echo -e "\tERROR CODE: ${POST_VARSCAN_INDEL_ERROR_CODE}"
 echo ""
 echo "STDERR"
 echo "------"
-cat OUTPUT/varscan_somatic_indel.stderr
+cat OUTPUT/${VARSCAN_SOMATIC_INDEL_STDERR}
 echo "=========================================================="
 
 
