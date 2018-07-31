@@ -364,31 +364,31 @@ echo "=========================================================="
 echo "{\"Normal\":\"${NORMAL_BAM}\",\"Tumor\":\"${TUMOR_BAM}\",\"Stage\":7,\"Reference\":\"${REFERENCE_NAME}\"}" > OUTPUT/running_entry.txt
 python post_json.py -u updaterunningsample -v -i ${IP} -f OUTPUT/running_entry.txt
 
-echo ""
-echo "Compressing VCF files...."
-tar -zcf ${BASE_OUTPUT_NAME}.vcf.tar.gz *.vcf
+# echo ""
+# echo "Compressing VCF files...."
+# tar -zcf ${BASE_OUTPUT_NAME}.vcf.tar.gz *.vcf
 
-# How to move into GS bucket?
-# Where to move into bucket?
+# # How to move into GS bucket?
+# # Where to move into bucket?
 
-echo ""
-echo "Copying files into the appropriate output location..."
-gsutil cp ${BASE_OUTPUT_NAME}*.vcf.gz ${OUTPUT_LOCATION}/varscan_results/
-gsutil cp OUTPUT/* ${OUTPUT_LOCATION}/varscan_results/${BASE_OUTPUT_NAME}/
+# echo ""
+# echo "Copying files into the appropriate output location..."
+# gsutil cp ${BASE_OUTPUT_NAME}*.vcf.gz ${OUTPUT_LOCATION}/varscan_results/
+# gsutil cp OUTPUT/* ${OUTPUT_LOCATION}/varscan_results/${BASE_OUTPUT_NAME}/
 
 
-ERROR_FILES="${OUTPUT_LOCATION}/varscan_results/${BASE_OUTPUT_NAME}/"
-JSON_FINISHED="{\"Normal\":\"${NORMAL_BAM}\",\"Tumor\":\"${TUMOR_BAM}\",\"errorfiles\":\"${ERROR_FILES}\",\"SortNormalError\":${SORT_NORMAL_ERROR_CODE},\"PostSortNormalError\":${POST_NORMAL_ERROR_CODE},\"SortTumorError\":${SORT_TUMOR_ERROR_CODE},\"PostSortTumorError\":${POST_TUMOR_ERROR_CODE},\"MpileupError\":${MPILEUP_ERROR_CODE},\"PostMpileupError\":${POST_MPILEUP_ERROR_CODE},\"VarscanError\":${VARSCAN_ERROR_CODE},\"PostVarscanError\":${POST_VARSCAN_ERROR_CODE},\"VarscanSnpError\":${VARSCAN_SNP_ERROR_CODE},\"PostVarscanSnpError\":${POST_VARSCAN_SNP_ERROR_CODE},\"VarscanIndelError\":${VARSCAN_INDEL_ERROR_CODE},\"PostVarscanIndelError\":${POST_VARSCAN_INDEL_ERROR_CODE}}"
-echo "============================================="
-echo ${JSON_FINISHED} > OUTPUT/finished.txt
-echo "FINISHED File:"
-cat OUTPUT/finished.txt
-echo ""
-echo ""
-echo "POSTing job information ..."
-python post_json.py -u recordfinished -i ${IP} -f OUTPUT/finished.txt
-# Update Running Entry to finished
-echo "{\"Normal\":\"${NORMAL_BAM}\",\"Tumor\":\"${TUMOR_BAM}\",\"Stage\":9,\"Reference\":\"${REFERENCE_NAME}\"}" > OUTPUT/running_entry.txt
-python post_json.py -u updaterunningsample -v -i ${IP} -f OUTPUT/running_entry.txt
-echo ""
-echo "FINISHED!"
+# ERROR_FILES="${OUTPUT_LOCATION}/varscan_results/${BASE_OUTPUT_NAME}/"
+# JSON_FINISHED="{\"Normal\":\"${NORMAL_BAM}\",\"Tumor\":\"${TUMOR_BAM}\",\"errorfiles\":\"${ERROR_FILES}\",\"SortNormalError\":${SORT_NORMAL_ERROR_CODE},\"PostSortNormalError\":${POST_NORMAL_ERROR_CODE},\"SortTumorError\":${SORT_TUMOR_ERROR_CODE},\"PostSortTumorError\":${POST_TUMOR_ERROR_CODE},\"MpileupError\":${MPILEUP_ERROR_CODE},\"PostMpileupError\":${POST_MPILEUP_ERROR_CODE},\"VarscanError\":${VARSCAN_ERROR_CODE},\"PostVarscanError\":${POST_VARSCAN_ERROR_CODE},\"VarscanSnpError\":${VARSCAN_SNP_ERROR_CODE},\"PostVarscanSnpError\":${POST_VARSCAN_SNP_ERROR_CODE},\"VarscanIndelError\":${VARSCAN_INDEL_ERROR_CODE},\"PostVarscanIndelError\":${POST_VARSCAN_INDEL_ERROR_CODE}}"
+# echo "============================================="
+# echo ${JSON_FINISHED} > OUTPUT/finished.txt
+# echo "FINISHED File:"
+# cat OUTPUT/finished.txt
+# echo ""
+# echo ""
+# echo "POSTing job information ..."
+# python post_json.py -u recordfinished -i ${IP} -f OUTPUT/finished.txt
+# # Update Running Entry to finished
+# echo "{\"Normal\":\"${NORMAL_BAM}\",\"Tumor\":\"${TUMOR_BAM}\",\"Stage\":9,\"Reference\":\"${REFERENCE_NAME}\"}" > OUTPUT/running_entry.txt
+# python post_json.py -u updaterunningsample -v -i ${IP} -f OUTPUT/running_entry.txt
+# echo ""
+# echo "FINISHED!"

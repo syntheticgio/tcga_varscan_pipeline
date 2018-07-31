@@ -74,10 +74,12 @@ echo "Copying script files ..."
 cp /home/torcivia/pipeline/tcga_varscan_pipeline/src/pipeline.sh ./
 cp /home/torcivia/pipeline/tcga_varscan_pipeline/src/post_json.py ./
 cp /home/torcivia/pipeline/tcga_varscan_pipeline/src/split_by_ref.sh ./
+cp /home/torcivia/pipeline/tcga_varscan_pipeline/src/transfer_clean.sh ./
 
 echo "Changing permissions..."
 chmod +x split_by_ref.sh
 chmod +x pipeline.sh
+chmod +x transfer_clean.sh
 
 echo "Splitting by reference..."
 ./split_by_ref.sh {normal} {tumor} {db_address}
@@ -98,6 +100,8 @@ echo "Splitting by reference..."
 #SBATCH --ntasks=1
 #SBATCH --mem=1024
 #SBATCH --chdir={working_directory}
+
+./transfer_clean.sh {normal_file} {tumor_file} {output_location} {barcode} {working_directory}/../references/{reference} {db_address}
 
 rm -rf {working_directory}
         
