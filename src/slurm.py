@@ -34,7 +34,7 @@ class slurm_submitter():
 
 #SBATCH --ntasks=1
 #SBATCH --mem=1024
-#SBATCH --dependency=afterok:{job_ids}
+#SBATCH --dependency=afterany:{job_ids}
 #SBATCH --chdir={working_directory}
 
 cd {working_directory}
@@ -57,6 +57,7 @@ cd {working_directory}
 #SBATCH --ntasks=1
 #SBATCH --mem=1024
 #SBATCH --chdir=/home/torcivia/tcga/
+{download_job_id}
 
 echo "Attempting to make directory..."
 mkdir -p {working_directory}
@@ -123,6 +124,10 @@ rm -rf {working_directory}
         
 
         if job_type == "DOWNLOAD":
+            if job_ids != -1:
+                self.download_job_id = "#SBATCH --dependency=afterany:{}".format(job_ids)
+            else:
+                self.download_job_id = ""
             self.template = self.download_template.format(**vars())
         elif job_type == "VARCALL":
             normal_file_REF = normal_file.rsplit(".", 1)[0] + ".REF_" + reference.rsplit(".", 1)[0] + ".bam"
@@ -157,7 +162,7 @@ rm -rf {working_directory}
         print "OUTDIR: %s" % jobdir
         # print "SLURM FILE: %s" % filename
         if self.job_type == "CLEAN":
-            _ids = ','.join('afterok:{}'.format(str(c)) for c in self.job_ids)
+            _ids = ','.join('afterany:{}'.format(str(c)) for c in self.job_ids)
             output = commands.getoutput('sbatch --dependency={} {}'.format(_ids, filename))
             #print("IDS: {}".format(_ids))
             #print("filename: {}".format(filename))

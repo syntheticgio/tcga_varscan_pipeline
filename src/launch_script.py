@@ -112,6 +112,8 @@ def generate_sbatch_scripts(callers):
     # Generate the sbatch instructions
     node_length = len(nodes)
     node_indx = 0
+    wait_id = []
+    wait_id.append(-1)
     for caller in callers:
         # For each caller we need to:
         #   1. Download the relevant BAM / BAI files
@@ -121,7 +123,13 @@ def generate_sbatch_scripts(callers):
 
         # working_directory = "/home/torcivia/tcga/{}/".format(caller.barcode)
         # working_directory = "/Users/Jonny/tmp/test_tcga/{}/".format(caller.barcode)
+        # WHEN WORKING ON MAC
         # base_directory = "/Users/Jonny/tmp/test_tcga/"
+        
+        # WORKING ON DESKTOP
+        # base_directory = "/Users/Jonny/tmp/test_tcga/"
+        
+        # IN CLOUD
         base_directory = "/home/torcivia/tcga/"
         s = slurm_submitter(base_directory)
         
@@ -129,7 +137,7 @@ def generate_sbatch_scripts(callers):
         job_type = "DOWNLOAD"
         node = nodes[node_indx]
         
-        s.populate_template(caller, node, job_type)
+        s.populate_template(caller, node, job_type, "download", wait_id[node_indx])
         # print s.template
 
         # Launch download here
@@ -139,7 +147,6 @@ def generate_sbatch_scripts(callers):
         # Set new job type
         job_type = "VARCALL"
         varcall_job_ids = []
-        # TODO use references here to determine file name to act on (normal / tumor)
         for ref in references:
             s.populate_template(caller, node, job_type, ref, job_id)
             _job_id = s.launch_job()
@@ -151,11 +158,13 @@ def generate_sbatch_scripts(callers):
         # Do cleanup
         job_type = "CLEAN"
         s.populate_template(caller, node, job_type, "cleanup", varcall_job_ids)
-        s.launch_job()
-
+        wait_id[node_indx] = s.launch_job()
+        
         node_indx += 1
         if node_indx > node_length - 1:
             node_indx = 0
+        else:
+            wait_id.append(-1)
 
 
 if __name__ == "__main__":
