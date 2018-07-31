@@ -306,7 +306,7 @@ echo "9. VARSCAN SOMATIC SNP CALLS: /usr/bin/time -o OUTPUT/${VARSCAN_SOMATIC_SN
 	--min-tumor-freq 0.10 \
 	--max-normal-freq 0.05 \
 	--p-value 0.07 \
-	2> ${VARSCAN_SOMATIC_SNP_STDERR}
+	2> OUTPUT/${VARSCAN_SOMATIC_SNP_STDERR}
 VARSCAN_SNP_ERROR_CODE=$?
 echo -e "\tERROR CODE: ${VARSCAN_SNP_ERROR_CODE}"
 echo ""
