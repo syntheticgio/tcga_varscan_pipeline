@@ -91,7 +91,7 @@ SORT_FORMAT="{\"ID\":\"${NORMAL_BAM}\",${TIME_FORMAT}"
 # Only run if the bai index is not included
 # Stage 1
 #
-echo "{\"Normal\":\"${NORMAL_BAM}\",\"Tumor\":\"${TUMOR_BAM}\",\"Stage\":1}" > OUTPUT/running_entry.txt
+echo "{\"Normal\":\"${NORMAL_BAM}\",\"Tumor\":\"${TUMOR_BAM}\",\"Stage\":1,\"Reference\":\"Human\"}" > OUTPUT/running_entry.txt
 python post_json.py -u createrunningsample -v -i ${IP} -f OUTPUT/running_entry.txt
 echo "=========================================================="
 echo "1. SORTING:  /usr/bin/time -o OUTPUT/samtools_sort_normal_time.txt --format "${SORT_FORMAT}" ${SAMTOOLS} sort ${NORMAL_BAM} -o sorted_${NORMAL_BAM} 1> OUTPUT/samtools_sort_normal.stdout 2> OUTPUT/samtools_sort_normal.stderr"
@@ -130,7 +130,7 @@ bamtools split -in sorted_${NORMAL_BAM} -reference
 # Run the SORT command for TUMOR and submit to the database
 # Stage 2
 #
-echo "{\"Normal\":\"${NORMAL_BAM}\",\"Tumor\":\"${TUMOR_BAM}\",\"Stage\":2}" > OUTPUT/running_entry.txt
+echo "{\"Normal\":\"${NORMAL_BAM}\",\"Tumor\":\"${TUMOR_BAM}\",\"Stage\":2,\"Reference\":\"Human\"}" > OUTPUT/running_entry.txt
 python post_json.py -u updaterunningsample -v -i ${IP} -f OUTPUT/running_entry.txt
 
 echo ""
@@ -165,3 +165,6 @@ echo "=========================================================="
 # split based on reference
 # TODO get time for this
 bamtools split -in sorted_${TUMOR_BAM} -reference
+
+echo "{\"Normal\":\"${NORMAL_BAM}\",\"Tumor\":\"${TUMOR_BAM}\",\"Stage\":9,\"Reference\":\"Human\"}" > OUTPUT/running_entry.txt
+python post_json.py -u updaterunningsample -v -i ${IP} -f OUTPUT/running_entry.txt

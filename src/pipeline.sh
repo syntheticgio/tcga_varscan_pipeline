@@ -218,11 +218,14 @@ MPILEUP_FORMAT="{\"NormalID\":\"${NORMAL_BAM}\",\"TumorID\":\"${TUMOR_BAM}\",\"R
 # Stage 3
 #
 # TODO: Need to update here to have the sorted_*BAM files with the proper _REF_xxx appended
-echo "{\"Normal\":\"${NORMAL_BAM}\",\"Tumor\":\"${TUMOR_BAM}\",\"Stage\":3}" > OUTPUT/running_entry.txt
-python post_json.py -u updaterunningsample -v -i ${IP} -f OUTPUT/running_entry.txt
+echo "{\"Normal\":\"${NORMAL_BAM}\",\"Tumor\":\"${TUMOR_BAM}\",\"Stage\":3,\"Reference\":\"${REFERENCE_NAME}\"}" > OUTPUT/running_entry.txt
+python post_json.py -u createrunningsample -v -i ${IP} -f OUTPUT/running_entry.txt
 echo ""
-echo "5. MPILEUP: /usr/bin/time -o OUTPUT/mpileup_time.txt --format ${MPILEUP_FORMAT} ${SAMTOOLS} mpileup -f ${REFERENCE} -q 1 -B sorted_${NORMAL_BAM} sorted_${TUMOR_BAM} 1> intermediate_mpileup.pileup 2> OUTPUT/intermediate_mpileup.stderr"
-/usr/bin/time -o OUTPUT/mpileup_time.txt --format "${MPILEUP_FORMAT}" \
+MPILEUP_OUTPUT_NAME="intermediate_mpileup.${REFERENCE_NAME}.pileup"
+MPILEUP_OUTPUT_STDERR="intermediate_mpileup.${REFERENCE_NAME}.stderr"
+MPILEUP_OUTPUT_TIME="mpileup_time.${REFERENCE_NAME}.txt"
+echo "5. MPILEUP: /usr/bin/time -o OUTPUT/${MPILEUP_OUTPUT_TIME} --format ${MPILEUP_FORMAT} ${SAMTOOLS} mpileup -f ${REFERENCE} -q 1 -B sorted_${NORMAL_BAM} sorted_${TUMOR_BAM} 1> ${MPILEUP_OUTPUT_NAME} 2> OUTPUT/${MPILEUP_OUTPUT_STDERR}"
+/usr/bin/time -o OUTPUT/${MPILEUP_OUTPUT_TIME} --format "${MPILEUP_FORMAT}" \
     ${SAMTOOLS} mpileup \
 	-f ${REFERENCE} \
 	-q 1 \
@@ -230,26 +233,26 @@ echo "5. MPILEUP: /usr/bin/time -o OUTPUT/mpileup_time.txt --format ${MPILEUP_FO
 	sorted_${NORMAL_BAM} \
 	sorted_${TUMOR_BAM} \
 	1> \
-	intermediate_mpileup.pileup \
-	2> OUTPUT/intermediate_mpileup.stderr
+	${MPILEUP_OUTPUT_NAME} \
+	2> OUTPUT/${MPILEUP_OUTPUT_STDERR}
 MPILEUP_ERROR_CODE=$?
 echo -e "\tERROR CODE: ${MPILEUP_ERROR_CODE}"
 echo ""
-echo "6. POSTing mpileup: python post_json.py -u mpileup -f OUTPUT/mpileup_time.txt -v -i ${IP}"
-python post_json.py -u mpileup -f OUTPUT/mpileup_time.txt -v -i ${IP}
+echo "6. POSTing mpileup: python post_json.py -u mpileup -f OUTPUT/${MPILEUP_OUTPUT_TIME} -v -i ${IP}"
+python post_json.py -u mpileup -f OUTPUT/${MPILEUP_OUTPUT_TIME} -v -i ${IP}
 POST_MPILEUP_ERROR_CODE=$?
 echo -e "\tERROR CODE: ${POST_MPILEUP_ERROR_CODE}"
 echo ""
 echo "STDERR"
 echo "------"
-cat OUTPUT/intermediate_mpileup.stderr
+cat OUTPUT/${MPILEUP_OUTPUT_STDERR}
 echo "=========================================================="
 
 #
 # Get base somatic mutations
 # Stage 4
 #
-echo "{\"Normal\":\"${NORMAL_BAM}\",\"Tumor\":\"${TUMOR_BAM}\",\"Stage\":4}" > OUTPUT/running_entry.txt
+echo "{\"Normal\":\"${NORMAL_BAM}\",\"Tumor\":\"${TUMOR_BAM}\",\"Stage\":4,\"Reference\":\"${REFERENCE_NAME}\"}" > OUTPUT/running_entry.txt
 python post_json.py -u updaterunningsample -v -i ${IP} -f OUTPUT/running_entry.txt
 SOMATIC_FORMAT="{\"NormalID\":\"${NORMAL_BAM}\",\"TumorID\":\"${TUMOR_BAM}\",\"Reference\":\"${REFERENCE}\",${TIME_FORMAT}"
 echo ""
@@ -288,7 +291,7 @@ echo "=========================================================="
 # Process for somatic SNPs
 # Stage 5
 #
-echo "{\"Normal\":\"${NORMAL_BAM}\",\"Tumor\":\"${TUMOR_BAM}\",\"Stage\":5}" > OUTPUT/running_entry.txt
+echo "{\"Normal\":\"${NORMAL_BAM}\",\"Tumor\":\"${TUMOR_BAM}\",\"Stage\":5,\"Reference\":\"${REFERENCE_NAME}\"}" > OUTPUT/running_entry.txt
 python post_json.py -u updaterunningsample -v -i ${IP} -f OUTPUT/running_entry.txt
 echo ""
 echo "9. VARSCAN SOMATIC SNP CALLS: /usr/bin/time -o OUTPUT/process_somatic_snp_time.txt --format ${SOMATIC_FORMAT}java -jar /varscan/varscan/VarScan.jar processSomatic ${BASE_OUTPUT_NAME}.snp.vcf --min-tumor-freq 0.10 --max-normal-freq 0.05 --p-value 0.07 2> varscan_somatic_snp.stderr"
@@ -316,7 +319,7 @@ echo "=========================================================="
 # Process for somatic indels
 # Stage 6
 #
-echo "{\"Normal\":\"${NORMAL_BAM}\",\"Tumor\":\"${TUMOR_BAM}\",\"Stage\":6}" > OUTPUT/running_entry.txt
+echo "{\"Normal\":\"${NORMAL_BAM}\",\"Tumor\":\"${TUMOR_BAM}\",\"Stage\":6,\"Reference\":\"${REFERENCE_NAME}\"}" > OUTPUT/running_entry.txt
 python post_json.py -u updaterunningsample -v -i ${IP} -f OUTPUT/running_entry.txt
 echo ""
 echo "11. VARSCAN SOMATIC INDEL CALLS: /usr/bin/time -o OUTPUT/process_somatic_indel_time.txt --format ${SOMATIC_FORMAT} java -jar /varscan/varscan/VarScan.jar processSomatic ${BASE_OUTPUT_NAME}.indel.vcf --min-tumor-freq 0.10 --max-normal-freq 0.05 --p-value 0.07 2> OUTPUT/varscan_somatic_indel.stderr"
@@ -351,7 +354,7 @@ echo "=========================================================="
 #..indel.Germline.hc.vcf  ..indel.LOH.hc.vcf    ..indel.Somatic.hc.vcf  ..indel.vcf          ..snp.Germline.hc.vcf  ..snp.LOH.hc.vcf    ..snp.Somatic.hc.vcf  ..snp.vcf
 
 # Stage 7
-echo "{\"Normal\":\"${NORMAL_BAM}\",\"Tumor\":\"${TUMOR_BAM}\",\"Stage\":7}" > OUTPUT/running_entry.txt
+echo "{\"Normal\":\"${NORMAL_BAM}\",\"Tumor\":\"${TUMOR_BAM}\",\"Stage\":7,\"Reference\":\"${REFERENCE_NAME}\"}" > OUTPUT/running_entry.txt
 python post_json.py -u updaterunningsample -v -i ${IP} -f OUTPUT/running_entry.txt
 
 echo ""
@@ -378,7 +381,7 @@ echo ""
 echo "POSTing job information ..."
 python post_json.py -u recordfinished -i ${IP} -f OUTPUT/finished.txt
 # Update Running Entry to finished
-echo "{\"Normal\":\"${NORMAL_BAM}\",\"Tumor\":\"${TUMOR_BAM}\",\"Stage\":9}" > OUTPUT/running_entry.txt
+echo "{\"Normal\":\"${NORMAL_BAM}\",\"Tumor\":\"${TUMOR_BAM}\",\"Stage\":9,\"Reference\":\"${REFERENCE_NAME}\"}" > OUTPUT/running_entry.txt
 python post_json.py -u updaterunningsample -v -i ${IP} -f OUTPUT/running_entry.txt
 echo ""
 echo "FINISHED!"
