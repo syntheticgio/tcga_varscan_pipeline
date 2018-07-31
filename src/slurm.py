@@ -125,9 +125,10 @@ rm -rf {working_directory}
 
         if job_type == "DOWNLOAD":
             if job_ids != -1:
-                self.download_job_id = "#SBATCH --dependency=afterany:{}".format(job_ids)
+                download_job_id = "#SBATCH --dependency=afterany:{}".format(job_ids)
             else:
-                self.download_job_id = ""
+                download_job_id = ""
+            
             self.template = self.download_template.format(**vars())
         elif job_type == "VARCALL":
             normal_file_REF = normal_file.rsplit(".", 1)[0] + ".REF_" + reference.rsplit(".", 1)[0] + ".bam"
