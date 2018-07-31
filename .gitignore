@@ -2,3 +2,16 @@ server/.idea/
 server/_trial_temp/
 server/database.pyc
 server/time_keep_database.db-journal
+.idea/
+server/OUTPUT/
+server/time_keep_database2.db
+server/varscan/
+src/TCGA-13-0919-01A-01W-0419-10_454.bam
+src/TCGA-13-0919-10A-01W-0419-10_454.bam
+src/example_slurm.py
+src/hg19_nochrom.fa.gz
+src/matches.log
+src/output.txt
+src/rawdata.txt
+src/slurm.pyc
+src/tcga.pyc
