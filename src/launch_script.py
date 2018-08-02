@@ -108,7 +108,7 @@ def extract_matches():
     return VAR_CALLERS            
 
 
-def generate_sbatch_scripts(callers):
+def generate_sbatch_scripts(callers, **kwargs):
     # Generate the sbatch instructions
     node_length = len(nodes)
     node_indx = 0
@@ -124,20 +124,24 @@ def generate_sbatch_scripts(callers):
         # working_directory = "/home/torcivia/tcga/{}/".format(caller.barcode)
         # working_directory = "/Users/Jonny/tmp/test_tcga/{}/".format(caller.barcode)
         # WHEN WORKING ON MAC
-        # base_directory = "/Users/Jonny/tmp/test_tcga/"
+        #base_directory = "/Users/Jonny/tmp/test_tcga/"
         
         # WORKING ON DESKTOP
         # base_directory = "/Users/Jonny/tmp/test_tcga/"
         
         # IN CLOUD
-        base_directory = "/home/torcivia/tcga/"
+        #base_directory = "/home/torcivia/tcga/"
+
+        base_directory = kwargs.get("base_dir", "/home/torcivia/tcga/")
+        db_address = kwargs.get("ip", "0.0.0.0")
+
         s = slurm_submitter(base_directory)
         
         # Setup Download
         job_type = "DOWNLOAD"
         node = nodes[node_indx]
         
-        s.populate_template(caller, node, job_type, "download", wait_id[node_indx])
+        s.populate_template(caller, node, job_type, db_address, "download", wait_id[node_indx])
         # print s.template
 
         # Launch download here
@@ -148,7 +152,7 @@ def generate_sbatch_scripts(callers):
         job_type = "VARCALL"
         varcall_job_ids = []
         for ref in references:
-            s.populate_template(caller, node, job_type, ref, job_id)
+            s.populate_template(caller, node, job_type, db_address, ref, job_id)
             _job_id = s.launch_job()
             varcall_job_ids.append(_job_id)
         
@@ -157,7 +161,7 @@ def generate_sbatch_scripts(callers):
 
         # Do cleanup
         job_type = "CLEAN"
-        s.populate_template(caller, node, job_type, "cleanup", varcall_job_ids)
+        s.populate_template(caller, node, job_type, db_address, "cleanup", varcall_job_ids)
         wait_id[node_indx] = s.launch_job()
         
         node_indx += 1
@@ -169,17 +173,13 @@ def generate_sbatch_scripts(callers):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Commands for launch script.')
+    parser.add_argument('ip', dest='ip', help='The IP address of the server, in format xxx.xxx.xxx.xxx.  This is required.')
+    parser.add_argument('--base_dir', '-b', dest='base_dir', default='/home/torcivia/tcga/', help='Changes the base directory that computation scripts should be generated.  Default is /home/torcivia/tcga/.')
     parser.add_argument('--verbose', '-v', dest='verbose', action='store_true', help="Turns on verbosity.")
     # parser.add_argument('--quick', '-q', dest='quick', action='store_true', help='Instead of re-generating the pairing index, reads from matches.csv (if exists).')
     parser.add_argument('--matches_log', '-l', dest='log', action='store_true', help='Instead of storing matches as CSV, stores them as LOG file with more detailed output.  This cannot be used as an input for other functionality in this program.')
-    
-    # parser.add_argument('--port', '-p', dest='port', default="50051", help='Selects the port for the server to run on.  Defaults to 50051 if not provided.')
-    # parser.add_argument('--latitude', '-lat', dest='latitude', default="38.7509000", help='This is the latitude the drone should be created at, if using a SITL simulation.  By default this will be in Manassas Va')
-    # parser.add_argument('--longitude', '-lon', dest='longitude', default="-77.4753000", help='This is the longitude the drone should be created at, if using a SITL simulation.  By default this will be in Manassas Va')
-
     args = parser.parse_args()
 
-    # if args.quick:
     callers = []
     try:
         csv_file = open('matches.csv', 'r')
@@ -220,4 +220,4 @@ if __name__ == "__main__":
         #         caller.dump_caller_info_csv(f)
         # f.close()
     
-    generate_sbatch_scripts(callers)
+    generate_sbatch_scripts(callers, ip=args.ip, base_dir=args.base_dir)

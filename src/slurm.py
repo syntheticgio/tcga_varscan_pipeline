@@ -17,6 +17,7 @@ class slurm_submitter():
     job_ids = []
     base_directory = ""
     download_id = 0
+    indx = 0
 
     def __init__(self, base_dir):
         self.base_directory = base_dir
@@ -108,7 +109,7 @@ rm -rf {working_directory}
         
         """
 
-    def populate_template(self, caller, node, job_type, reference="download", job_ids=0):
+    def populate_template(self, caller, node, job_type, db_address, reference="download", job_ids=0):
         barcode = caller.barcode
         normal = caller.normal_file_url
         tumor = caller.tumor_file_url
@@ -116,7 +117,7 @@ rm -rf {working_directory}
         tumor_file = caller.tumor_file
         
         self.tcga_barcode = caller.barcode # set here for other purposes (launching)
-        db_address = "35.231.62.194"
+        #db_address = "35.231.62.194"
         # Construct output location
         output_location = "gs://iron-eye-6998/tcga_wgs_results/" + barcode + "/"
         self.slurm_file = barcode + "_" + job_type + "_" + reference + ".slurm"
@@ -164,21 +165,31 @@ rm -rf {working_directory}
         # print "SLURM FILE: %s" % filename
         if self.job_type == "CLEAN":
             _ids = ','.join('afterany:{}'.format(str(c)) for c in self.job_ids)
-            output = commands.getoutput('sbatch --dependency={} {}'.format(_ids, filename))
+            #output = commands.getoutput('sbatch --dependency={} {}'.format(_ids, filename))
+            output = self.indx
+            self.indx += 1
             #print("IDS: {}".format(_ids))
             #print("filename: {}".format(filename))
             print ('sbatch --dependency={} {}'.format(_ids, filename))
             #pass
         elif self.job_type == "DOWNLOAD":
-            output = commands.getoutput('sbatch --dependency=afterok:{} {}'.format(self.download_id, filename))
-            self.download_id=output.split()[3]
+            #output = commands.getoutput('sbatch --dependency=afterok:{} {}'.format(self.download_id, filename))
+            output = self.indx
+            
+            #self.download_id=output.split()[3]
+            self.download_id = self.indx
+            self.indx += 1
             print('sbatch --dependency=afterok:{} {}'.format(self.download_id, filename))
             #print("output: {}".format(output))
         else:
-            output = commands.getoutput('sbatch {}'.format(filename))
+            #output = commands.getoutput('sbatch {}'.format(filename))
+            output = self.indx
+            self.indx += 1
             print('sbatch {}'.format(filename))
 
         #output = 555  # temporary
-        return output.split()[3]
+        
+        #return output.split()[3]
+        return output
 
         

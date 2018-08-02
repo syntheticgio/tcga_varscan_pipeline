@@ -8,14 +8,14 @@
 #
 # Sanity checking for number of arguments
 #
-if [[ $# -lt 3 ]] ; then
-    echo 'The pipeline script requires five arguments:'
-	echo "pipeline.h <gs://.../normal.bam> <gs://.../tumor.bam> <output bucket location (i.e. gs://my-bucket/output)> <output base name> <reference> <ip address of database>"
+if [[ $# -lt 2 ]] ; then
+    echo 'The pipeline script requires two arguments with an optional third one:'
+	echo "pipeline.h <normal.bam> <tumor.bam> <ip address of database>"
     exit 1
 fi
 if [[ $# -gt 3 ]] ; then
-    echo 'The pipeline script requires five arguments:'
-	echo "pipeline.h <gs://.../normal.bam> <gs://.../tumor.bam> <output bucket location (i.e. gs://my-bucket/output)> <output base name> <reference> <ip address of database>"
+    echo 'The pipeline script requires two arguments with an optional third one:'
+	echo "pipeline.h <normal.bam> <tumor.bam> <ip address of database>"
     exit 1
 fi
 
@@ -29,9 +29,6 @@ if [[ $1 == "-h" ]]; then
 	echo ""
 	exit 1
 fi
-
-
-
 
 # Check to make sure files are copied and exist
 NORMAL_BAM=$(basename "$1")
@@ -65,7 +62,10 @@ else
 	echo "TUMOR BAM INDEX DOESN'T EXIST"
 fi
 
-
+if [ -z "$3" ]
+  then
+    echo "No argument supplied"
+fi
 IP=$3
 mkdir -p OUTPUT
 
@@ -92,7 +92,7 @@ SORT_FORMAT="{\"ID\":\"${NORMAL_BAM}\",${TIME_FORMAT}"
 # Stage 1
 #
 echo "{\"Normal\":\"${NORMAL_BAM}\",\"Tumor\":\"${TUMOR_BAM}\",\"Stage\":1,\"Reference\":\"Human\"}" > OUTPUT/running_entry.txt
-python post_json.py -u createrunningsample -v -i ${IP} -f OUTPUT/running_entry.txt
+[ ! -z "$3"] && python post_json.py -u createrunningsample -v -i ${3} -f OUTPUT/running_entry.txt
 echo "=========================================================="
 echo "1. SORTING:  /usr/bin/time -o OUTPUT/samtools_sort_normal_time.txt --format "${SORT_FORMAT}" ${SAMTOOLS} sort ${NORMAL_BAM} -o sorted_${NORMAL_BAM} 1> OUTPUT/samtools_sort_normal.stdout 2> OUTPUT/samtools_sort_normal.stderr"
 if [ ${NORMAL_SORTED} -gt 0 ]
@@ -113,8 +113,8 @@ else
 fi
 
 echo ""
-echo "2. POSTing time data to database: python post_json.py -u samtoolssort -f OUTPUT/samtools_sort_normal_time.txt -v -i ${IP}"
-python post_json.py -u samtoolssort -f OUTPUT/samtools_sort_normal_time.txt -v -i ${IP}
+echo "2. POSTing time data to database: python post_json.py -u samtoolssort -f OUTPUT/samtools_sort_normal_time.txt -v -i ${3}"
+[ ! -z "$3"] && python post_json.py -u samtoolssort -f OUTPUT/samtools_sort_normal_time.txt -v -i ${3}
 POST_NORMAL_ERROR_CODE=$?
 echo -e "\tERROR CODE: ${POST_NORMAL_ERROR_CODE}"
 echo ""
@@ -131,7 +131,7 @@ bamtools split -in sorted_${NORMAL_BAM} -reference
 # Stage 2
 #
 echo "{\"Normal\":\"${NORMAL_BAM}\",\"Tumor\":\"${TUMOR_BAM}\",\"Stage\":2,\"Reference\":\"Human\"}" > OUTPUT/running_entry.txt
-python post_json.py -u updaterunningsample -v -i ${IP} -f OUTPUT/running_entry.txt
+[ ! -z "$3"] && python post_json.py -u updaterunningsample -v -i ${3} -f OUTPUT/running_entry.txt
 
 echo ""
 echo "3. SORTING: /usr/bin/time -o OUTPUT/samtools_sort_tumor_time.txt --format "${SORT_FORMAT}" ${SAMTOOLS} sort ${TUMOR_BAM} -o sorted_${TUMOR_BAM} 1> OUTPUT/samtools_sort_tumor.stdout 2> OUTPUT/samtools_sort_tumor.stderr"
@@ -152,8 +152,8 @@ else
 fi
 
 echo ""
-echo "4. POSTing time data to database: python post_json.py -u samtoolssort -f OUTPUT/samtools_sort_tumor_time.txt -v -i ${IP}"
-python post_json.py -u samtoolssort -f OUTPUT/samtools_sort_tumor_time.txt -v -i ${IP}
+echo "4. POSTing time data to database: python post_json.py -u samtoolssort -f OUTPUT/samtools_sort_tumor_time.txt -v -i ${3}"
+[ ! -z "$3"] && python post_json.py -u samtoolssort -f OUTPUT/samtools_sort_tumor_time.txt -v -i ${3}
 POST_TUMOR_ERROR_CODE=$?
 echo -e "\tERROR CODE: ${POST_TUMOR_ERROR_CODE}"
 echo ""
@@ -167,4 +167,4 @@ echo "=========================================================="
 bamtools split -in sorted_${TUMOR_BAM} -reference
 
 echo "{\"Normal\":\"${NORMAL_BAM}\",\"Tumor\":\"${TUMOR_BAM}\",\"Stage\":9,\"Reference\":\"Human\"}" > OUTPUT/running_entry.txt
-python post_json.py -u updaterunningsample -v -i ${IP} -f OUTPUT/running_entry.txt
+[ ! -z "$3"] && python post_json.py -u updaterunningsample -v -i ${3} -f OUTPUT/running_entry.txt
