@@ -165,31 +165,31 @@ rm -rf {working_directory}
         # print "SLURM FILE: %s" % filename
         if self.job_type == "CLEAN":
             _ids = ','.join('afterany:{}'.format(str(c)) for c in self.job_ids)
-            #output = commands.getoutput('sbatch --dependency={} {}'.format(_ids, filename))
-            output = self.indx
-            self.indx += 1
+            output = commands.getoutput('sbatch --dependency={} {}'.format(_ids, filename))
+            #output = self.indx
+            #self.indx += 1
             #print("IDS: {}".format(_ids))
             #print("filename: {}".format(filename))
             print ('sbatch --dependency={} {}'.format(_ids, filename))
             #pass
         elif self.job_type == "DOWNLOAD":
-            #output = commands.getoutput('sbatch --dependency=afterok:{} {}'.format(self.download_id, filename))
-            output = self.indx
+            output = commands.getoutput('sbatch --dependency=afterok:{} {}'.format(self.download_id, filename))
+            #output = self.indx
             
-            #self.download_id=output.split()[3]
-            self.download_id = self.indx
-            self.indx += 1
+            self.download_id=output.split()[3]
+            #self.download_id = self.indx
+            #self.indx += 1
             print('sbatch --dependency=afterok:{} {}'.format(self.download_id, filename))
             #print("output: {}".format(output))
         else:
-            #output = commands.getoutput('sbatch {}'.format(filename))
-            output = self.indx
-            self.indx += 1
+            output = commands.getoutput('sbatch {}'.format(filename))
+            #output = self.indx
+            #self.indx += 1
             print('sbatch {}'.format(filename))
 
         #output = 555  # temporary
         
-        #return output.split()[3]
-        return output
+        return output.split()[3]
+        #return output
 
         
