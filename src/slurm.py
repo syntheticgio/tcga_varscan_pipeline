@@ -41,7 +41,7 @@ class slurm_submitter():
 cd {working_directory}
 
 ./pipeline.sh {normal_file_REF} {tumor_file_REF} {output_location} {barcode} {working_directory}/../references/{reference} {db_address}
-echo "pipeline.sh : ${?}" 
+echo "pipeline.sh : "$? 
         """
 
         self.download_template = """\
@@ -69,13 +69,13 @@ cd {working_directory}
 
 echo "Copying BAM files and indexes..."
 gsutil cp {normal} ./ 2> download_normal.sterr
-echo "GSUTIL {normal} : ${?}" 
+echo "GSUTIL {normal} : "$? 
 gsutil cp {tumor} ./ 2> download_tumor.stderr
-echo "GSUTIL {tumor} : ${?}" 
+echo "GSUTIL {tumor} : "$?
 gsutil cp {normal}.bai ./ 2> download_normal_bai.stderr
-echo "GSUTIL {normal}.bai : ${?}" 
+echo "GSUTIL {normal}.bai : "$?
 gsutil cp {tumor}.bai ./ 2> download_tumor_bai.stderr
-echo "GSUTIL {tumor}.bai : ${?}" 
+echo "GSUTIL {tumor}.bai : "$? 
 
 echo "Copying script files ..."
 cp /home/torcivia/pipeline/tcga_varscan_pipeline/src/pipeline.sh ./
@@ -90,7 +90,7 @@ chmod +x transfer_clean.sh
 
 echo "Splitting by reference..."
 ./split_by_ref.sh {normal} {tumor} {db_address}
-echo "split_by_ref.sh : ${?}" 
+echo "split_by_ref.sh : "$? 
         """
     
         self.clean_template = """\
@@ -110,7 +110,7 @@ echo "split_by_ref.sh : ${?}"
 #SBATCH --chdir={working_directory}
 
 ./transfer_clean.sh {normal_file} {tumor_file} {output_location} {barcode} {working_directory}/../references/{reference} {db_address}
-echo "transfer_clean.sh : ${?}" 
+echo "transfer_clean.sh : "$? 
 
 rm -rf {working_directory}
         
