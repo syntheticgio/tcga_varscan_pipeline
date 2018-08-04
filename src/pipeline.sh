@@ -392,3 +392,5 @@ python post_json.py -u updaterunningsample -v -i ${IP} -f OUTPUT/running_entry.t
 # python post_json.py -u updaterunningsample -v -i ${IP} -f OUTPUT/running_entry.txt
 # echo ""
 # echo "FINISHED!"
+
+return 0

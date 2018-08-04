@@ -73,3 +73,5 @@ echo "{\"Normal\":\"${NORMAL_BAM}\",\"Tumor\":\"${TUMOR_BAM}\",\"Stage\":9,\"Ref
 python post_json.py -u updaterunningsample -v -i ${IP} -f OUTPUT/running_entry.txt
 echo ""
 echo "FINISHED!"
+
+return 0
