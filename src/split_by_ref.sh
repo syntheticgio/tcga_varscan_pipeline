@@ -123,6 +123,9 @@ echo "------"
 cat OUTPUT/samtools_sort_normal.stderr
 echo "=========================================================="
 
+# Get BAMSTATS
+${SAMTOOLS} flagstat sorted_${NORMAL_BAM} > OUTPUT/_${NORMAL_BAM}_flagstat.txt
+java -jar -Xmx8g /BAMStats-1.25/BAMStats-1.25.jar -i sorted_${NORMAL_BAM} > OUTPUT/_${NORMAL_BAM}_bamstats.txt
 # split based on reference
 # TODO get time for this
 bamtools split -in sorted_${NORMAL_BAM} -reference
@@ -162,6 +165,10 @@ echo "------"
 cat OUTPUT/samtools_sort_tumor.stderr
 echo "=========================================================="
 
+
+# BAMSTAT
+${SAMTOOLS} flagstat sorted_${TUMOR_BAM} > OUTPUT/_${TUMOR_BAM}_flagstat.txt
+java -jar -Xmx8g /BAMStats-1.25/BAMStats-1.25.jar -i sorted_${TUMOR_BAM} > OUTPUT/_${TUMOR_BAM}_bamstats.txt
 # split based on reference
 # TODO get time for this
 bamtools split -in sorted_${TUMOR_BAM} -reference
