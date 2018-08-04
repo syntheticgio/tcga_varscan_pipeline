@@ -55,6 +55,7 @@ echo ""
 echo "Copying files into the appropriate output location..."
 gsutil cp ${BASE_OUTPUT_NAME}.vcf.tar.gz ${OUTPUT_LOCATION}varscan_results/
 gsutil -m cp OUTPUT/* ${OUTPUT_LOCATION}varscan_results/OUTPUT/
+gsutil cp ../*.std* ${OUTPUT_LOCATION}varscan_results/OUTPUT/
 
 
 ERROR_FILES="${OUTPUT_LOCATION}varscan_results/OUTPUT/"
