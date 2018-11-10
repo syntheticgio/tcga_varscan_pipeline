@@ -1,3 +1,5 @@
+#!/usr/bin/python
+
 import csv
 from tcga import TCGAVariantCaller
 import json
@@ -113,7 +115,8 @@ def generate_sbatch_scripts(callers, **kwargs):
     node_length = len(nodes)
     node_indx = 0
     wait_id = []
-    wait_id.append(-1)
+    for x in range(0, node_length):
+        wait_id.append(-1)
     for caller in callers:
         # For each caller we need to:
         #   1. Download the relevant BAM / BAI files
@@ -167,8 +170,8 @@ def generate_sbatch_scripts(callers, **kwargs):
         node_indx += 1
         if node_indx > node_length - 1:
             node_indx = 0
-        else:
-            wait_id.append(-1)
+        #else:
+        #    wait_id.append(-1)
 
 
 if __name__ == "__main__":

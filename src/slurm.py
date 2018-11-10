@@ -57,7 +57,6 @@ echo "pipeline.sh : "$?
 #SBATCH --nodelist={node}
 
 #SBATCH --ntasks=1
-#SBATCH --mem=1024
 #SBATCH --chdir=/home/torcivia/tcga/
 {download_job_id}
 
