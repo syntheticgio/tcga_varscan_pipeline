@@ -81,6 +81,7 @@ cp /home/torcivia/pipeline/tcga_varscan_pipeline/src/pipeline.sh ./
 cp /home/torcivia/pipeline/tcga_varscan_pipeline/src/post_json.py ./
 cp /home/torcivia/pipeline/tcga_varscan_pipeline/src/split_by_ref.sh ./
 cp /home/torcivia/pipeline/tcga_varscan_pipeline/src/transfer_clean.sh ./
+cp /home/torcivia/pipeline/tcga_varscan_pipeline/src/re_chrom_name.awk ./
 
 echo "Changing permissions..."
 chmod +x split_by_ref.sh
