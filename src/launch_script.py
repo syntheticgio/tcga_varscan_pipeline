@@ -8,6 +8,8 @@ import argparse
 import csv
 from slurm import slurm_submitter
 
+#nodes = ["slurm-child1", "slurm-child3", "slurm-child4", "slurm-child5", "slurm-child6", "slurm-child7", "slurm-child8", "slurm-child9", "slurm-child10"]
+#nodes = ["slurm-child11", "slurm-child12", "slurm-child13", "slurm-child14", "slurm-child15", "slurm-child16", "slurm-child17", "slurm-child18", "slurm-child19", "slurm-child20"]
 nodes = ["slurm-child1"]
 references = ["chr1.fa", "chr2.fa", "chr3.fa", "chr4.fa", "chr5.fa", "chr6.fa", "chr7.fa", "chr8.fa", "chr9.fa", "chr10.fa", "chr11.fa", "chr12.fa", "chr13.fa", "chr14.fa", "chr15.fa", "chr16.fa", "chr17.fa", "chr18.fa", "chr19.fa", "chr20.fa", "chr21.fa", "chr22.fa", "chrX.fa", "chrY.fa", "chrM.fa"]
 
