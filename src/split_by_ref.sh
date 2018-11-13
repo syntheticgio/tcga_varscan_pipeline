@@ -132,7 +132,8 @@ echo "=========================================================="
 # Make sure chromosome names are the same...
 /samtools/bin/samtools view -H sorted_${NORMAL_BAM} > header.sam
 awk -f re_chrom_name.awk header.sam > new_header.sam
-${SAMTOOLS} reheader -iP new_header.sam sorted_${NORMAL_BAM}
+${SAMTOOLS} reheader -iP new_header.sam sorted_${NORMAL_BAM} > _tmp
+mv _tmp sorted_${NORMAL_BAM}
 
 # Get BAMSTATS
 ${SAMTOOLS} flagstat sorted_${NORMAL_BAM} > OUTPUT/_${NORMAL_BAM}_flagstat.txt
@@ -184,7 +185,8 @@ echo "=========================================================="
 # Make sure chromosome names are the same...
 /samtools/bin/samtools view -H sorted_${TUMOR_BAM} > header.sam
 awk -f re_chrom_name.awk header.sam > new_header.sam
-${SAMTOOLS} reheader -iP new_header.sam sorted_${TUMOR_BAM}
+${SAMTOOLS} reheader -iP new_header.sam sorted_${TUMOR_BAM} > _tmp
+mv _tmp sorted_${TUMOR_BAM}
 
 # BAMSTAT
 ${SAMTOOLS} flagstat sorted_${TUMOR_BAM} > OUTPUT/_${TUMOR_BAM}_flagstat.txt
