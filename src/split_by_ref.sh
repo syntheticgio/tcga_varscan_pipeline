@@ -129,6 +129,11 @@ echo "------"
 cat OUTPUT/samtools_sort_normal.stderr
 echo "=========================================================="
 
+# Make sure chromosome names are the same...
+/samtools/bin/samtools view -H sorted_${NORMAL_BAM} > header.sam
+awk -f re_chrom_name.awk header.sam > new_header.sam
+${SAMTOOLS} reheader -iP new_header.sam sorted_${NORMAL_BAM}
+
 # Get BAMSTATS
 ${SAMTOOLS} flagstat sorted_${NORMAL_BAM} > OUTPUT/_${NORMAL_BAM}_flagstat.txt
 java -jar -Xmx8g /BAMStats-1.25/BAMStats-1.25.jar -i sorted_${NORMAL_BAM} > OUTPUT/_${NORMAL_BAM}_bamstats.txt
@@ -176,6 +181,10 @@ echo "------"
 cat OUTPUT/samtools_sort_tumor.stderr
 echo "=========================================================="
 
+# Make sure chromosome names are the same...
+/samtools/bin/samtools view -H sorted_${TUMOR_BAM} > header.sam
+awk -f re_chrom_name.awk header.sam > new_header.sam
+${SAMTOOLS} reheader -iP new_header.sam sorted_${TUMOR_BAM}
 
 # BAMSTAT
 ${SAMTOOLS} flagstat sorted_${TUMOR_BAM} > OUTPUT/_${TUMOR_BAM}_flagstat.txt
