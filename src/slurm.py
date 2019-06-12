@@ -197,6 +197,3 @@ rm -rf {working_directory}
         #output = 555  # temporary
         
         return output.split()[3]
-        #return output
-
-        
