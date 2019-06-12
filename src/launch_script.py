@@ -3,7 +3,7 @@
 # import csv
 from tcga import TCGAVariantCaller
 import json
-import os
+# import os
 import argparse
 import csv
 from slurm import slurm_submitter
@@ -13,7 +13,7 @@ def extract_matches(config):
     VAR_INDEX = 0
     VAR_CALLERS = []
     with open(config['tcga-sample-list'], 'rb') as csvfile:
-        if config['debug']:
+        if config['verbose']:
             print("[ debug ] Opening source file {} to injest tumor / normal pair data.".format(config['tcga-sample-list']))
         tcga_reader = csv.reader(csvfile, delimiter=',')
         i = 0
@@ -21,6 +21,7 @@ def extract_matches(config):
         # and that the matches are rows that follow each other
         for row in tcga_reader:
             if i == 0:
+                # Ignore header
                 i = i + 1
                 continue
             if i % 2 == 1:  # odd - first entry in group
