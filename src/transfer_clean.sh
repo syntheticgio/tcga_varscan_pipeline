@@ -18,12 +18,12 @@
 #
 if [[ $# -lt 5 ]] ; then
     echo 'The pipeline script requires five arguments with an optional sixth:'
-	echo "pipeline.h <gs://.../normal.bam> <gs://.../tumor.bam> <output bucket location (i.e. gs://my-bucket/output)> <output base name> <reference> <ip address of database>"
+	echo "pipeline.h </path/to/normal.bam> </path/to/tumor.bam> <output bucket location (i.e. gs://my-bucket/output)> <output base name> <reference> <[optional] ip address of database>"
     exit 1
 fi
 if [[ $# -gt 6 ]] ; then
     echo 'The pipeline script requires five arguments with an optional sixth:'
-	echo "pipeline.h <gs://.../normal.bam> <gs://.../tumor.bam> <output bucket location (i.e. gs://my-bucket/output)> <output base name> <reference> <ip address of database>"
+	echo "pipeline.h </path/to/normal.bam> </path/to/tumor.bam> <output bucket location (i.e. gs://my-bucket/output)> <output base name> <reference> <[optional] ip address of database>"
     exit 1
 fi
 
