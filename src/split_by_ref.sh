@@ -62,12 +62,20 @@ else
 	echo "TUMOR BAM INDEX DOESN'T EXIST"
 fi
 
-if [ -z "$3" ]
+if [[ -z "$3" ]]
   then
-    echo "No argument supplied"
+    echo "No argument supplied for server."
+else
+    IP=$3
 fi
-IP=$3
+
 mkdir -p OUTPUT
+if [[ $? -gt 0 ]]; then
+    directory=`pwd`
+    echo "Error creating the output directory.  Make sure you have permissions to create ${directory}/OUTPUT"
+    exit 5
+fi
+
 
 NORMAL_ID="${NORMAL_BAM%.*}"
 TUMOR_ID="${TUMOR_BAM%.*}"
