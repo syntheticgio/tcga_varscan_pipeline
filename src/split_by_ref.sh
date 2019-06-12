@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 
 # ARGUMENTS
-# 1. Normal Bam File 
-# 2. Tumor Bam 
+# 1. Normal Bam File Location
+# 2. Tumor Bam File Location
 # 3. IP address if the server for keeping logs
 
 #
@@ -20,7 +20,7 @@ if [[ $# -gt 3 ]] ; then
 fi
 
 #
-# Help script
+# Help output
 #
 if [[ $1 == "-h" ]]; then
 	echo "Help"
