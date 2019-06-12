@@ -104,7 +104,7 @@ MPILEUP_FORMAT="{\"NormalID\":\"${NORMAL_BAM}\",\"TumorID\":\"${TUMOR_BAM}\",\"R
 ######################################################
 # TODO: Need to update here to have the sorted_*BAM files with the proper _REF_xxx appended
 echo "{\"Normal\":\"${NORMAL_BAM}\",\"Tumor\":\"${TUMOR_BAM}\",\"Stage\":3,\"Reference\":\"${REFERENCE_NAME}\"}" > OUTPUT/running_entry.txt
-if [[ ! -z "$3" ]]
+if [[ ! -z "$6" ]]
 then
     python post_json.py -u createrunningsample -v -i ${IP} -f OUTPUT/running_entry.txt 2> "__createsample_${REFERENCE_NAME}_post.stderr"
 fi
@@ -126,7 +126,7 @@ echo "5. MPILEUP: /usr/bin/time -o OUTPUT/${MPILEUP_OUTPUT_TIME} --format ${MPIL
 MPILEUP_ERROR_CODE=$?
 echo -e "\tERROR CODE: ${MPILEUP_ERROR_CODE}"
 echo ""
-if [[ ! -z "$3" ]]
+if [[ ! -z "$6" ]]
 then
     echo "6. POSTing mpileup: python post_json.py -u mpileup -f OUTPUT/${MPILEUP_OUTPUT_TIME} -v -i ${IP}"
     python post_json.py -u mpileup -f OUTPUT/${MPILEUP_OUTPUT_TIME} -v -i ${IP} 2> "__mpileup_${REFERENCE_NAME}_post.stderr"
@@ -171,7 +171,7 @@ echo "7. VARSCAN SOMATIC: /usr/bin/time -o OUTPUT/${VARSCAN_SOMATIC_TIME} --form
 VARSCAN_ERROR_CODE=$?
 echo -e "\tERROR CODE: ${VARSCAN_ERROR_CODE}"
 echo ""
-if [[ ! -z "$3" ]]
+if [[ ! -z "$6" ]]
 then
     echo "8. POSTing varscan: python post_json.py -u varscansomatic -f OUTPUT/${VARSCAN_SOMATIC_TIME} -v -i ${IP}"
     python post_json.py -u varscansomatic -f OUTPUT/${VARSCAN_SOMATIC_TIME} -v -i ${IP} 2> "__varscansomatic_${REFERENCE_NAME}_post.stderr"
@@ -204,7 +204,7 @@ echo "9. VARSCAN SOMATIC SNP CALLS: /usr/bin/time -o OUTPUT/${VARSCAN_SOMATIC_SN
 VARSCAN_SNP_ERROR_CODE=$?
 echo -e "\tERROR CODE: ${VARSCAN_SNP_ERROR_CODE}"
 echo ""
-if [[ ! -z "$3" ]]
+if [[ ! -z "$6" ]]
 then
     echo "10. POSTing VARSCAN SNP: python post_json.py -u varscanprocesssomaticsnps -f OUTPUT/${VARSCAN_SOMATIC_SNP_TIME} -v -i ${IP}"
     python post_json.py -u varscanprocesssomaticsnps -f OUTPUT/${VARSCAN_SOMATIC_SNP_TIME} -v -i ${IP} 2> "__varscanprocesssomaticsnps_${REFERENCE_NAME}_post.stderr"
@@ -237,7 +237,7 @@ echo "11. VARSCAN SOMATIC INDEL CALLS: /usr/bin/time -o OUTPUT/${VARSCAN_SOMATIC
 VARSCAN_INDEL_ERROR_CODE=$?
 echo -e "\tERROR CODE: ${VARSCAN_INDEL_ERROR_CODE}"
 echo ""
-if [[ ! -z "$3" ]]
+if [[ ! -z "$6" ]]
 then
     echo "12. POSTing VARSCAN INDEL: python post_json.py -u varscanprocesssomaticindels -f OUTPUT/${VARSCAN_SOMATIC_INDEL_TIME} -v -i ${IP}"
     python post_json.py -u varscanprocesssomaticindels -f OUTPUT/${VARSCAN_SOMATIC_INDEL_TIME} -v -i ${IP} 2> "__varscanprocesssomaticindels_${REFERENCE_NAME}_post.stderr"
@@ -255,7 +255,7 @@ echo "=========================================================="
 #############################################
 
 echo "{\"Normal\":\"${NORMAL_BAM}\",\"Tumor\":\"${TUMOR_BAM}\",\"Stage\":7,\"Reference\":\"${REFERENCE_NAME}\"}" > OUTPUT/running_entry.txt
-if [[ ! -z "$3" ]]
+if [[ ! -z "$6" ]]
 then
     python post_json.py -u updaterunningsample -v -i ${IP} -f OUTPUT/running_entry.txt 2> "__update4_${REFERENCE_NAME}_post.stderr"
 fi
