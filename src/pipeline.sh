@@ -1,10 +1,8 @@
 #!/usr/bin/env bash
 
 # ARGUMENTS
-# 1. Normal Bam File Location (i.e. gs://my-bucket/my-bam.bam)
-#   NOTE: In order to avoid sorting if bam is already sorted, the .bam.bai file should also be included there, with the same basename
-# 2. Tumor Bam File Location (i.e. gs://my-bucket/my-bam.bam)
-#   NOTE: In order to avoid sorting if bam is already sorted, the .bam.bai file should also be included there, with the same basename
+# 1. Normal Bam File Location (BAI index should also be in same location)
+# 2. Tumor Bam File Location (BAI index should also be in same location)
 # 3. Output Location
 #   This is where the output from the pipeline should be copied to (i.e. gs://my-bucket/output/)
 # 4. Base Output Name
@@ -16,14 +14,14 @@
 #
 # Sanity checking for number of arguments
 #
-if [[ $# -lt 6 ]] ; then
-    echo 'The pipeline script requires five arguments:'
-	echo "pipeline.h <gs://.../normal.bam> <gs://.../tumor.bam> <output bucket location (i.e. gs://my-bucket/output)> <output base name> <reference> <ip address of database>"
+if [[ $# -lt 5 ]] ; then
+    echo 'The pipeline script requires five arguments with an optional sixth one:'
+	echo "pipeline.h </path/to/normal.bam> </path/to/tumor.bam> <output bucket location (i.e. gs://my-bucket/output)> <output base name> <reference> <ip address of database>"
     exit 1
 fi
 if [[ $# -gt 6 ]] ; then
-    echo 'The pipeline script requires five arguments:'
-	echo "pipeline.h <gs://.../normal.bam> <gs://.../tumor.bam> <output bucket location (i.e. gs://my-bucket/output)> <output base name> <reference> <ip address of database>"
+    echo 'The pipeline script requires six arguments:'
+	echo "pipeline.h </path/to/normal.bam> </path/to/tumor.bam> <output bucket location (i.e. gs://my-bucket/output)> <output base name> <reference> <ip address of database>"
     exit 1
 fi
 
@@ -33,7 +31,7 @@ fi
 if [[ $1 == "-h" ]]; then
 	echo "Help"
 	echo "-------------"
-	echo "pipeline.h <gs://.../normal.bam> <gs://.../tumor.bam> <output bucket location (i.e. gs://my-bucket/output)> <output base name> <reference> <ip address of database>"
+	echo "pipeline.h </path/to/normal.bam> </path/to/tumor.bam> <output bucket location (i.e. gs://my-bucket/output)> <output base name> <reference> <ip address of database>"
 	echo ""
 	echo "The files should be locations the container can access; this script is set up to accept accessible gs:// locations and copy them in using gsutil."
 	echo "For example: gs://my-bucket/normal.bam"
@@ -41,66 +39,22 @@ if [[ $1 == "-h" ]]; then
 	exit 1
 fi
 
-#
-# Set variables based on user passed in data
-#
-# gsutil cp $1 ./
-# If a bai file exists, we know that the file is sorted
-# gsutil cp ${1}.bai ./
-# NORMAL_SORTED=$?
-# gsutil cp $2 ./
-# If a bai file exists, we know that the file is sorted
-# gsutil cp ${2}.bai ./
-# TUMOR_SORTED=$?
-# TODO: Needs to be local
-# gsutil cp $5 ./
+# SET VARIABLES
 
-
-# Check to make sure files are copied and exist
+# The normal and tumor bam and bai files should have been downloaded
+# by the split_by_ref.sh script
 NORMAL_BAM=$(basename "$1")
 TUMOR_BAM=$(basename "$2")
-
-# Check if NORMAL BAM file was copied
-# if [ ! -e "${NORMAL_BAM}" ]; then
-# 	echo "Error, Normal BAM not found..."
-# 	exit 5
-# fi
-
-# # Check if TUMOR BAM was copied
-# if [ ! -e "${TUMOR_BAM}" ]; then
-# 	echo "Error, Tumor BAM not found..."
-# 	exit 6
-# fi
-
-# # Check to see if normal bam index exists to skip sorting
-# if [ -e "${NORMAL_BAM}.bai" ]; then
-# 	NORMAL_SORTED=0
-# else
-# 	NORMAL_SORTED=1
-#         echo "NORMAL BAM INDEX DOESN'T EXIST"
-# fi
-
-# # Check to see if tumor bam index exists to skip sorting
-# if [ -e "${TUMOR_BAM}.bai" ]; then
-# 	TUMOR_SORTED=0
-# else
-# 	TUMOR_SORTED=1
-# 	echo "TUMOR BAM INDEX DOESN'T EXIST"
-# fi
-
 OUTPUT_LOCATION=$3
 BASE_OUTPUT_NAME=$4
 REFERENCE=$5
 REFERENCE_NAME=$(basename "$5")
-
 # Check to see if reference file exists
-if [ ! -e "${5}" ]; then
+if [[ ! -e "${5}" ]]; then
 	echo "Error, Reference file not found..."
 	exit 7
 fi
-
 IP=$6
-
 NORMAL_ID="${NORMAL_BAM%.*}"
 TUMOR_ID="${TUMOR_BAM%.*}"
 
