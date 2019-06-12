@@ -107,7 +107,7 @@ def generate_sbatch_scripts(callers, config, **kwargs):
     wait_id = []
     for x in range(0, node_length):
         wait_id.append(-1)
-    for caller in callers:
+    for caller_ in callers:
         # For each caller we need to:
         #   1. Download the relevant BAM / BAI files
         #   2. On completion of #1, we need to then launch 25 jobs (Chrom 1 - 22, Y, X, M)
@@ -124,7 +124,7 @@ def generate_sbatch_scripts(callers, config, **kwargs):
         job_type = "DOWNLOAD"
         node = nodes[node_indx]
 
-        s.populate_template(caller, node, job_type, db_address, "download", wait_id[node_indx])
+        s.populate_template(caller_, node, job_type, db_address, "download", wait_id[node_indx])
         # print s.template
 
         # Launch download here
@@ -135,13 +135,13 @@ def generate_sbatch_scripts(callers, config, **kwargs):
         job_type = "VARCALL"
         varcall_job_ids = []
         for ref in references:
-            s.populate_template(caller, node, job_type, db_address, ref, job_id)
+            s.populate_template(caller_, node, job_type, db_address, ref, job_id)
             _job_id = s.launch_job()
             varcall_job_ids.append(_job_id)
 
         # Do cleanup
         job_type = "CLEAN"
-        s.populate_template(caller, node, job_type, db_address, "cleanup", varcall_job_ids)
+        s.populate_template(caller_, node, job_type, db_address, "cleanup", varcall_job_ids)
         wait_id[node_indx] = s.launch_job()
 
         node_indx += 1
