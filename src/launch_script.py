@@ -1,12 +1,11 @@
 #!/usr/bin/python
 
-# import csv
-from tcga import TCGAVariantCaller
+from src.support.tcga import TCGAVariantCaller
+from src.support.slurm import slurm_submitter
+
 import json
-# import os
 import argparse
 import csv
-from slurm import slurm_submitter
 
 
 def extract_matches(config):
@@ -171,6 +170,7 @@ if __name__ == "__main__":
                                                                                             'references used.  See '
                                                                                             'configuration.json as an '
                                                                                             'example.')
+
     args = parser.parse_args()
 
     with open(args.config, 'r') as fh:
