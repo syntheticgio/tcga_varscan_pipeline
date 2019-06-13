@@ -178,8 +178,8 @@ if __name__ == "__main__":
 
     callers = []
     try:
-        csv_file = open('matches.csv', 'r')
-        print "Found matches.csv file"
+        csv_file = open(configuration['input_file'], 'r')
+        print("Found {} file".format(configuration['input_file']))
         csv_reader = csv.reader(csv_file, delimiter=',')
         indx = 1
         for row in csv_reader:
@@ -204,10 +204,10 @@ if __name__ == "__main__":
             indx += 1
             print caller
     except IOError:
-        print "matches.csv file doens't appear to exist."
-        print "Regenerating matches.csv"
+        print("{} file doens't appear to exist.".format(configuration['input_file']))
+        print("Generating {}".format(configuration['input_file']))
         callers = extract_matches(configuration)
-        f = open('matches.csv', 'w')
+        f = open(configuration['input_file'], 'w')
         if args.log:
             for caller in callers:
                 caller.dump_caller_info(f)
