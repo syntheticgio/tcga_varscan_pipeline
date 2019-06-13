@@ -2,7 +2,9 @@ import os
 import os.path
 import commands
 
+
 class slurm_submitter():
+    # TODO This needs to be updated to not specifically use my directory structure
     template = ""
     varcall_template = ""
     download_template = ""
