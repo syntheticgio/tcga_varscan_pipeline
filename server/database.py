@@ -20,6 +20,7 @@ import itertools
 import logging
 import time
 
+
 class Connection(object):
 
     """A lightweight wrapper around Sqlite3 connections.
@@ -37,7 +38,7 @@ class Connection(object):
     UTF-8 on all connections to avoid time zone and encoding errors.
     """
 
-    def __init__(self, database="time_keep_database2.db", host="localhost", user=None, password=None, max_idle_time=7*3600):
+    def __init__(self, database="time_keep_database.db", host="localhost", user=None, password=None, max_idle_time=7*3600):
         self.host = host
         self.database = database
         self.max_idle_time = max_idle_time
