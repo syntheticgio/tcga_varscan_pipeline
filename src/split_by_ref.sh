@@ -147,7 +147,7 @@ mv _tmp sorted_${NORMAL_BAM}
 ${SAMTOOLS} flagstat sorted_${NORMAL_BAM} > OUTPUT/_${NORMAL_BAM}_flagstat.txt
 java -jar -Xmx8g /BAMStats-1.25/BAMStats-1.25.jar -i sorted_${NORMAL_BAM} > OUTPUT/_${NORMAL_BAM}_bamstats.txt
 # split based on reference
-# TODO get time for this
+# TODO get time for this (needs to be added to server)
 bamtools split -in sorted_${NORMAL_BAM} -reference
 #
 # Run the SORT command for TUMOR and submit to the database
@@ -200,7 +200,7 @@ mv _tmp sorted_${TUMOR_BAM}
 ${SAMTOOLS} flagstat sorted_${TUMOR_BAM} > OUTPUT/_${TUMOR_BAM}_flagstat.txt
 java -jar -Xmx8g /BAMStats-1.25/BAMStats-1.25.jar -i sorted_${TUMOR_BAM} > OUTPUT/_${TUMOR_BAM}_bamstats.txt
 # split based on reference
-# TODO get time for this
+# TODO get time for this (needs to be added to server)
 bamtools split -in sorted_${TUMOR_BAM} -reference
 
 echo "{\"Normal\":\"${NORMAL_BAM}\",\"Tumor\":\"${TUMOR_BAM}\",\"Stage\":9,\"Reference\":\"Human\"}" > OUTPUT/running_entry.txt
