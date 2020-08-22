@@ -2,6 +2,8 @@
  * AJAX Polling
  */
 
+// let URL = "http://34.67.6.46:8081"
+let URL = "http://127.0.0.1:8081"
 function RequestStatus() {
     this.poll = false;
     this.activatePoll = function () {
@@ -16,8 +18,9 @@ function RequestStatus() {
 
         var poll = setTimeout(function () {
             $.ajax({
-                url: 'http://127.0.0.1/progress/',
+                url: URL + "/progress/",
                 success: function (response) {
+                    document.getElementById("queued").innerHTML = response["queued"];
                     document.getElementById("information").innerHTML = response["results"];
                     //console.log(response)
                     //console.log(response["results"])
@@ -25,7 +28,7 @@ function RequestStatus() {
                 dataType: "json",
                 data: JSON.stringify({"0": "0"}),
                 complete: function () {
-                    if (self.poll == false) {
+                    if (self.poll === false) {
                         clearTimeout(poll);
                     } else {
                         self.runPoll();
@@ -38,6 +41,22 @@ function RequestStatus() {
         }, 1000);
 
     };
+}
+function SubmitJob(tcga_id) {
+    $.ajax({
+        url: URL + "/submit_job/",
+        success: function (response) {
+            // document.getElementById("queued").innerHTML = response["queued"];
+            // document.getElementById("information").innerHTML = response["results"];
+            console.log(response)
+            //console.log(response["results"])
+        },
+        dataType: "json",
+        data: JSON.stringify({"tcga_id": tcga_id}),
+        type: "post",
+        contentType: "application/json; charset=utf-8",
+        traditional: true
+    })
 }
 
 

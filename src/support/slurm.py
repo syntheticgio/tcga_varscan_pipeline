@@ -94,7 +94,7 @@ echo "Splitting by reference..."
 ./split_by_ref.sh {normal} {tumor} {db_address}
 echo "split_by_ref.sh : "$? 
         """
-    
+
         self.clean_template = """\
 #!/bin/bash
 
@@ -124,21 +124,20 @@ rm -rf {working_directory}
         tumor = caller.tumor_file_url
         normal_file = caller.normal_file
         tumor_file = caller.tumor_file
-        
-        self.tcga_barcode = caller.barcode # set here for other purposes (launching)
-        #db_address = "35.231.62.194"
+
+        self.tcga_barcode = caller.barcode  # set here for other purposes (launching)
+        # db_address = "35.231.62.194"
         # Construct output location
         output_location = "gs://iron-eye-6998/tcga_wgs_results/" + barcode + "/"
         self.slurm_file = barcode + "_" + job_type + "_" + reference + ".slurm"
         working_directory = self.base_directory + caller.barcode + "/"
-        
 
         if job_type == "DOWNLOAD":
             if job_ids != -1:
                 download_job_id = "#SBATCH --dependency=afterany:{}".format(job_ids)
             else:
                 download_job_id = ""
-            
+
             self.template = self.download_template.format(**vars())
         elif job_type == "VARCALL":
             normal_file_REF = normal_file.rsplit(".", 1)[0] + ".REF_" + reference.rsplit(".", 1)[0] + ".bam"
@@ -151,7 +150,7 @@ rm -rf {working_directory}
             self.template = self.clean_template.format(**vars())
             # print self.template
         else:
-            print ("ERROR: Couldn't find job_type template.")
+            print("ERROR: Couldn't find job_type template.")
 
     def launch_job(self):
         jobdir = os.path.join(self.base_directory, self.tcga_barcode)
@@ -159,8 +158,8 @@ rm -rf {working_directory}
         if not os.path.exists(jobdir):
             try:
                 os.makedirs(jobdir)
-            except:
-                print "Error creating directory!"
+            except BaseException as e:
+                print("Error creating directory! %s", e)
 
         # Construct directory.
 
@@ -170,32 +169,32 @@ rm -rf {working_directory}
         outfile.write(self.template)
         outfile.close()
 
-        print "OUTDIR: %s" % jobdir
+        print("OUTDIR: %s" % jobdir)
         # print "SLURM FILE: %s" % filename
         if self.job_type == "CLEAN":
             _ids = ','.join('afterany:{}'.format(str(c)) for c in self.job_ids)
             output = commands.getoutput('sbatch --dependency={} {}'.format(_ids, filename))
-            #output = self.indx
-            #self.indx += 1
-            #print("IDS: {}".format(_ids))
-            #print("filename: {}".format(filename))
-            print ('sbatch --dependency={} {}'.format(_ids, filename))
-            #pass
+            # output = self.indx
+            # self.indx += 1
+            # print("IDS: {}".format(_ids))
+            # print("filename: {}".format(filename))
+            print('sbatch --dependency={} {}'.format(_ids, filename))
+            # pass
         elif self.job_type == "DOWNLOAD":
             output = commands.getoutput('sbatch --dependency=afterok:{} {}'.format(self.download_id, filename))
-            #output = self.indx
-            
-            self.download_id=output.split()[3]
-            #self.download_id = self.indx
-            #self.indx += 1
+            # output = self.indx
+
+            self.download_id = output.split()[3]
+            # self.download_id = self.indx
+            # self.indx += 1
             print('sbatch --dependency=afterok:{} {}'.format(self.download_id, filename))
-            #print("output: {}".format(output))
+            # print("output: {}".format(output))
         else:
             output = commands.getoutput('sbatch {}'.format(filename))
-            #output = self.indx
-            #self.indx += 1
+            # output = self.indx
+            # self.indx += 1
             print('sbatch {}'.format(filename))
 
-        #output = 555  # temporary
-        
+        # output = 555  # temporary
+
         return output.split()[3]

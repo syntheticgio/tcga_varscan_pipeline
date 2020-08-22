@@ -38,6 +38,10 @@ sqlstr = "DELETE FROM VarscanSomatic"
 print("Deleting VarscanSomatic...")
 cursor.execute(sqlstr)
 
+sqlstr = "DELETE FROM queued"
+print("Deleting queued...")
+cursor.execute(sqlstr)
+
 sqlstr = "UPDATE sqlite_sequence SET seq = 0"
 print("Resetting Indexes...")
 cursor.execute(sqlstr)

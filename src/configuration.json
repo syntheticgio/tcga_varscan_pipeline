@@ -38,7 +38,8 @@
     "chrY.fa",
     "chrM.fa"
   ],
-  "input_file": "tcga-data.csv",
-  "debug": "false",
-  "tcga-sample-list": "full-results-normal.csv"
+  "input_file": "src/matches.csv",
+  "header": false,
+  "debug": true,
+  "tcga-sample-list": "src/full-results-normal.csv"
 }

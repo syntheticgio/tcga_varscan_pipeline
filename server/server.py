@@ -1,12 +1,18 @@
+from typing import Optional, Awaitable
+
 import tornado.ioloop
 import tornado.web
 import sqlite3
 import os
 import tornado.httpserver
 import json
+from src.support.tcga import TCGAVariantCaller
 
 
 class MainHandler(tornado.web.RequestHandler):
+    def data_received(self, chunk: bytes) -> Optional[Awaitable[None]]:
+        pass
+
     # This is going to show the basic stats page
     def get(self):
         self.render("../index.html")
@@ -53,6 +59,14 @@ class MainHandler(tornado.web.RequestHandler):
         return self.application.cursor
 
     @property
+    def batch_scriptor(self):
+        return self.application.batch_scriptor
+
+    @property
+    def callers(self):
+        return self.application.callers
+
+    @property
     def table_style(self):
         return "<html><head><style>table {font-family: \"Trebuchet MS\", Arial, Helvetica, sans-serif;border-collapse: collapse;width: 100%;}table td, #customers th {border: 1px solid #ddd;padding: 8px;}table tr:nth-child(even){background-color: #f2f2f2;}table tr:hover {background-color: #ddd;}table th {padding-top: 12px;padding-bottom: 12px;text-align: left;background-color: #4CAF50;color: white;}</style></head>"
 
@@ -82,8 +96,28 @@ class ProgressHandler(MainHandler):
         for row in self.cursor.execute(sqlstr):
             rows = rows + "<tr><td>{}</td><td>{}</td><td>{}</td></tr>".format(row[1], row[2], row[3])
         # print(rows)
+        queued_rows = "<h2>Queued computations</h2><table><tr>" \
+                      "<th>TCGA ID</th>" \
+                      "<th>Cancer Type</th>" \
+                      "<th>Tumor Barcode</th>" \
+                      "<th>Tumor File Size</th>" \
+                      "<th>Normal Barcode</th>" \
+                      "<th>Normal File Size</th>" \
+                      "<th>Run</th>" \
+                      "</tr>"
+        sqlstr2 = "SELECT tumor_barcode, tumor_file_size, normal_barcode, normal_file_size, cancer_type, tcga_id FROM " \
+                  "queued "
+        for row in self.cursor.execute(sqlstr2):
+            queued_rows = queued_rows + "<tr><td>{}</td><td>{}</td><td>{}</td><td>{}</td><td>{}</td><td>{" \
+                                        "}</td><td><button type=\"button\" onclick=\"SubmitJob(\'{}\')\">+</button></td></tr>".format(
+                row[5], row[4], row[0], row[1],
+                row[2], row[3], row[5])
+
         self.set_header("Content-Type", "text/plain")
-        _rws = {"results": rows}
+        _rws = {
+            "results": rows,
+            "queued": queued_rows
+        }
         self.write(_rws)
 
 
@@ -97,13 +131,13 @@ class RawDataHandler(MainHandler):
     def post(self):
         json_body = tornado.escape.json_decode(self.request.body)
         table = json_body["table"]
-        print ("TABLE: {}".format(table))
+        print("TABLE: {}".format(table))
         self.cursor.execute("SELECT * FROM {}".format(table))
         r = [dict((self.cursor.description[i][0], value) \
                   for i, value in enumerate(row)) for row in self.cursor.fetchall()]
         self.set_header("Content-Type", "text/plain")
         print(r)
-        json_mylist = json.dumps(r, separators=(',',':'))
+        json_mylist = json.dumps(r, separators=(',', ':'))
         self.write(json_mylist)
 
 
@@ -132,9 +166,8 @@ class UpdateRunningSampleHandler(MainHandler):
 
     def post(self):
         json_body = tornado.escape.json_decode(self.request.body)
-        sqlstr = "UPDATE RunningSamples SET Stage = {} WHERE Normal = \"{}\" AND Tumor = \"{}\"".format(json_body['Stage'],
-                                                                                                        json_body['Normal'],
-                                                                                                        json_body['Tumor'])
+        sqlstr = "UPDATE RunningSamples SET Stage = {} WHERE Normal = \"{}\" AND Tumor = \"{}\"".format(
+            json_body['Stage'], json_body['Normal'], json_body['Tumor'])
         print(sqlstr)
         self.cursor.execute(sqlstr)
         self.db.commit()
@@ -150,7 +183,8 @@ class RemoveRunningSampleHandler(MainHandler):
 
     def post(self):
         json_body = tornado.escape.json_decode(self.request.body)
-        sqlstr = "DELETE FROM RunningSamples WHERE Normal = {} AND Tumor = {}".format(json_body['Normal'], json_body['Tumor'])
+        sqlstr = "DELETE FROM RunningSamples WHERE Normal = {} AND Tumor = {}".format(json_body['Normal'],
+                                                                                      json_body['Tumor'])
         print(sqlstr)
         self.cursor.execute(sqlstr)
         self.db.commit()
@@ -251,6 +285,7 @@ class MpileupHandler(MainHandler):
 
 
 class VarscanSomaticHandler(MainHandler):
+
     def initialize(self):
         pass
 
@@ -277,6 +312,7 @@ class VarscanSomaticHandler(MainHandler):
 
 
 class VarscanProcessSomaticSnpsHandler(MainHandler):
+
     def initialize(self):
         pass
 
@@ -303,6 +339,7 @@ class VarscanProcessSomaticSnpsHandler(MainHandler):
 
 
 class VarscanProcessSomaticIndelsHandler(MainHandler):
+
     def initialize(self):
         pass
 
@@ -327,6 +364,41 @@ class VarscanProcessSomaticIndelsHandler(MainHandler):
         self.cursor.execute(sqlstr)
         self.db.commit()
         self.write(sqlstr)
+
+
+class SubmitJobHandler(MainHandler):
+    def get(self):
+        pass
+
+    def post(self):
+        json_body = tornado.escape.json_decode(self.request.body)
+        print("Body: {}".format(json_body))
+        print("Checking to see if {} is available to push to computations.".format(json_body['tcga_id']))
+        try:
+            if self.batch_scriptor.generate_sbatch_by_tcga_id(json_body['tcga_id']):
+                # Remove this tcga ID entry from the query table, and put it into the processing one
+                sql_statement = """
+                                INSERT INTO
+                                processing
+                                SELECT * FROM
+                                queued
+                                WHERE
+                                tcga_id = \'{}\'
+                                """.format(json_body['tcga_id'])
+                self.cursor.execute(sql_statement)
+                sql_statement = """
+                                DELETE FROM queued WHERE tcga_id = \'{}\'
+                                """.format(json_body['tcga_id'])
+            else:
+                print("Failed to submit the tcga ID job: {}".format(json_body['tcga_id']))
+                self.write({"result": "failed"})
+
+        except KeyError:
+            print("There was no TCGA ID sent!")
+            self.write({"result": "failed"})
+
+        self.db.commit()
+        self.write({"result": "ok"})
 
 
 class Application(tornado.web.Application):
@@ -365,6 +437,58 @@ class Application(tornado.web.Application):
         # self.db = database.Connection()
         self.db = sqlite3.connect('time_keep_database.db')
         self.cursor = self.db.cursor()
+
+
+class ManagerApplication(tornado.web.Application):
+    def __init__(self, callers, batch_scriptor):
+        tornado_settings = {
+            "static_path": os.path.join(os.path.dirname(__file__), "static"),
+            'debug': True
+        }
+
+        handlers = [
+            (r"/", MainHandler),
+            (r"/progress/", ProgressHandler),
+            (r"/submit_job/", SubmitJobHandler),
+            (r"/samtoolssort/", SortHandler),
+            (r"/mpileup/", MpileupHandler),
+            (r"/varscansomatic/", VarscanSomaticHandler),
+            (r"/varscanprocesssomaticsnps/", VarscanProcessSomaticSnpsHandler),
+            (r"/varscanprocesssomaticindels/", VarscanProcessSomaticIndelsHandler),
+            (r"/recordfinished/", RecordFinishedHandler),
+            (r"/createrunningsample/", CreateRunningSampleHandler),
+            (r"/updaterunningsample/", UpdateRunningSampleHandler),
+            (r"/removerunningsample/", RemoveRunningSampleHandler),
+            (r"/rawdata/", RawDataHandler),
+            (r"/test/", TestHandler),
+            (r"/js/(.*)", tornado.web.StaticFileHandler,
+             dict(path=tornado_settings['static_path'])),
+            (r"/(styles\.css)", tornado.web.StaticFileHandler,
+             dict(path=tornado_settings['static_path'])),
+            (r"/(favicon\.ico)", tornado.web.StaticFileHandler,
+             dict(path=tornado_settings['static_path'])),
+            (r"/img/(.*)", tornado.web.StaticFileHandler,
+             dict(path=tornado_settings['static_path']))
+        ]
+
+        tornado.web.Application.__init__(self, handlers, **tornado_settings)
+
+        # self.db = database.Connection()
+        self.db = sqlite3.connect('time_keep_database.db')
+        self.cursor = self.db.cursor()
+        self.callers = callers
+        self.batch_scriptor = batch_scriptor
+        print(os.getcwd())
+        print("Adding callers to database.")
+        # Add callers to database
+        for x, caller in enumerate(self.callers):
+            print('Processing caller {}\r'.format(x), end="")
+            statement = caller.add_to_db()
+            # print(statement)
+            self.cursor.execute(statement)
+        self.db.commit()
+        print("\n")
+        print("Finished setting up database.")
 
 
 if __name__ == "__main__":
