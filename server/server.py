@@ -88,14 +88,20 @@ class ProgressHandler(MainHandler):
         self.write(rows)
 
     def post(self):
-        sqlstr = "SELECT * FROM RunningSamples WHERE Stage < 9"
-        # print(sqlstr)
-        # self.cursor.execute(sqlstr)
-        # self.db.commit()
-        rows = "<h2>Running computations</h2><table><tr><th>Normal</th><th>Tumor</th><th>Stage</th></tr>"
+        # Fetch the processing ones
+        sqlstr = "SELECT tcga_id, cancer_type, stage  FROM processing"
+        # TODO: move finished processing entries to finished here
+        #       Should be some type of call when they get finished; maybe at the end of the computation
+        #       the shell script should make a requests call.
+
+        rows = "<h2>Running computations</h2><table><tr>" \
+               "<th>TCGA ID</th>" \
+               "<th>Cancer</th>" \
+               "<th>Stage</th></tr>"
         for row in self.cursor.execute(sqlstr):
-            rows = rows + "<tr><td>{}</td><td>{}</td><td>{}</td></tr>".format(row[1], row[2], row[3])
-        # print(rows)
+            rows = rows + "<tr><td>{}</td><td>{}</td><td>{}</td></tr>".format(row[0], row[1], row[2])
+
+        # Fetched the queued ones.
         queued_rows = "<h2>Queued computations</h2><table><tr>" \
                       "<th>TCGA ID</th>" \
                       "<th>Cancer Type</th>" \
@@ -110,8 +116,8 @@ class ProgressHandler(MainHandler):
         for row in self.cursor.execute(sqlstr2):
             queued_rows = queued_rows + "<tr><td>{}</td><td>{}</td><td>{}</td><td>{}</td><td>{}</td><td>{" \
                                         "}</td><td><button type=\"button\" onclick=\"SubmitJob(\'{}\')\">+</button></td></tr>".format(
-                row[5], row[4], row[0], row[1],
-                row[2], row[3], row[5])
+                                        row[5], row[4], row[0], row[1],
+                                        row[2], row[3], row[5])
 
         self.set_header("Content-Type", "text/plain")
         _rws = {
