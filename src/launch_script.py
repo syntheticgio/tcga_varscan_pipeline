@@ -249,7 +249,7 @@ if __name__ == "__main__":
             for caller in callers:
                 caller.dump_caller_info_csv(f)
 
-    batch_scriptor = BatchScriptor(callers, configuration, ip=args.ip, base_dir=args.base_dir)
+    batch_scriptor = BatchScriptor(callers, configuration, ip=args.ip, base_dir=configuration["base_directory"])
     if args.bypass_server:
         batch_scriptor.generate_sbatch_scripts()
         # generate_sbatch_scripts(callers, configuration, ip=args.ip, base_dir=args.base_dir, )
