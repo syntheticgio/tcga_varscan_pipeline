@@ -436,6 +436,7 @@ class SubmitJobHandler(MainHandler):
                 sql_statement = """
                                 DELETE FROM queued WHERE tcga_id = \'{}\'
                                 """.format(json_body['tcga_id'])
+                self.cursor.execute(sql_statement)
             else:
                 print("Failed to submit the tcga ID job: {}".format(json_body['tcga_id']))
                 self.write({"result": "failed"})
