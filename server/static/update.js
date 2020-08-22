@@ -21,7 +21,8 @@ function RequestStatus() {
                 url: URL + "/progress/",
                 success: function (response) {
                     document.getElementById("queued").innerHTML = response["queued"];
-                    document.getElementById("information").innerHTML = response["results"];
+                    document.getElementById("processing").innerHTML = response["processing"];
+                    document.getElementById("finished").innerHTML = response["finished"];
                     //console.log(response)
                     //console.log(response["results"])
                 },
