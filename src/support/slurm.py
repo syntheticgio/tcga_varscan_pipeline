@@ -1,9 +1,10 @@
 import os
 import os.path
-import commands
+# import commands
+import subprocess
 
 
-class slurm_submitter():
+class slurm_submitter:
     # TODO This needs to be updated to not specifically use my directory structure
     template = ""
     varcall_template = ""
@@ -173,7 +174,7 @@ rm -rf {working_directory}
         # print "SLURM FILE: %s" % filename
         if self.job_type == "CLEAN":
             _ids = ','.join('afterany:{}'.format(str(c)) for c in self.job_ids)
-            output = commands.getoutput('sbatch --dependency={} {}'.format(_ids, filename))
+            output = subprocess.check_output('sbatch --dependency={} {}'.format(_ids, filename))
             # output = self.indx
             # self.indx += 1
             # print("IDS: {}".format(_ids))
@@ -181,7 +182,7 @@ rm -rf {working_directory}
             print('sbatch --dependency={} {}'.format(_ids, filename))
             # pass
         elif self.job_type == "DOWNLOAD":
-            output = commands.getoutput('sbatch --dependency=afterok:{} {}'.format(self.download_id, filename))
+            output = subprocess.check_output('sbatch --dependency=afterok:{} {}'.format(self.download_id, filename))
             # output = self.indx
 
             self.download_id = output.split()[3]
@@ -190,11 +191,11 @@ rm -rf {working_directory}
             print('sbatch --dependency=afterok:{} {}'.format(self.download_id, filename))
             # print("output: {}".format(output))
         else:
-            output = commands.getoutput('sbatch {}'.format(filename))
+            output = subprocess.check_output('sbatch {}'.format(filename))
             # output = self.indx
             # self.indx += 1
             print('sbatch {}'.format(filename))
 
         # output = 555  # temporary
-
+        print("OUTPUT: {}".format(output))
         return output.split()[3]
