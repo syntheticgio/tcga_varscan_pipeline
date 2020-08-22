@@ -137,7 +137,7 @@ class ProgressHandler(MainHandler):
                       "<th>Normal File Size</th>" \
                       "<th>Stage</th>" \
                       "</tr>"
-        for row_ in self.cursor.execute(sqlstr3):
+        for row in self.cursor.execute(sqlstr3):
             finished_rows = finished_rows + "<tr><td>{}</td><td>{}</td><td>{}</td><td>{}</td><td>{}</td><td>{" \
                                         "}</td><td>{}</td></tr>".format(
                                         row[5], row[4], row[0], row[1],
