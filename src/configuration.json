@@ -40,6 +40,7 @@
   ],
   "input_file": "src/matches.csv",
   "header": false,
+  "completed_list": "src/finished_tcga_ids.txt",
   "debug": true,
   "tcga-sample-list": "src/full-results-normal.csv"
 }

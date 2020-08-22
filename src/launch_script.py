@@ -204,6 +204,15 @@ if __name__ == "__main__":
     with open(args.config, 'r') as fh:
         configuration = json.load(fh)
 
+    # Get finished matches as to not run those...
+    match_list = []
+    try:
+        with open(configuration['completed_list'], "r") as f:
+            matches_reader = csv.reader(f, delimiter=",")
+            for row in matches_reader:
+                match_list.append(row[0])
+    except IOError:
+        print("Couldn't get the previous finished matches!")
     callers = []
     try:
         csv_file = open(configuration['input_file'], 'r')
@@ -213,6 +222,14 @@ if __name__ == "__main__":
             next(csv_reader)
         indx = 1
         for row in csv_reader:
+            mtch = False
+            for match in match_list:
+                if match == row[1]:
+                    print("There was a match of {} .... skipping.".format(match))
+                    mtch = True
+                    break
+            if mtch:
+                continue
             caller = TCGAVariantCaller(indx)
             caller.set_index(indx)
             caller.set_barcode(row[1])
