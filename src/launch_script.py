@@ -175,21 +175,10 @@ class BatchScriptor:
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Commands for launch script.')
-    parser.add_argument('ip', help='The IP address of the server, in format xxx.xxx.xxx.xxx.  This is required.')
-    parser.add_argument('--base_dir', '-b', dest='base_dir', default='./',
-                        help='Changes the base directory that computation scripts should be generated.  Default is '
-                             './ (the current directory).  This directory should be where the data will be transferred'
-                             ' to and manipulated on the node.')
+    parser.add_argument('ip', help='The IP address (and port) of the server, in format xxx.xxx.xxx.xxx.  This is required.')
     parser.add_argument('--verbose', '-v', dest='verbose', action='store_true', help="Turns on verbosity.")
     parser.add_argument('--bypass_server', dest='bypass_server', action='store_true', help="Turns off server and just "
                                                                                     "submits jobs.")
-
-    parser.add_argument('--matches_log', '-l', dest='log', action='store_true', help='Instead of storing matches as '
-                                                                                     'CSV, stores them as LOG file '
-                                                                                     'with more detailed output.  '
-                                                                                     'This cannot be used as an input '
-                                                                                     'for other functionality in this '
-                                                                                     'program.')
     parser.add_argument('--config', '-c', dest='config', default='src/configuration.json', help='Configuration file '
                                                                                                 'which '
                                                                                                 'lists the nodes and '
@@ -203,6 +192,7 @@ if __name__ == "__main__":
 
     with open(args.config, 'r') as fh:
         configuration = json.load(fh)
+        # TODO: Need to make sure everything needed is specified with a error message if not
 
     # Get finished matches as to not run those...
     match_list = []
@@ -255,14 +245,9 @@ if __name__ == "__main__":
         print("{} file does not appear to exist.".format(configuration['input_file']))
         print("Generating {}".format(configuration['input_file']))
         callers = extract_matches(configuration)
-        f = open(configuration['input_file'], 'w')
-        if args.log:
-            for caller in callers:
-                caller.dump_caller_info(f)
-        else:
+        with open(configuration['input_file'], 'w') as f:
             for caller in callers:
                 caller.dump_caller_info_csv(f)
-        f.close()
 
     batch_scriptor = BatchScriptor(callers, configuration, ip=args.ip, base_dir=args.base_dir)
     if args.bypass_server:

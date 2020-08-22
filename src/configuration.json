@@ -42,5 +42,6 @@
   "header": false,
   "completed_list": "src/finished_tcga_ids.txt",
   "debug": true,
-  "tcga-sample-list": "src/full-results-normal.csv"
+  "tcga-sample-list": "src/full-results-normal.csv",
+  "base_directory": "/home/torcivia/tcga/"
 }
