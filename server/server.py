@@ -486,6 +486,7 @@ class ManagerApplication(tornado.web.Application):
             statement = caller.add_to_db()
             # print(statement)
             self.cursor.execute(statement)
+
         self.db.commit()
         print("\n")
         print("Finished setting up database.")

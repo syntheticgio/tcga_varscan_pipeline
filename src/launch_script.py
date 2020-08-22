@@ -211,15 +211,19 @@ if __name__ == "__main__":
         if configuration["header"]:
             next(csv_reader)
         indx = 1
+        matched_num = 0
+        new_num = 0
         for row in csv_reader:
             mtch = False
             for match in match_list:
                 if match == row[1]:
                     print("There was a match of {} .... skipping.".format(match))
                     mtch = True
+                    matched_num += 1
                     break
             if mtch:
                 continue
+            new_num += 1
             caller = TCGAVariantCaller(indx)
             caller.set_index(indx)
             caller.set_barcode(row[1])
@@ -241,6 +245,8 @@ if __name__ == "__main__":
             indx += 1
             if args.verbose:
                 print(caller)
+        print("Matched entries: {}".format(matched_num))
+        print("New entries: {}".format(new_num))
     except IOError:
         print("{} file does not appear to exist.".format(configuration['input_file']))
         print("Generating {}".format(configuration['input_file']))
