@@ -16,14 +16,14 @@
 #
 # Sanity checking for number of arguments
 #
-if [[ $# -lt 6 ]] ; then
-    echo 'The pipeline script requires five arguments:'
-	echo "pipeline.h <gs://.../normal.bam> <gs://.../tumor.bam> <output bucket location (i.e. gs://my-bucket/output)> <output base name> <reference> <ip address of database>"
+if [[ $# -lt 5 ]] ; then
+    echo 'The pipeline script requires five arguments with an optional sixth:'
+	echo "pipeline.h </path/to/normal.bam> </path/to/tumor.bam> <output bucket location (i.e. gs://my-bucket/output)> <output base name> <reference> <[optional] ip address of database>"
     exit 1
 fi
 if [[ $# -gt 6 ]] ; then
-    echo 'The pipeline script requires five arguments:'
-	echo "pipeline.h <gs://.../normal.bam> <gs://.../tumor.bam> <output bucket location (i.e. gs://my-bucket/output)> <output base name> <reference> <ip address of database>"
+    echo 'The pipeline script requires five arguments with an optional sixth:'
+	echo "pipeline.h </path/to/normal.bam> </path/to/tumor.bam> <output bucket location (i.e. gs://my-bucket/output)> <output base name> <reference> <[optional] ip address of database>"
     exit 1
 fi
 
@@ -41,9 +41,6 @@ IP=$6
 # Don't need to use volumes since we're using buckets (???)
 # 1. Create output directory based on patient ID / TCGA number
 # 2. Copy appropriate files into that directory 
-
-#mv ..indel                  ..indel.Germline.vcf  ..indel.LOH.vcf         ..indel.Somatic.vcf  ..snp                  ..snp.Germline.vcf  ..snp.LOH.vcf         ..snp.Somatic.vcf
-#..indel.Germline.hc.vcf  ..indel.LOH.hc.vcf    ..indel.Somatic.hc.vcf  ..indel.vcf          ..snp.Germline.hc.vcf  ..snp.LOH.hc.vcf    ..snp.Somatic.hc.vcf  ..snp.vcf
 
 echo "Compressing VCF files...."
 tar -zcf ${BASE_OUTPUT_NAME}.vcf.tar.gz *.vcf
@@ -66,11 +63,17 @@ echo "FINISHED File:"
 cat OUTPUT/finished.txt
 echo ""
 echo ""
-echo "POSTing job information ..."
-python post_json.py -u recordfinished -i ${IP} -f OUTPUT/finished.txt
+if [[ ! -z "$6" ]]
+then
+    echo "POSTing job information ..."
+    python post_json.py -u recordfinished -i ${IP} -f OUTPUT/finished.txt
+fi
 # Update Running Entry to finished
 echo "{\"Normal\":\"${NORMAL_BAM}\",\"Tumor\":\"${TUMOR_BAM}\",\"Stage\":9,\"Reference\":\"${REFERENCE_NAME}\"}" > OUTPUT/running_entry.txt
-python post_json.py -u updaterunningsample -v -i ${IP} -f OUTPUT/running_entry.txt
+if [[ ! -z "$6" ]]
+then
+    python post_json.py -u updaterunningsample -v -i ${IP} -f OUTPUT/running_entry.txt
+fi
 echo ""
 echo "FINISHED!"
 

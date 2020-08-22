@@ -2,7 +2,9 @@ import os
 import os.path
 import commands
 
+
 class slurm_submitter():
+    # TODO This needs to be updated to not specifically use my directory structure
     template = ""
     varcall_template = ""
     download_template = ""
@@ -197,6 +199,3 @@ rm -rf {working_directory}
         #output = 555  # temporary
         
         return output.split()[3]
-        #return output
-
-        

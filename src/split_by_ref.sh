@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 
 # ARGUMENTS
-# 1. Normal Bam File 
-# 2. Tumor Bam 
+# 1. Normal Bam File Location
+# 2. Tumor Bam File Location
 # 3. IP address if the server for keeping logs
 
 #
@@ -20,7 +20,7 @@ if [[ $# -gt 3 ]] ; then
 fi
 
 #
-# Help script
+# Help output
 #
 if [[ $1 == "-h" ]]; then
 	echo "Help"
@@ -35,19 +35,19 @@ NORMAL_BAM=$(basename "$1")
 TUMOR_BAM=$(basename "$2")
 
 # Check if NORMAL BAM file was copied
-if [ ! -e "${NORMAL_BAM}" ]; then
+if [[ ! -e "${NORMAL_BAM}" ]]; then
 	echo "Error, Normal BAM not found..."
 	exit 5
 fi
 
 # Check if TUMOR BAM was copied
-if [ ! -e "${TUMOR_BAM}" ]; then
+if [[ ! -e "${TUMOR_BAM}" ]]; then
 	echo "Error, Tumor BAM not found..."
 	exit 6
 fi
 
 # Check to see if normal bam index exists to skip sorting
-if [ -e "${NORMAL_BAM}.bai" ]; then
+if [[ -e "${NORMAL_BAM}.bai" ]]; then
 	NORMAL_SORTED=0
 else
 	NORMAL_SORTED=1
@@ -55,19 +55,27 @@ else
 fi
 
 # Check to see if tumor bam index exists to skip sorting
-if [ -e "${TUMOR_BAM}.bai" ]; then
+if [[ -e "${TUMOR_BAM}.bai" ]]; then
 	TUMOR_SORTED=0
 else
 	TUMOR_SORTED=1
 	echo "TUMOR BAM INDEX DOESN'T EXIST"
 fi
 
-if [ -z "$3" ]
+if [[ -z "$3" ]]
   then
-    echo "No argument supplied"
+    echo "No argument supplied for server."
+else
+    IP=$3
 fi
-IP=$3
+
 mkdir -p OUTPUT
+if [[ $? -gt 0 ]]; then
+    directory=`pwd`
+    echo "Error creating the output directory.  Make sure you have permissions to create ${directory}/OUTPUT"
+    exit 5
+fi
+
 
 NORMAL_ID="${NORMAL_BAM%.*}"
 TUMOR_ID="${TUMOR_BAM%.*}"
@@ -92,13 +100,13 @@ SORT_FORMAT="{\"ID\":\"${NORMAL_BAM}\",${TIME_FORMAT}"
 # Stage 1
 #
 echo "{\"Normal\":\"${NORMAL_BAM}\",\"Tumor\":\"${TUMOR_BAM}\",\"Stage\":1,\"Reference\":\"Human\"}" > OUTPUT/running_entry.txt
-if [ ! -z "$3" ] 
+if [[ ! -z "$3" ]]
 then
     python post_json.py -u createrunningsample -v -i ${3} -f OUTPUT/running_entry.txt
 fi
 echo "=========================================================="
 echo "1. SORTING:  /usr/bin/time -o OUTPUT/samtools_sort_normal_time.txt --format "${SORT_FORMAT}" ${SAMTOOLS} sort ${NORMAL_BAM} -o sorted_${NORMAL_BAM} 1> OUTPUT/samtools_sort_normal.stdout 2> OUTPUT/samtools_sort_normal.stderr"
-if [ ${NORMAL_SORTED} -gt 0 ]
+if [[ ${NORMAL_SORTED} -gt 0 ]]
 then
     echo "Normal Not yet sorted, sorting now..."
     /usr/bin/time -o OUTPUT/samtools_sort_normal_time.txt --format "${SORT_FORMAT}" ${SAMTOOLS} sort ${NORMAL_BAM} -o sorted_${NORMAL_BAM} 1> OUTPUT/samtools_sort_normal.stdout 2> OUTPUT/samtools_sort_normal.stderr
@@ -117,7 +125,7 @@ fi
 
 echo ""
 echo "2. POSTing time data to database: python post_json.py -u samtoolssort -f OUTPUT/samtools_sort_normal_time.txt -v -i ${3}"
-if [ ! -z "$3" ]
+if [[ ! -z "$3" ]]
 then
     python post_json.py -u samtoolssort -f OUTPUT/samtools_sort_normal_time.txt -v -i ${3}
 fi
@@ -139,20 +147,20 @@ mv _tmp sorted_${NORMAL_BAM}
 ${SAMTOOLS} flagstat sorted_${NORMAL_BAM} > OUTPUT/_${NORMAL_BAM}_flagstat.txt
 java -jar -Xmx8g /BAMStats-1.25/BAMStats-1.25.jar -i sorted_${NORMAL_BAM} > OUTPUT/_${NORMAL_BAM}_bamstats.txt
 # split based on reference
-# TODO get time for this
+# TODO get time for this (needs to be added to server)
 bamtools split -in sorted_${NORMAL_BAM} -reference
 #
 # Run the SORT command for TUMOR and submit to the database
 # Stage 2
 #
 echo "{\"Normal\":\"${NORMAL_BAM}\",\"Tumor\":\"${TUMOR_BAM}\",\"Stage\":2,\"Reference\":\"Human\"}" > OUTPUT/running_entry.txt
-if [ ! -z "$3" ] 
+if [[ ! -z "$3" ]]
 then
     python post_json.py -u updaterunningsample -v -i ${3} -f OUTPUT/running_entry.txt
 fi
 echo ""
 echo "3. SORTING: /usr/bin/time -o OUTPUT/samtools_sort_tumor_time.txt --format "${SORT_FORMAT}" ${SAMTOOLS} sort ${TUMOR_BAM} -o sorted_${TUMOR_BAM} 1> OUTPUT/samtools_sort_tumor.stdout 2> OUTPUT/samtools_sort_tumor.stderr"
-if [ ${TUMOR_SORTED} -gt 0 ]
+if [[ ${TUMOR_SORTED} -gt 0 ]]
 then
     echo "Tumor not yet sorted, sorting now..."
     /usr/bin/time -o OUTPUT/samtools_sort_tumor_time.txt --format "${SORT_FORMAT}" ${SAMTOOLS} sort ${TUMOR_BAM} -o sorted_${TUMOR_BAM} 1> OUTPUT/samtools_sort_tumor.stdout 2> OUTPUT/samtools_sort_tumor.stderr
@@ -170,7 +178,7 @@ fi
 
 echo ""
 echo "4. POSTing time data to database: python post_json.py -u samtoolssort -f OUTPUT/samtools_sort_tumor_time.txt -v -i ${3}"
-if [ ! -z "$3" ]
+if [[ ! -z "$3" ]]
 then
     python post_json.py -u samtoolssort -f OUTPUT/samtools_sort_tumor_time.txt -v -i ${3}
 fi
@@ -192,11 +200,11 @@ mv _tmp sorted_${TUMOR_BAM}
 ${SAMTOOLS} flagstat sorted_${TUMOR_BAM} > OUTPUT/_${TUMOR_BAM}_flagstat.txt
 java -jar -Xmx8g /BAMStats-1.25/BAMStats-1.25.jar -i sorted_${TUMOR_BAM} > OUTPUT/_${TUMOR_BAM}_bamstats.txt
 # split based on reference
-# TODO get time for this
+# TODO get time for this (needs to be added to server)
 bamtools split -in sorted_${TUMOR_BAM} -reference
 
 echo "{\"Normal\":\"${NORMAL_BAM}\",\"Tumor\":\"${TUMOR_BAM}\",\"Stage\":9,\"Reference\":\"Human\"}" > OUTPUT/running_entry.txt
-if [ ! -z "$3" ]
+if [[ ! -z "$3" ]]
 then
     python post_json.py -u updaterunningsample -v -i ${3} -f OUTPUT/running_entry.txt
 fi
