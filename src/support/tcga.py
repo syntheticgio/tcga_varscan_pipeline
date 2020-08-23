@@ -16,7 +16,6 @@ class TCGAVariantCaller(object):
     cancer_type = ""
     total_size = 0
 
-
     def __init__(self, index):
         self.index = index
 
@@ -39,7 +38,7 @@ class TCGAVariantCaller(object):
         self.tumor_file_url = tumor_file_url
 
     def set_tumor_file_size(self, tumor_file_size):
-        self.tumor_file_size = long(tumor_file_size)
+        self.tumor_file_size = float(tumor_file_size)
 
     def set_tumor_platform(self, tumor_platform):
         self.tumor_platform = tumor_platform
@@ -57,7 +56,7 @@ class TCGAVariantCaller(object):
         self.normal_file_url = normal_file_url
 
     def set_normal_file_size(self, normal_file_size):
-        self.normal_file_size = long(normal_file_size)
+        self.normal_file_size = float(normal_file_size)
 
     def set_normal_platform(self, normal_platform):
         self.normal_platform = normal_platform
@@ -68,7 +67,7 @@ class TCGAVariantCaller(object):
     def set_total_size(self, total_size):
         self.total_size = total_size
 
-    def dump_caller_info(self, f):
+    def dump_caller_info(self, f=None):
         print("---=== Debug Dump ===---")
         print("[ Index            ] {}".format(self.index))
         print("[ General Barcode  ] {}".format(self.barcode))
@@ -87,25 +86,59 @@ class TCGAVariantCaller(object):
         print("[ Cancer Type      ] {}".format(self.cancer_type))
         print("")
 
-        # Write output to log file
-        f.write("[ Index            ] {}\n".format(self.index))
-        f.write("[ General Barcode  ] {}\n".format(self.barcode))
-        f.write("[ Tumor Barcode    ] {}\n".format(self.tumor_barcode))
-        f.write("[ Tumor File       ] {}\n".format(self.tumor_file))
-        f.write("[ Tumor GDC ID     ] {}\n".format(self.tumor_gdc_id))
-        f.write("[ Tumor File URL   ] {}\n".format(self.tumor_file_url))
-        f.write("[ Tumor File Size  ] {}\n".format(self.tumor_file_size))
-        f.write("[ Tumor Platform   ] {}\n".format(self.tumor_platform))
-        f.write("[ Normal Barcode   ] {}\n".format(self.normal_barcode))
-        f.write("[ Normal File      ] {}\n".format(self.normal_file))
-        f.write("[ Normal GDC ID    ] {}\n".format(self.normal_gdc_id))
-        f.write("[ Normal File URL  ] {}\n".format(self.normal_file_url))
-        f.write("[ Normal File Size ] {}\n".format(self.normal_file_size))
-        f.write("[ Normal Platform  ] {}\n".format(self.normal_platform))
-        f.write("[ Cancer Type      ] {}\n\n".format(self.cancer_type))
-        
+        if f:
+            # Write output to log file
+            try:
+                f.write("[ Index            ] {}\n".format(self.index))
+                f.write("[ General Barcode  ] {}\n".format(self.barcode))
+                f.write("[ Tumor Barcode    ] {}\n".format(self.tumor_barcode))
+                f.write("[ Tumor File       ] {}\n".format(self.tumor_file))
+                f.write("[ Tumor GDC ID     ] {}\n".format(self.tumor_gdc_id))
+                f.write("[ Tumor File URL   ] {}\n".format(self.tumor_file_url))
+                f.write("[ Tumor File Size  ] {}\n".format(self.tumor_file_size))
+                f.write("[ Tumor Platform   ] {}\n".format(self.tumor_platform))
+                f.write("[ Normal Barcode   ] {}\n".format(self.normal_barcode))
+                f.write("[ Normal File      ] {}\n".format(self.normal_file))
+                f.write("[ Normal GDC ID    ] {}\n".format(self.normal_gdc_id))
+                f.write("[ Normal File URL  ] {}\n".format(self.normal_file_url))
+                f.write("[ Normal File Size ] {}\n".format(self.normal_file_size))
+                f.write("[ Normal Platform  ] {}\n".format(self.normal_platform))
+                f.write("[ Cancer Type      ] {}\n\n".format(self.cancer_type))
+            except IOError:
+                print("[ error ] Not able to write to log file!.")
+
     def dump_caller_info_csv(self, f, debug=False):
         total_size = self.tumor_file_size + self.normal_file_size
         if debug:
-            print("{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{}\n".format(self.index, self.barcode, self.tumor_barcode, self.tumor_file, self.tumor_gdc_id, self.tumor_file_url, self.tumor_file_size, self.tumor_platform, self.normal_barcode, self.normal_file, self.normal_gdc_id, self.normal_file_url, self.normal_file_size, self.normal_platform, self.cancer_type, total_size))
-        f.write("{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{}\n".format(self.index, self.barcode, self.tumor_barcode, self.tumor_file, self.tumor_gdc_id, self.tumor_file_url, self.tumor_file_size, self.tumor_platform, self.normal_barcode, self.normal_file, self.normal_gdc_id, self.normal_file_url, self.normal_file_size, self.normal_platform, self.cancer_type, total_size))
+            print(
+                "{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{}\n".format(self.index, self.barcode, self.tumor_barcode,
+                                                                           self.tumor_file, self.tumor_gdc_id,
+                                                                           self.tumor_file_url, self.tumor_file_size,
+                                                                           self.tumor_platform, self.normal_barcode,
+                                                                           self.normal_file, self.normal_gdc_id,
+                                                                           self.normal_file_url, self.normal_file_size,
+                                                                           self.normal_platform, self.cancer_type,
+                                                                           total_size))
+        f.write("{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{}\n".format(self.index, self.barcode, self.tumor_barcode,
+                                                                           self.tumor_file, self.tumor_gdc_id,
+                                                                           self.tumor_file_url, self.tumor_file_size,
+                                                                           self.tumor_platform, self.normal_barcode,
+                                                                           self.normal_file, self.normal_gdc_id,
+                                                                           self.normal_file_url, self.normal_file_size,
+                                                                           self.normal_platform, self.cancer_type,
+                                                                           total_size))
+
+    def add_to_db(self):
+        sqlstmt = "INSERT OR IGNORE INTO queued (" \
+                  "tumor_barcode, tumor_file, tumor_gdc_id, tumor_file_url, tumor_file_size, " \
+                  "tumor_platform, normal_barcode, normal_file, normal_gdc_id, normal_file_url, normal_file_size, " \
+                  "normal_platform, cancer_type, total_size, tcga_id) VALUES (\"{}\",\"{}\",\"{}\",\"{}\",\"{}\"," \
+                  "\"{}\",\"{}\",\"{}\",\"{}\",\"{}\",\"{}\",\"{}\",\"{}\"," \
+                  "\"{}\",\"{}\")".format(self.tumor_barcode, self.tumor_file,
+                                                  self.tumor_gdc_id, self.tumor_file_url,
+                                                  self.tumor_file_size,
+                                                  self.tumor_platform, self.normal_barcode, self.normal_file,
+                                                  self.normal_gdc_id,
+                                                  self.normal_file_url, self.normal_file_size,
+                                                  self.normal_platform, self.cancer_type, self.total_size, self.barcode)
+        return sqlstmt
