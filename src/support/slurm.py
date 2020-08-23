@@ -23,6 +23,8 @@ class slurm_submitter:
     download_id = 0
     indx = 0
 
+    sample_id_lists = {}
+
     def __init__(self, base_dir):
         self.base_directory = base_dir
         self.test_template = """\
@@ -225,5 +227,9 @@ rm -rf {working_directory}
             print('sbatch {}'.format(filename))
 
         # output = 555  # temporary
-        print("OUTPUT: {}".format(output))
-        return output.split()[3].decode('UTF-8')
+        return_ids = output.split()[3].decode('UTF-8')
+        # print("OUTPUT: {}".format(output))
+        self.sample_id_lists[self.tcga_barcode][self.job_type] = (int(c) for c in return_ids)
+        if self.job_type == "CLEAN":
+            print("DEBUG: {}".format(self.sample_id_lists[self.tcga_barcode]))
+        return return_ids
