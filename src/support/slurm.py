@@ -47,6 +47,7 @@ cd {working_directory}
 echo "Copying script file ..."
 cp /home/torcivia/pipeline/tcga_varscan_pipeline/src/test.py ./
 
+echo "Generating the 37th entry of the Fibonacci sequence"
 python3 test.py
 echo "test.py : "$? 
         """
