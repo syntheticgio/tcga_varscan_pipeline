@@ -2,6 +2,7 @@ import os
 import os.path
 # import commands
 import subprocess
+from time import time
 
 
 class slurm_submitter:
@@ -141,11 +142,13 @@ rm -rf {working_directory}
         """
 
     def populate_template(self, caller, node, job_type, db_address, reference="download", job_ids=0):
-        # Capture test quickl to avoid having to deal with caller etc.
+        # Capture test first to avoid having to deal with caller etc.
+        self.job_type = job_type
         if job_type == "TEST":
             # Just put the test output in the working directory
-            working_directory = self.base_directory + "/"
+            working_directory = self.base_directory
             self.template = self.test_template.format(**vars())
+            self.slurm_file = "test_run_{}.slurm".format(time())
             return
 
         # While some of these variables appear to not be used; they are being used in the **vars() calls below silently.
@@ -163,22 +166,20 @@ rm -rf {working_directory}
         working_directory = self.base_directory + caller.barcode + "/"
 
         if job_type == "DOWNLOAD":
+            # This is used in the **vars() call.
             if job_ids != -1:
                 download_job_id = "#SBATCH --dependency=afterany:{}".format(job_ids)
             else:
                 download_job_id = ""
-
             self.template = self.download_template.format(**vars())
         elif job_type == "VARCALL":
+            # These are used in the **vars() call.
             normal_file_REF = normal_file.rsplit(".", 1)[0] + ".REF_" + reference.rsplit(".", 1)[0] + ".bam"
             tumor_file_REF = tumor_file.rsplit(".", 1)[0] + ".REF_" + reference.rsplit(".", 1)[0] + ".bam"
             self.template = self.varcall_template.format(**vars())
-            # print self.template
         elif job_type == "CLEAN":
-            self.job_type = job_type
             self.job_ids = job_ids
             self.template = self.clean_template.format(**vars())
-            # print self.template
         else:
             print("ERROR: Couldn't find job_type template.")
 
@@ -194,35 +195,26 @@ rm -rf {working_directory}
         # Construct directory.
 
         filename = os.path.join(jobdir, self.slurm_file)
-        print("Filename: {}".format(filename))
-        outfile = open(filename, 'w')
-        outfile.write(self.template)
-        outfile.close()
+        print("Writing template to {}/{} for job launching.".format(jobdir, filename))
+        # Write out template here
+        with open(filename, 'w') as batch_file:
+            batch_file.write(self.template)
 
-        print("OUTDIR: %s" % jobdir)
-        # print "SLURM FILE: %s" % filename
+        # Catch any special types of job types that need to be run here.
+        # Otherwise the else clause is the one that should run everything if possible.
+
         if self.job_type == "CLEAN":
             _ids = ','.join('afterany:{}'.format(str(c)) for c in self.job_ids)
             output = subprocess.check_output('sbatch --dependency={} {}'.format(_ids, filename))
-            # output = self.indx
-            # self.indx += 1
-            # print("IDS: {}".format(_ids))
-            # print("filename: {}".format(filename))
             print('sbatch --dependency={} {}'.format(_ids, filename))
             # pass
-        elif self.job_type == "DOWNLOAD":
-            output = subprocess.check_output('sbatch --dependency=afterok:{} {}'.format(self.download_id, filename))
-            # output = self.indx
-
-            self.download_id = output.split()[3]
-            # self.download_id = self.indx
-            # self.indx += 1
-            print('sbatch --dependency=afterok:{} {}'.format(self.download_id, filename))
-            # print("output: {}".format(output))
+        # elif self.job_type == "DOWNLOAD":
+        #     output = subprocess.check_output('sbatch --dependency=afterok:{} {}'.format(self.download_id, filename))
+        #     # self.download_id = output.split()[3]
+        #     print('sbatch --dependency=afterok:{} {}'.format(self.download_id, filename))
+        #     # print("output: {}".format(output))
         else:
             output = subprocess.check_output('sbatch {}'.format(filename))
-            # output = self.indx
-            # self.indx += 1
             print('sbatch {}'.format(filename))
 
         # output = 555  # temporary
