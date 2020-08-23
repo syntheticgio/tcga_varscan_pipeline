@@ -226,4 +226,4 @@ rm -rf {working_directory}
 
         # output = 555  # temporary
         print("OUTPUT: {}".format(output))
-        return output.split()[3]
+        return output.split()[3].decode('UTF-8')
