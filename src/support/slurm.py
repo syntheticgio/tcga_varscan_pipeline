@@ -24,6 +24,27 @@ class slurm_submitter:
 
     def __init__(self, base_dir):
         self.base_directory = base_dir
+        self.test_template = """\
+#!/bin/bash
+
+#SBATCH --job-name=test-job 
+#SBATCH --output=test_%A_job.stout
+#SBATCH --error=test_%A_job.sterr
+
+#SBATCH --mail-type=FAIL,END
+#SBATCH --mail-user=torcivia@gwu.edu
+
+#SBATCH --nodelist={node}
+
+#SBATCH --ntasks=1
+#SBATCH --mem=1024
+#SBATCH --chdir={working_directory}
+
+cd {working_directory}
+python3 test.py
+echo "test.py : "$? 
+        """
+
         self.varcall_template = """\
 #!/bin/bash
 
@@ -120,6 +141,14 @@ rm -rf {working_directory}
         """
 
     def populate_template(self, caller, node, job_type, db_address, reference="download", job_ids=0):
+        # Capture test quickl to avoid having to deal with caller etc.
+        if job_type == "TEST":
+            # Just put the test output in the working directory
+            working_directory = self.base_directory + "/"
+            self.template = self.test_template.format(**vars())
+            return
+
+        # While some of these variables appear to not be used; they are being used in the **vars() calls below silently.
         barcode = caller.barcode
         normal = caller.normal_file_url
         tumor = caller.tumor_file_url

@@ -9,6 +9,7 @@ import tornado.httpserver
 import json
 import argparse
 import csv
+import socket
 
 
 def extract_matches(config):
@@ -116,6 +117,27 @@ class BatchScriptor:
         for x in range(0, self.node_length):
             self.wait_id.append(-1)
 
+    @staticmethod
+    def run_test(config):
+        s = slurm_submitter(config["base_directory"])
+        # Setup Download
+        job_type = "TEST"
+        nodes = []
+        try:
+            nodes = config['nodes']
+        except KeyError:
+            print("[ error ] 'nodes' field must be provided in config file to specify which slurm nodes (by name) are "
+                  "available.")
+            exit(1)
+        assert len(nodes) > 0
+        node = nodes[0]
+
+        s.populate_template(None, node, job_type, None)
+
+        # Launch test here
+        # job_id = <call for job here>
+        job_id = s.launch_job()
+
     def generate_sbatch_by_tcga_id(self, tcga_id):
         for caller_ in self.callers:
             if caller_.barcode == tcga_id:
@@ -175,24 +197,58 @@ class BatchScriptor:
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Commands for launch script.')
-    parser.add_argument('ip', help='The IP address (and port) of the server, in format xxx.xxx.xxx.xxx.  This is required.')
-    parser.add_argument('--verbose', '-v', dest='verbose', action='store_true', help="Turns on verbosity.")
-    parser.add_argument('--bypass_server', dest='bypass_server', action='store_true', help="Turns off server and just "
-                                                                                    "submits jobs.")
-    parser.add_argument('--config', '-c', dest='config', default='src/configuration.json', help='Configuration file '
-                                                                                                'which '
-                                                                                                'lists the nodes and '
-                                                                                                'the '
-                                                                                                'references used.  See '
-                                                                                                'configuration.json '
-                                                                                                'as an '
-                                                                                                'example.')
+    parser.add_argument('--ip', '-i',
+                        help='The IP address (and port) of the server, in format xxx.xxx.xxx.xxx.  If not specified '
+                             'the program will try to generate it.')
+    parser.add_argument('--verbose', '-v',
+                        dest='verbose',
+                        action='store_true',
+                        help="Turns on verbosity.")
+    parser.add_argument('--bypass_server',
+                        dest='bypass_server',
+                        action='store_true',
+                        help="Turns off server and just submits jobs.")
+    parser.add_argument('--config', '-c',
+                        dest='config',
+                        default='src/configuration.json',
+                        help='Configuration file which lists the nodes and the references used.  See '
+                             'configuration.json as an example.')
+    parser.add_argument('--test', '-t',
+                        dest='test',
+                        action='store_true',
+                        help="Runs test and exits.")
 
     args = parser.parse_args()
 
     with open(args.config, 'r') as fh:
         configuration = json.load(fh)
         # TODO: Need to make sure everything needed is specified with a error message if not
+
+    if args.test:
+        # Run test and exit
+        BatchScriptor.run_test(configuration)
+        print("Launched test: exiting program.  Use SQUEUE to see results or examine the output files in the working "
+              "directory {} on the node being used {}.".format(
+                                                            configuration["base_directory"],
+                                                            configuration["nodes"][0])
+                                                        )
+        exit(0)
+
+    if not args.ip:
+        if args.bypass_server:
+            print("[ error ] The IP address will need to be set if not running locally!")
+            exit(0)
+        # getting the hostname by socket.gethostname() method
+        hostname = socket.gethostname()
+        # getting the IP address using socket.gethostbyname() method
+        ip_address = socket.gethostbyname(hostname)
+        print("Setting the host to: {}:8081 (the current master node)".format(ip_address))
+        args.ip = "{}:8081".format(ip_address)
+    else:
+        print("Using {} for the server IP.".format(args.ip))
+        print("NOTE: If this does not include the port, this will not work unless the port is on 80!  (This is not "
+              "the default, the default port is 8081 and the ip and port should be specified as follows <ip "
+              "address>:<port>.")
 
     # Get finished matches as to not run those...
     match_list = []
