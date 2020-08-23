@@ -2,6 +2,7 @@ import os
 import os.path
 # import commands
 import subprocess
+from time import time
 
 
 class slurm_submitter:
@@ -144,8 +145,9 @@ rm -rf {working_directory}
         # Capture test quickl to avoid having to deal with caller etc.
         if job_type == "TEST":
             # Just put the test output in the working directory
-            working_directory = self.base_directory + "/"
+            working_directory = self.base_directory
             self.template = self.test_template.format(**vars())
+            self.slurm_file = self.base_directory + "test_run_{}.slurm".format(time())
             return
 
         # While some of these variables appear to not be used; they are being used in the **vars() calls below silently.
