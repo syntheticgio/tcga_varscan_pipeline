@@ -195,7 +195,7 @@ rm -rf {working_directory}
         # Construct directory.
 
         filename = os.path.join(jobdir, self.slurm_file)
-        print("Writing template to {}/{} for job launching.".format(jobdir, filename))
+        print("Writing template to {} for job launching.".format(filename))
         # Write out template here
         with open(filename, 'w') as batch_file:
             batch_file.write(self.template)
