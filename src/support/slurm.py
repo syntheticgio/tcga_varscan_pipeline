@@ -41,7 +41,12 @@ class slurm_submitter:
 #SBATCH --mem=1024
 #SBATCH --chdir={working_directory}
 
+echo "Moving to directory..."
 cd {working_directory}
+
+echo "Copying script file ..."
+cp /home/torcivia/pipeline/tcga_varscan_pipeline/src/test.py ./
+
 python3 test.py
 echo "test.py : "$? 
         """
