@@ -3,7 +3,7 @@ import argparse
 
 parser = argparse.ArgumentParser(description='Recycling database.')
 parser.add_argument(dest='database', help='Database name.')
-
+parser.add_argument("--finished", "-f", action="store_true", help="Optionally purge the finished table.")
 args = parser.parse_args()
 
 
@@ -41,6 +41,17 @@ cursor.execute(sqlstr)
 sqlstr = "DELETE FROM queued"
 print("Deleting queued...")
 cursor.execute(sqlstr)
+
+sqlstr = "DELETE FROM processing"
+print("Deleting processing...")
+cursor.execute(sqlstr)
+
+if args.finished:
+    sqlstr = "DELETE FROM finished"
+    print("Deleting queued...")
+    cursor.execute(sqlstr)
+else:
+    print("Skipping finished table...")
 
 sqlstr = "UPDATE sqlite_sequence SET seq = 0"
 print("Resetting Indexes...")
