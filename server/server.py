@@ -128,7 +128,7 @@ class ProgressHandler(MainHandler):
         # Fetch the processing ones
         sqlstr = "SELECT tumor_barcode, tumor_file_size, normal_barcode, normal_file_size, cancer_type, tcga_id, stage  FROM processing"
         # Get Status for running computations
-        jobs_status = self.batch_scriptor.query_all_jobs()
+        jobs_status = self.batch_scriptor.s.query_all_jobs()
 
         rows = "<h2>Running computations</h2><table><tr>" \
                "<th>TCGA ID</th>" \
@@ -509,7 +509,7 @@ class NodeStatusHandler(MainHandler):
             if json_body["node_ids"].tolower() != "all":
                 requested_nodes = [json_body["node_id"]]
 
-        node_status = self.batch_scriptor.query_node_status(nodes=requested_nodes)  # Will send in None for all nodes
+        node_status = self.batch_scriptor.s.query_node_status(nodes=requested_nodes)  # Will send in None for all nodes
         for node in node_status:
             node_response[node] = {
                 "name": "<h5><i class=\"fi-graph-bar\"></i>{}</h5>".format(node),
@@ -532,7 +532,7 @@ class SubmitJobHandler(MainHandler):
         print("Body: {}".format(json_body))
         print("Checking to see if {} is available to push to computations.".format(json_body['tcga_id']))
         try:
-            if self.batch_scriptor.generate_sbatch_by_tcga_id(json_body['tcga_id']):
+            if self.batch_scriptor.s.generate_sbatch_by_tcga_id(json_body['tcga_id']):
                 # Remove this tcga ID entry from the query table, and put it into the processing one
                 sql_statement = """
                                 INSERT INTO

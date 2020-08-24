@@ -119,6 +119,7 @@ class BatchScriptor:
         for x in range(0, self.node_length):
             self.wait_id.append(-1)
         self.sample_id_lists = {}
+        self.s = slurm_submitter(self.base_directory)
 
     @staticmethod
     def run_test(config):
@@ -164,33 +165,33 @@ class BatchScriptor:
         #       then cleaned up (removed) from node
         #   3. On completion of all jobs, the downloaded files are cleaned up behind
 
-        s = slurm_submitter(self.base_directory)
+        # s = slurm_submitter(self.base_directory)
 
         # Setup Download
         job_type = "DOWNLOAD"
         node = self.nodes[self.node_indx]
 
-        s.populate_template(caller_, node, job_type, self.db_address, "download", self.wait_id[self.node_indx])
+        self.s.populate_template(caller_, node, job_type, self.db_address, "download", self.wait_id[self.node_indx])
         # print s.template
 
         # Launch download here
         # job_id = <call for job here>
-        job_id = s.launch_job()
+        job_id = self.s.launch_job()
         self.sample_id_lists[caller_.barcode][job_type] = job_id
 
         # Set new job type
         job_type = "VARCALL"
         varcall_job_ids = []
         for ref in self.references:
-            s.populate_template(caller_, node, job_type, self.db_address, ref, job_id)
-            _job_id = s.launch_job()
+            self.s.populate_template(caller_, node, job_type, self.db_address, ref, job_id)
+            _job_id = self.s.launch_job()
             varcall_job_ids.append(_job_id)
         self.sample_id_lists[caller_.barcode][job_type] = varcall_job_ids
 
         # Do cleanup
         job_type = "CLEAN"
         s.populate_template(caller_, node, job_type, self.db_address, "cleanup", varcall_job_ids)
-        self.wait_id[self.node_indx] = s.launch_job()
+        self.wait_id[self.node_indx] = self.s.launch_job()
         self.sample_id_lists[caller_.barcode][job_type] = self.wait_id[self.node_indx]
 
         self.node_indx += 1
