@@ -300,7 +300,8 @@ if __name__ == "__main__":
             mtch = False
             for match in match_list:
                 if match == row[1]:
-                    print("There was a match of {} .... skipping.".format(match))
+                    if args.verbose:
+                        print("There was a match of {} .... skipping.".format(match))
                     mtch = True
                     matched_num += 1
                     break
