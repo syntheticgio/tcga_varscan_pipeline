@@ -268,18 +268,22 @@ rm -rf {working_directory}
     def query_by_barcode(self, barcode):
         job_id_dict = self.sample_id_lists[barcode]
 
-    def query_node_status(self, node=None):
+    def query_node_status(self, nodes=None):
+        # nodes is a list of requested nodes to send back
         node_dict = pyslurm.node().get()
-        nodes = {}
+        node_list = {}
         if len(node_dict) > 0:
             # CPU_LOAD = Load AVG
             # FREE_MEM = Free memory in Megabytes
-            fetch_list = ['state', 'free_mem', 'cpu_load', 'cores', 'read_memory']
+            fetch_list = ['state', 'free_mem', 'cpu_load', 'cores', 'real_memory']
             for key, value in node_dict.items():
                 # key = slurm-child3, for example
                 # value is a bunch of other info:
-                nodes[key] = {}
-                for part_key in sorted(value.keys()):
-                    if part_key in fetch_list:
-                        nodes[key][part_key] = value[part_key]
-        return nodes
+
+                # TODO: Check to make sure this works ... think key in nodes could be an error?
+                if nodes is None or key in nodes:
+                    node_list[key] = {}
+                    for part_key in sorted(value.keys()):
+                        if part_key in fetch_list:
+                            node_list[key][part_key] = value[part_key]
+        return node_list

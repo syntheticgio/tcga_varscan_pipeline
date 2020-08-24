@@ -81,8 +81,31 @@ class MainHandler(tornado.web.RequestHandler):
         return self.application.callers
 
     @property
+    def red_label(self): return ["DOWN", "DRAINED", "DRAINING", "FAIL", "FAILING", "POWER_DOWN", "POWERING_DOWN", "RESERVED",
+                "PERFCTRS"]
+    @property
+    def yellow_label(self): return ["UNKNOWN", "POWER_UP", "REBOOT", "MAINT", "FUTURE"]
+
+    @property
+    def green_label(self): return ["ALLOCATED", "ALLOCATED+", "COMPLETING", "IDLE", "MIXED"]
+
+    def node_label_color(self, node_status):
+        if node_status in self.red_label:
+            return "<span class=\"label alert\"><i class=\"fi-x\"></i> " + node_status + "</span>"
+        elif node_status in self.yellow_label:
+            return "<span class=\"label warning\"><i class=\"fi-alert\"></i> " + node_status + "</span>"
+        elif node_status in self.green_label:
+            return "<span class=\"label success\"><i class=\"fi-check\"></i> " + node_status + "</span>"
+        return "<span class=\"label secondary\"><i class=\"fi-info\"></i> " + node_status + "</span>"
+
+    # TODO: Shift to foundation
+    @property
     def table_style(self):
-        return "<html><head><style>table {font-family: \"Trebuchet MS\", Arial, Helvetica, sans-serif;border-collapse: collapse;width: 100%;}table td, #customers th {border: 1px solid #ddd;padding: 8px;}table tr:nth-child(even){background-color: #f2f2f2;}table tr:hover {background-color: #ddd;}table th {padding-top: 12px;padding-bottom: 12px;text-align: left;background-color: #4CAF50;color: white;}</style></head>"
+        return "<html><head><style>table {font-family: \"Trebuchet MS\", Arial, Helvetica, " \
+               "sans-serif;border-collapse: collapse;width: 100%;}table td, #customers th {border: 1px solid " \
+               "#ddd;padding: 8px;}table tr:nth-child(even){background-color: #f2f2f2;}table tr:hover {" \
+               "background-color: #ddd;}table th {padding-top: 12px;padding-bottom: 12px;text-align: " \
+               "left;background-color: #4CAF50;color: white;}</style></head> "
 
 
 class ProgressHandler(MainHandler):
@@ -476,15 +499,26 @@ class NodeStatusHandler(MainHandler):
 
     def post(self):
         json_body = tornado.escape.json_decode(self.request.body)
-        node = None
-        if "node_id" in json_body:
+        requested_nodes = None
+        node_response = {}
+        if "node_ids" in json_body:
             # Specific node requested
-            node = json_body["node_id"]
+            requested_nodes = json_body["node_ids"]
+        elif "node_id" in json_body:
+            requested_nodes = [json_body["node_ids"]]
 
-        node_status = self.batch_scriptor.query_node_status(node=node)  # Will send in None for all nodes
+        node_status = self.batch_scriptor.query_node_status(nodes=requested_nodes)  # Will send in None for all nodes
+        for node in node_status:
+            node_response[node] = {
+                "name": "<h5><i class=\"fi-graph-bar\"></i>{}</h5>".format(node),
+                "status": "{}<br></br>".format(self.node_label_color(node_status[node]['state'])),
+                "free_mem": "Free Mem: {} MB<br />".format(node_status[node]['free_mem']),
+                "cpu_load": "CPU Load: {}<br />".format(node_status[node]['cpu_load']),
+                "real_mem": "Real Mem: {} MB<br />".format(node_status[node]['real_mem']),
+                "cores": "Cores: {}<br />".format(node_status[node]['cores'])
+            }
 
-
-
+        self.write(node_response)
 
 
 class SubmitJobHandler(MainHandler):
