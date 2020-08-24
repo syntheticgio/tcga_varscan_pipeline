@@ -213,9 +213,9 @@ rm -rf {working_directory}
         if self.job_type == "CLEAN":
             _ids = ','.join('afterany:{}'.format(str(c)) for c in self.job_ids)
             cmd = ["sbatch", "--dependency={}".format(_ids), filename]
-            # output = subprocess.check_output(cmd)
+            output = subprocess.check_output(cmd)
             print('sbatch --dependency={} {}'.format(_ids, filename))
-            return "7000000"
+            # return "7000000"
             # pass
         # elif self.job_type == "DOWNLOAD":
         #     output = subprocess.check_output('sbatch --dependency=afterok:{} {}'.format(self.download_id, filename))
