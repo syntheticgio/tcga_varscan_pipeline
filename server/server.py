@@ -523,7 +523,7 @@ class NodeStatusHandler(MainHandler):
                 "status": "{}<br></br>".format(self.node_label_color(node_status[node]['state'])),
                 "free_mem": "Free Mem: {} MB<br />".format(node_status[node]['free_mem']),
                 "cpu_load": "Avg. CPU: {}<br />".format(node_status[node]['cpu_load']),
-                "real_mem": "Real Mem: {} MB<br />".format(node_status[node]['real_mem']),
+                "real_mem": "Real Mem: {} MB<br />".format(node_status[node]['real_memory']),
                 "cores": "Cores: {}<br />".format(node_status[node]['cores'])
             }
 
