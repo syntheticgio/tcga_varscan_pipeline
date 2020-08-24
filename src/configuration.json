@@ -34,5 +34,6 @@
   "completed_list": "src/finished_tcga_ids.txt",
   "debug": true,
   "tcga-sample-list": "src/full-results-normal.csv",
-  "base_directory": "/home/torcivia/tcga/"
+  "base_directory": "/home/torcivia/tcga/",
+  "external_ip": "34.67.6.46"
 }

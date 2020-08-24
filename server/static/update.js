@@ -2,8 +2,8 @@
  * AJAX Polling
  */
 
-const URL = "REPLACE_URL_HERE"
-// const URL = "http://34.67.6.46:8081"
+
+const URL = "http://34.67.6.46:8081"
 // const URL = "http://127.0.0.1:8081"
 function RequestStatus() {
     this.poll = false;
