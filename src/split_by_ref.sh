@@ -100,23 +100,23 @@ SORT_FORMAT="{\"ID\":\"${NORMAL_BAM}\",${TIME_FORMAT}"
 # Stage 1
 #
 echo "{\"Normal\":\"${NORMAL_BAM}\",\"Tumor\":\"${TUMOR_BAM}\",\"Stage\":1,\"Reference\":\"Human\"}" > OUTPUT/running_entry.txt
-if [[ ! -z "$3" ]]
+if [[ -n "$3" ]]
 then
-    python post_json.py -u createrunningsample -v -i ${3} -f OUTPUT/running_entry.txt
+    python post_json.py -u createrunningsample -v -i "${3}" -f OUTPUT/running_entry.txt
 fi
 echo "=========================================================="
 echo "1. SORTING:  /usr/bin/time -o OUTPUT/samtools_sort_normal_time.txt --format "${SORT_FORMAT}" ${SAMTOOLS} sort ${NORMAL_BAM} -o sorted_${NORMAL_BAM} 1> OUTPUT/samtools_sort_normal.stdout 2> OUTPUT/samtools_sort_normal.stderr"
 if [[ ${NORMAL_SORTED} -gt 0 ]]
 then
     echo "Normal Not yet sorted, sorting now..."
-    /usr/bin/time -o OUTPUT/samtools_sort_normal_time.txt --format "${SORT_FORMAT}" ${SAMTOOLS} sort ${NORMAL_BAM} -o sorted_${NORMAL_BAM} 1> OUTPUT/samtools_sort_normal.stdout 2> OUTPUT/samtools_sort_normal.stderr
-    rm ${NORMAL_BAM}
+    /usr/bin/time -o OUTPUT/samtools_sort_normal_time.txt --format "${SORT_FORMAT}" ${SAMTOOLS} sort "${NORMAL_BAM}" -o sorted_"${NORMAL_BAM}" 1> OUTPUT/samtools_sort_normal.stdout 2> OUTPUT/samtools_sort_normal.stderr
+    rm "${NORMAL_BAM}"
     SORT_NORMAL_ERROR_CODE=$?
     echo -e "\tERROR CODE: ${SORT_NORMAL_ERROR_CODE}"
 else
     echo "Already sorted.  Simulating stdout and stderr for logging."
-    mv ${NORMAL_BAM} sorted_${NORMAL_BAM}
-    cp ${NORMAL_BAM}.bai sorted_${NORMAL_BAM}.bai
+    mv "${NORMAL_BAM}" sorted_"${NORMAL_BAM}"
+    cp "${NORMAL_BAM}".bai sorted_"${NORMAL_BAM}".bai
     # Make simulated time output file for submission
     /usr/bin/time -o OUTPUT/samtools_sort_normal_time.txt --format "${SORT_FORMAT}" ls 1> OUTPUT/samtools_sort_normal.stdout 2> OUTPUT/samtools_sort_normal.stderr
     SORT_NORMAL_ERROR_CODE=$?
@@ -178,7 +178,7 @@ fi
 
 echo ""
 echo "4. POSTing time data to database: python post_json.py -u samtoolssort -f OUTPUT/samtools_sort_tumor_time.txt -v -i ${3}"
-if [[ ! -z "$3" ]]
+if [[ -n "$3" ]]
 then
     python post_json.py -u samtoolssort -f OUTPUT/samtools_sort_tumor_time.txt -v -i ${3}
 fi
@@ -191,20 +191,20 @@ cat OUTPUT/samtools_sort_tumor.stderr
 echo "=========================================================="
 
 # Make sure chromosome names are the same...
-/samtools/bin/samtools view -H sorted_${TUMOR_BAM} > header.sam
+/samtools/bin/samtools view -H sorted_"${TUMOR_BAM}" > header.sam
 awk -f re_chrom_name.awk header.sam > new_header.sam
-${SAMTOOLS} reheader -iP new_header.sam sorted_${TUMOR_BAM} > _tmp
-mv _tmp sorted_${TUMOR_BAM}
+${SAMTOOLS} reheader -iP new_header.sam sorted_"${TUMOR_BAM}" > _tmp
+mv _tmp sorted_"${TUMOR_BAM}"
 
 # BAMSTAT
-${SAMTOOLS} flagstat sorted_${TUMOR_BAM} > OUTPUT/_${TUMOR_BAM}_flagstat.txt
-java -jar -Xmx8g /BAMStats-1.25/BAMStats-1.25.jar -i sorted_${TUMOR_BAM} > OUTPUT/_${TUMOR_BAM}_bamstats.txt
+${SAMTOOLS} flagstat sorted_"${TUMOR_BAM}" > OUTPUT/_"${TUMOR_BAM}"_flagstat.txt
+java -jar -Xmx8g /BAMStats-1.25/BAMStats-1.25.jar -i sorted_"${TUMOR_BAM}" > OUTPUT/_"${TUMOR_BAM}"_bamstats.txt
 # split based on reference
 # TODO get time for this (needs to be added to server)
 bamtools split -in sorted_${TUMOR_BAM} -reference
 
 echo "{\"Normal\":\"${NORMAL_BAM}\",\"Tumor\":\"${TUMOR_BAM}\",\"Stage\":9,\"Reference\":\"Human\"}" > OUTPUT/running_entry.txt
-if [[ ! -z "$3" ]]
+if [[ -n "$3" ]]
 then
-    python post_json.py -u updaterunningsample -v -i ${3} -f OUTPUT/running_entry.txt
+    python post_json.py -u updaterunningsample -v -i "${3}" -f OUTPUT/running_entry.txt
 fi
