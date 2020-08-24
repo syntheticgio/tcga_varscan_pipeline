@@ -249,7 +249,12 @@ rm -rf {working_directory}
             other_fields = ['run_time', 'run_time_str', 'nodes', 'job_state', 'command', 'comment']
 
             for key, value in jobs.items():
-                tcga_barcode = self.sample_by_id_lookup[key]
+                try:
+                    tcga_barcode = self.sample_by_id_lookup[key]
+                except KeyError:
+                    # print("Looks like there is a job that is running which isn't tracked in our internal database.")
+                    # Skip
+                    continue
                 job_info[tcga_barcode] = {key: {}}
 
                 for part_key in sorted(value.keys()):
