@@ -95,19 +95,19 @@ class ProgressHandler(MainHandler):
         #       the shell script should make a requests call.
 
         rows = "<h2>Running computations</h2><table><tr>" \
-                      "<th>TCGA ID</th>" \
-                      "<th>Cancer Type</th>" \
-                      "<th>Tumor Barcode</th>" \
-                      "<th>Tumor File Size</th>" \
-                      "<th>Normal Barcode</th>" \
-                      "<th>Normal File Size</th>" \
-                      "<th>Stage</th>" \
-                      "</tr>"
+               "<th>TCGA ID</th>" \
+               "<th>Cancer Type</th>" \
+               "<th>Tumor Barcode</th>" \
+               "<th>Tumor File Size</th>" \
+               "<th>Normal Barcode</th>" \
+               "<th>Normal File Size</th>" \
+               "<th>Stage</th>" \
+               "</tr>"
         for row in self.cursor.execute(sqlstr):
             rows = rows + "<tr><td>{}</td><td>{}</td><td>{}</td><td>{}</td><td>{}</td><td>{" \
-                                        "}</td><td>{}</td></tr>".format(
-                                        row[5], row[4], row[0], row[1],
-                                        row[2], row[3], row[6])
+                          "}</td><td>{}</td></tr>".format(
+                row[5], row[4], row[0], row[1],
+                row[2], row[3], row[6])
 
         # Fetched the queued ones.
         queued_rows = "<h2>Queued computations</h2><table><tr>" \
@@ -124,24 +124,24 @@ class ProgressHandler(MainHandler):
         for row in self.cursor.execute(sqlstr2):
             queued_rows = queued_rows + "<tr><td>{}</td><td>{}</td><td>{}</td><td>{}</td><td>{}</td><td>{" \
                                         "}</td><td><button type=\"button\" onclick=\"SubmitJob(\'{}\')\">+</button></td></tr>".format(
-                                        row[5], row[4], row[0], row[1],
-                                        row[2], row[3], row[5])
+                row[5], row[4], row[0], row[1],
+                row[2], row[3], row[5])
 
         sqlstr3 = "SELECT tumor_barcode, tumor_file_size, normal_barcode, normal_file_size, cancer_type, tcga_id, stage FROM finished"
         finished_rows = "<h2>Finished computations</h2><table><tr>" \
-                      "<th>TCGA ID</th>" \
-                      "<th>Cancer Type</th>" \
-                      "<th>Tumor Barcode</th>" \
-                      "<th>Tumor File Size</th>" \
-                      "<th>Normal Barcode</th>" \
-                      "<th>Normal File Size</th>" \
-                      "<th>Stage</th>" \
-                      "</tr>"
+                        "<th>TCGA ID</th>" \
+                        "<th>Cancer Type</th>" \
+                        "<th>Tumor Barcode</th>" \
+                        "<th>Tumor File Size</th>" \
+                        "<th>Normal Barcode</th>" \
+                        "<th>Normal File Size</th>" \
+                        "<th>Stage</th>" \
+                        "</tr>"
         for row in self.cursor.execute(sqlstr3):
             finished_rows = finished_rows + "<tr><td>{}</td><td>{}</td><td>{}</td><td>{}</td><td>{}</td><td>{" \
-                                        "}</td><td>{}</td></tr>".format(
-                                        row[5], row[4], row[0], row[1],
-                                        row[2], row[3], row[6])
+                                            "}</td><td>{}</td></tr>".format(
+                row[5], row[4], row[0], row[1],
+                row[2], row[3], row[6])
         self.set_header("Content-Type", "text/plain")
         _rws = {
             "processing": rows,
@@ -196,10 +196,10 @@ class UpdateRunningSampleHandler(MainHandler):
 
     def post(self):
         json_body = tornado.escape.json_decode(self.request.body)
-        sqlstr = "UPDATE RunningSamples SET Stage = {} WHERE Normal = \"{}\" AND Tumor = \"{}\"".format(
+        sqlstr = "UPDATE RunningSamples SET Stage = {} WHERE Normal = \'{}\' AND Tumor = \'{}\'".format(
             json_body['Stage'], json_body['Normal'], json_body['Tumor'])
         # parrot the processing table too
-        sqlstr2 = "UPDATE processing SET stage = {} WHERE normal_file = \"{}\" AND tumor_file = \"{}\"".format(
+        sqlstr2 = "UPDATE processing SET stage = {} WHERE normal_file = \'{}\' AND tumor_file = \'{}\'".format(
             json_body['Stage'], json_body['Normal'], json_body['Tumor'])
         self.cursor.execute(sqlstr2)
         # print(sqlstr)
@@ -227,12 +227,12 @@ class RemoveRunningSampleHandler(MainHandler):
                         cancer_type, total_size, tcga_id, stage FROM
                         processing
                         WHERE NOT EXISTS(SELECT * FROM finished WHERE(
-                        normal_file = \'{}\' and tumor_file = \"{}\")) 
+                        normal_file = \'{}\' and tumor_file = \'{}\')) 
                         """.format(json_body['Normal'], json_body['Tumor'])
         self.cursor.execute(sql_statement)
 
         sqlstr2 = "DELETE FROM processing WHERE normal_file = {} AND tumor_file = {}".format(json_body['Normal'],
-                                                                                      json_body['Tumor'])
+                                                                                             json_body['Tumor'])
         self.cursor.execute(sqlstr2)
         # print(sqlstr)
         self.cursor.execute(sqlstr)
