@@ -265,6 +265,7 @@ rm -rf {working_directory}
             return job_info
         return None
 
+    # TODO: Not sure if this is needed or not...placeholder
     def query_by_barcode(self, barcode):
         job_id_dict = self.sample_id_lists[barcode]
 

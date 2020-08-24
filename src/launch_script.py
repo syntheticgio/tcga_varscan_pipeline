@@ -10,6 +10,8 @@ import json
 import argparse
 import csv
 import socket
+from requests import get
+import subprocess
 
 
 def extract_matches(config):
@@ -201,10 +203,23 @@ class BatchScriptor:
 
 
 if __name__ == "__main__":
+    def port(value):
+        ivalue = int(value)
+        if ivalue < 0:
+            raise argparse.ArgumentTypeError("%s is less than 0. Ports must be between 0 and 65535")
+        if ivalue > 65535:
+            raise argparse.ArgumentTypeError("%s is greater than 65535. Ports must be between 0 and 65535")
+        return ivalue
+
     parser = argparse.ArgumentParser(description='Commands for launch script.')
     parser.add_argument('--ip', '-i',
                         help='The IP address (and port) of the server, in format xxx.xxx.xxx.xxx.  If not specified '
                              'the program will try to generate it.')
+    parser.add_argument('--port', '-p',
+                        type=port,
+                        default=8081,
+                        help='The port of the server, If not specified '
+                             'the default of 8081 is used.')
     parser.add_argument('--verbose', '-v',
                         dest='verbose',
                         action='store_true',
@@ -247,13 +262,19 @@ if __name__ == "__main__":
         hostname = socket.gethostname()
         # getting the IP address using socket.gethostbyname() method
         ip_address = socket.gethostbyname(hostname)
-        print("Setting the host to: {}:8081 (the current master node)".format(ip_address))
-        args.ip = "{}:8081".format(ip_address)
+        print("Setting the host to: {}:{} (the current master node)".format(ip_address, args.port))
+        args.ip = "{}:{}".format(ip_address, args.port)
     else:
-        print("Using {} for the server IP.".format(args.ip))
+        print("Using {}:{} for the server IP and port.".format(args.ip, args.port))
         print("NOTE: If this does not include the port, this will not work unless the port is on 80!  (This is not "
               "the default, the default port is 8081 and the ip and port should be specified as follows <ip "
               "address>:<port>.")
+
+    if not args.bypass_server:
+        # Get external IP address for javascript
+        external_ip = get('https://api.ipify.org').text
+        # Replace in javascript
+        subprocess.run(["sed -i -e 's/REPLACE_URL_HERE/{}:{}/g' server/static/update.js".format(external_ip, args.port)], shell=True)
 
     # Get finished matches as to not run those...
     match_list = []
@@ -323,5 +344,10 @@ if __name__ == "__main__":
     else:
         settings = {}
         http_server = tornado.httpserver.HTTPServer(ManagerApplication(callers, batch_scriptor))
-        http_server.listen(8081)
+        try:
+            http_server.listen(args.port)
+        except BaseException as e:
+            print("[ error ] could not open on port %s because of error: %s", str(args.port), e)
+            print("Failed to open server.  Aborting program.")
+            exit(2)
         tornado.ioloop.IOLoop.instance().start()

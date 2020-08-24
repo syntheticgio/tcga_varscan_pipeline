@@ -503,9 +503,11 @@ class NodeStatusHandler(MainHandler):
         node_response = {}
         if "node_ids" in json_body:
             # Specific node requested
-            requested_nodes = json_body["node_ids"]
+            if json_body["node_ids"].tolower() != "all":
+                requested_nodes = json_body["node_ids"]
         elif "node_id" in json_body:
-            requested_nodes = [json_body["node_ids"]]
+            if json_body["node_ids"].tolower() != "all":
+                requested_nodes = [json_body["node_id"]]
 
         node_status = self.batch_scriptor.query_node_status(nodes=requested_nodes)  # Will send in None for all nodes
         for node in node_status:
@@ -513,7 +515,7 @@ class NodeStatusHandler(MainHandler):
                 "name": "<h5><i class=\"fi-graph-bar\"></i>{}</h5>".format(node),
                 "status": "{}<br></br>".format(self.node_label_color(node_status[node]['state'])),
                 "free_mem": "Free Mem: {} MB<br />".format(node_status[node]['free_mem']),
-                "cpu_load": "CPU Load: {}<br />".format(node_status[node]['cpu_load']),
+                "cpu_load": "Avg. CPU: {}<br />".format(node_status[node]['cpu_load']),
                 "real_mem": "Real Mem: {} MB<br />".format(node_status[node]['real_mem']),
                 "cores": "Cores: {}<br />".format(node_status[node]['cores'])
             }
