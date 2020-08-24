@@ -116,6 +116,7 @@ class BatchScriptor:
         self.wait_id = []
         for x in range(0, self.node_length):
             self.wait_id.append(-1)
+        self.sample_id_lists = {}
 
     @staticmethod
     def run_test(config):
@@ -173,6 +174,7 @@ class BatchScriptor:
         # Launch download here
         # job_id = <call for job here>
         job_id = s.launch_job()
+        self.sample_id_lists[caller_.barcode][job_type] = job_id
 
         # Set new job type
         job_type = "VARCALL"
@@ -181,11 +183,13 @@ class BatchScriptor:
             s.populate_template(caller_, node, job_type, self.db_address, ref, job_id)
             _job_id = s.launch_job()
             varcall_job_ids.append(_job_id)
+        self.sample_id_lists[caller_.barcode][job_type] = varcall_job_ids
 
         # Do cleanup
         job_type = "CLEAN"
         s.populate_template(caller_, node, job_type, self.db_address, "cleanup", varcall_job_ids)
         self.wait_id[self.node_indx] = s.launch_job()
+        self.sample_id_lists[caller_.barcode][job_type] = self.wait_id[self.node_indx]
 
         self.node_indx += 1
         if self.node_indx > self.node_length - 1:
@@ -230,9 +234,9 @@ if __name__ == "__main__":
         BatchScriptor.run_test(configuration)
         print("Launched test: exiting program.  Use SQUEUE to see results or examine the output files in the working "
               "directory {} on the node being used {}.".format(
-                                                            configuration["base_directory"],
-                                                            configuration["nodes"][0])
-                                                        )
+            configuration["base_directory"],
+            configuration["nodes"][0])
+        )
         exit(0)
 
     if not args.ip:

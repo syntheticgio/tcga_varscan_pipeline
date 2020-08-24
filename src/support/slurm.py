@@ -3,6 +3,8 @@ import os.path
 # import commands
 import subprocess
 from time import time
+import pyslurm
+from time import gmtime, strftime
 
 
 class slurm_submitter:
@@ -24,6 +26,7 @@ class slurm_submitter:
     indx = 0
 
     sample_id_lists = {}
+    sample_by_id_lookup = {}
 
     def __init__(self, base_dir):
         self.base_directory = base_dir
@@ -42,6 +45,7 @@ class slurm_submitter:
 #SBATCH --ntasks=1
 #SBATCH --mem=1024
 #SBATCH --chdir={working_directory}
+#SBATCH --comment="TEST"
 
 echo "Moving to directory..."
 cd {working_directory}
@@ -70,6 +74,7 @@ echo "test.py : "$?
 #SBATCH --mem=1024
 #SBATCH --dependency=afterany:{job_ids}
 #SBATCH --chdir={working_directory}
+#SBATCH --comment={job_type}
 
 cd {working_directory}
 
@@ -90,8 +95,10 @@ echo "pipeline.sh : "$?
 #SBATCH --nodelist={node}
 
 #SBATCH --ntasks=1
+#SBATCH --comment={job_type}
+
 #SBATCH --chdir=/home/torcivia/tcga/
-{download_job_id}
+{dependency_sbatch}
 
 echo "Attempting to make directory..."
 mkdir -p {working_directory}
@@ -142,6 +149,7 @@ echo "split_by_ref.sh : "$?
 #SBATCH --ntasks=1
 #SBATCH --mem=1024
 #SBATCH --chdir={working_directory}
+#SBATCH --comment={job_type}
 
 ./transfer_clean.sh {normal_file} {tumor_file} {output_location} {barcode} {working_directory}/../references/{reference} {db_address}
 echo "transfer_clean.sh : "$? 
@@ -177,9 +185,9 @@ rm -rf {working_directory}
         if job_type == "DOWNLOAD":
             # This is used in the **vars() call.
             if job_ids != -1:
-                download_job_id = "#SBATCH --dependency=afterany:{}".format(job_ids)
+                dependency_sbatch = "#SBATCH --dependency=afterany:{}".format(job_ids)
             else:
-                download_job_id = ""
+                dependency_sbatch = ""
             self.template = self.download_template.format(**vars())
         elif job_type == "VARCALL":
             # These are used in the **vars() call.
@@ -217,21 +225,61 @@ rm -rf {working_directory}
             cmd = ["sbatch", "--dependency={}".format(_ids), filename]
             output = subprocess.check_output(cmd)
             print('sbatch --dependency={} {}'.format(_ids, filename))
-            # return "7000000"
-            # pass
-        # elif self.job_type == "DOWNLOAD":
-        #     output = subprocess.check_output('sbatch --dependency=afterok:{} {}'.format(self.download_id, filename))
-        #     # self.download_id = output.split()[3]
-        #     print('sbatch --dependency=afterok:{} {}'.format(self.download_id, filename))
-        #     # print("output: {}".format(output))
         else:
             output = subprocess.check_output(['sbatch', filename])
             print('sbatch {}'.format(filename))
 
-        # output = 555  # temporary
         return_ids = output.split()[3].decode('UTF-8')
-        # print("OUTPUT: {}".format(output))
+        # Record a list of job ids by TCGA Barcode (might come in handy!)
+        if self.tcga_barcode not in self.sample_id_lists:
+            self.sample_id_lists[self.tcga_barcode] = {}
         self.sample_id_lists[self.tcga_barcode][self.job_type] = (int(c) for c in return_ids)
+        # Create lookup table for all job_ids w/ tcga barcode as their entry
+        self.sample_by_id_lookup[(int(c) for c in return_ids)] = self.tcga_barcode
         if self.job_type == "CLEAN":
             print("DEBUG: {}".format(self.sample_id_lists[self.tcga_barcode]))
         return return_ids
+
+    def query_all_jobs(self):
+        jobs = pyslurm.job().get()
+
+        if jobs:
+            job_info = {}
+            date_fields = ['start_time', 'suspend_time', 'submit_time', 'end_time', 'eligible_time', 'resize_time']
+            other_fields = ['run_time', 'run_time_str', 'nodes', 'job_state', 'command', 'comment']
+
+            for key, value in jobs.items():
+                tcga_barcode = self.sample_by_id_lookup[key]
+                job_info[tcga_barcode] = {key: {}}
+
+                for part_key in sorted(value.keys()):
+                    if part_key in date_fields:
+                        if value[part_key] == 0:
+                            job_info[tcga_barcode][key][part_key] = "NA"
+                        else:
+                            ddate = gmtime(value[part_key])
+                            ddate = strftime("%a %b %d %H:%M:%S %Y", ddate)
+                            job_info[tcga_barcode][key][part_key] = ddate
+                    elif part_key in other_fields:
+                        job_info[tcga_barcode][key][part_key] = value[part_key]
+            return job_info
+        return None
+
+    def query_by_barcode(self, barcode):
+        job_id_dict = self.sample_id_lists[barcode]
+
+    def query_node_status(self, node=None):
+        node_dict = pyslurm.node().get()
+        nodes = {}
+        if len(node_dict) > 0:
+            # CPU_LOAD = Load AVG
+            # FREE_MEM = Free memory in Megabytes
+            fetch_list = ['state', 'free_mem', 'cpu_load', 'cores', 'read_memory']
+            for key, value in node_dict.items():
+                # key = slurm-child3, for example
+                # value is a bunch of other info:
+                nodes[key] = {}
+                for part_key in sorted(value.keys()):
+                    if part_key in fetch_list:
+                        nodes[key][part_key] = value[part_key]
+        return nodes

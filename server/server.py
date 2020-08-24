@@ -37,6 +37,20 @@ class MainHandler(tornado.web.RequestHandler):
         self.finish()
 
     @staticmethod
+    def empty_progress_dict():
+        return {
+            "RUNNING": 0,
+            "PENDING": 0,
+            "SUSPENDED": 0,
+            "COMPLETING": 0,
+            "COMPLETED": 0,
+            "CANCELLED": 0,
+            "FAILED": 0,
+            "TIMEOUT": 0,
+            "OTHER": 0
+        }
+
+    @staticmethod
     def construct_sql(table_name, json_object):
         print("In the construct sql method...")
         print("Table name: {}".format(table_name))
@@ -90,24 +104,65 @@ class ProgressHandler(MainHandler):
     def post(self):
         # Fetch the processing ones
         sqlstr = "SELECT tumor_barcode, tumor_file_size, normal_barcode, normal_file_size, cancer_type, tcga_id, stage  FROM processing"
-        # TODO: move finished processing entries to finished here
-        #       Should be some type of call when they get finished; maybe at the end of the computation
-        #       the shell script should make a requests call.
+        # Get Status for running computations
+        jobs_status = self.batch_scriptor.query_all_jobs()
 
         rows = "<h2>Running computations</h2><table><tr>" \
                "<th>TCGA ID</th>" \
                "<th>Cancer Type</th>" \
                "<th>Tumor Barcode</th>" \
-               "<th>Tumor File Size</th>" \
                "<th>Normal Barcode</th>" \
-               "<th>Normal File Size</th>" \
+               "<th>Submitted</th>" \
+               "<th>Requested Node</th>" \
                "<th>Stage</th>" \
+               "<th>Progress</th>" \
                "</tr>"
         for row in self.cursor.execute(sqlstr):
-            rows = rows + "<tr><td>{}</td><td>{}</td><td>{}</td><td>{}</td><td>{}</td><td>{" \
-                          "}</td><td>{}</td></tr>".format(
-                row[5], row[4], row[0], row[1],
-                row[2], row[3], row[6])
+            # row[5] = tcga_id
+            barcode_progress = self.empty_progress_dict()
+            download_jobs = []
+            varscan_jobs = []
+            cleanup_jobs = []
+            node = "Un-assigned"
+            submit_time = "Un-submitted"
+            for job_id in jobs_status[row[5]]:
+                # date_fields = ['start_time', 'suspend_time', 'submit_time', 'end_time', 'eligible_time', 'resize_time']
+                # other_fields = ['run_time', 'run_time_str', 'nodes', 'job_state', 'command']
+                # PENDING, RUNNING, SUSPENDED, COMPLETING, and COMPLETED
+
+                # Get Job States for all Job Ids per interesting TCGA ID
+                if jobs_status[row[5]][job_id]['job_state'] in barcode_progress:
+                    barcode_progress[jobs_status[row[5]][job_id]['job_state']] += 1
+                else:
+                    barcode_progress["OTHER"] += 1
+
+                # Will overwrite for each job, but should all have more or less the same start time by TCGA ID
+                submit_time = jobs_status[row[5]][job_id]['submit_time']
+                node = jobs_status[row[5]][job_id]['nodes']
+
+                # TODO: This should be changed to the 'comment' field which will then need to be specified somehow.
+                if jobs_status[row[5]][job_id]['comment'].split("_")[1] == "DOWNLOAD":
+                    pass
+                elif jobs_status[row[5]][job_id]['comment'].split("_")[1] == "VARSCAN":
+                    pass
+                elif jobs_status[row[5]][job_id]['comment'].split("_")[1] == "CLEAN":
+                    pass
+                elif jobs_status[row[5]][job_id]['comment'].split("_")[1] == "TEST":
+                    pass
+                else:
+                    pass
+
+            # Create Progress report
+            failed = barcode_progress["FAILED"] + barcode_progress["SUSPENDED"] + barcode_progress["CANCELLED"] + \
+                     barcode_progress["TIMEOUT"]
+            completed = barcode_progress["COMPLETED"] + barcode_progress["COMPLETING"]
+            progress = "<span style=\"color: green\">{}<span> | <span style=\"color: yellow\">{}<span> | <span " \
+                       "style=\"color: red\">{}<span>".format(completed, barcode_progress["PENDING"], failed)
+
+            rows = rows + "<tr><td>{}</td><td>{}</td><td>{}</td><td>{}</td>" \
+                          "<td>{}</td><td>{}</td><td>{}</td><td>{}</td></tr>".format(
+                row[5], row[4], row[0],
+                row[2], submit_time, node, row[6], progress)
 
         # Fetched the queued ones.
         queued_rows = "<h2>Queued computations</h2><table><tr>" \
@@ -415,6 +470,23 @@ class VarscanProcessSomaticIndelsHandler(MainHandler):
         self.write(sqlstr)
 
 
+class NodeStatusHandler(MainHandler):
+    def get(self):
+        pass
+
+    def post(self):
+        json_body = tornado.escape.json_decode(self.request.body)
+        node = None
+        if "node_id" in json_body:
+            # Specific node requested
+            node = json_body["node_id"]
+
+        node_status = self.batch_scriptor.query_node_status(node=node)  # Will send in None for all nodes
+
+
+
+
+
 class SubmitJobHandler(MainHandler):
     def get(self):
         pass
@@ -497,11 +569,16 @@ class ManagerApplication(tornado.web.Application):
             "static_path": os.path.join(os.path.dirname(__file__), "static"),
             'debug': True
         }
+        foundation_css = os.path.join(tornado_settings["static_path"], "foundation", "assets", "css")
+        foundation_js = os.path.join(tornado_settings["static_path"], "foundation", "assets", "js")
+        foundation_svgs = os.path.join(tornado_settings["static_path"], "foundation", "assets", "svgs")
+        foundation_js_plugins = os.path.join(tornado_settings["static_path"], "foundation", "assets", "js", "plugins")
 
         handlers = [
             (r"/", MainHandler),
             (r"/progress/", ProgressHandler),
             (r"/submit_job/", SubmitJobHandler),
+            (r"/node_status/", NodeStatusHandler),
             (r"/samtoolssort/", SortHandler),
             (r"/mpileup/", MpileupHandler),
             (r"/varscansomatic/", VarscanSomaticHandler),
@@ -517,6 +594,14 @@ class ManagerApplication(tornado.web.Application):
              dict(path=tornado_settings['static_path'])),
             (r"/(styles\.css)", tornado.web.StaticFileHandler,
              dict(path=tornado_settings['static_path'])),
+            (r"/foundation/assets/css/(.*)", tornado.web.StaticFileHandler,
+             dict(path=foundation_css)),
+            (r"/foundation/assets/js/(.*)", tornado.web.StaticFileHandler,
+             dict(path=foundation_js)),
+            (r"/foundation/assets/svgs/(.*)", tornado.web.StaticFileHandler,
+             dict(path=foundation_svgs)),
+            (r"/foundation/assets/js/plugins/(.*)", tornado.web.StaticFileHandler,
+             dict(path=foundation_js_plugins)),
             (r"/(favicon\.ico)", tornado.web.StaticFileHandler,
              dict(path=tornado_settings['static_path'])),
             (r"/img/(.*)", tornado.web.StaticFileHandler,
