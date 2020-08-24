@@ -108,11 +108,6 @@ echo "GSUTIL {normal}.bai : "$?
 gsutil cp {tumor}.bai ./ 2> download_tumor_bai.stderr
 echo "GSUTIL {tumor}.bai : "$? 
 
-sleep 2
-
-touch {normal}.bai
-touch {tumor}.bai
-
 echo "Copying script files ..."
 cp /home/torcivia/pipeline/tcga_varscan_pipeline/src/pipeline.sh ./
 cp /home/torcivia/pipeline/tcga_varscan_pipeline/src/post_json.py ./
