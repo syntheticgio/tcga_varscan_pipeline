@@ -42,7 +42,7 @@ class MainHandler(tornado.web.RequestHandler):
         print("Table name: {}".format(table_name))
         columns = ''
         values = ''
-        for key, value in json_object.iteritems():
+        for key, value in json_object.items():
             columns = columns + '\"' + str(key) + '\", '
             values = values + '\"' + str(value) + '\", '
         c = columns[:-2]
