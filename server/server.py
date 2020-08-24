@@ -7,6 +7,7 @@ import os
 import tornado.httpserver
 import json
 from src.support.tcga import TCGAVariantCaller
+from hurry.filesize import size
 
 
 class MainHandler(tornado.web.RequestHandler):
@@ -81,13 +82,17 @@ class MainHandler(tornado.web.RequestHandler):
         return self.application.callers
 
     @property
-    def red_label(self): return ["DOWN", "DRAINED", "DRAINING", "FAIL", "FAILING", "POWER_DOWN", "POWERING_DOWN", "RESERVED",
+    def red_label(self):
+        return ["DOWN", "DRAINED", "DRAINING", "FAIL", "FAILING", "POWER_DOWN", "POWERING_DOWN", "RESERVED",
                 "PERFCTRS"]
-    @property
-    def yellow_label(self): return ["UNKNOWN", "POWER_UP", "REBOOT", "MAINT", "FUTURE"]
 
     @property
-    def green_label(self): return ["ALLOCATED", "ALLOCATED+", "COMPLETING", "IDLE", "MIXED"]
+    def yellow_label(self):
+        return ["UNKNOWN", "POWER_UP", "REBOOT", "MAINT", "FUTURE"]
+
+    @property
+    def green_label(self):
+        return ["ALLOCATED", "ALLOCATED+", "COMPLETING", "IDLE", "MIXED"]
 
     def node_label_color(self, node_status):
         if node_status in self.red_label:
@@ -114,20 +119,22 @@ class ProgressHandler(MainHandler):
         pass
 
     def get(self):
-        sqlstr = "SELECT * FROM RunningSamples WHERE Stage < 9"
-        rows = self.table_style
-        rows = rows + "<body>"
-        rows = rows + "<h2>Running computations</h2>"
-        rows = rows + "<table><tr><th>Normal</th><th>Tumor</th><th>Stage</th></tr>"
-        for row in self.cursor.execute(sqlstr):
-            rows = rows + "<tr><td>{}</td><td>{}</td><td>{}</td></tr>".format(row[1], row[2], row[3])
-        rows = rows + "</body></html>"
-        self.set_header("Content-Type", "text/html")
-        self.write(rows)
+        # sqlstr = "SELECT * FROM RunningSamples WHERE Stage < 9"
+        # rows = self.table_style
+        # rows = rows + "<body>"
+        # rows = rows + "<h2>Running computations</h2>"
+        # rows = rows + "<table><tr><th>Normal</th><th>Tumor</th><th>Stage</th></tr>"
+        # for row in self.cursor.execute(sqlstr):
+        #     rows = rows + "<tr><td>{}</td><td>{}</td><td>{}</td></tr>".format(row[1], row[2], row[3])
+        # rows = rows + "</body></html>"
+        # self.set_header("Content-Type", "text/html")
+        # self.write(rows)
+        pass
 
     def post(self):
         # Fetch the processing ones
-        sqlstr = "SELECT tumor_barcode, tumor_file_size, normal_barcode, normal_file_size, cancer_type, tcga_id, stage  FROM processing"
+        sqlstr = "SELECT tumor_barcode, tumor_file_size, normal_barcode, normal_file_size, cancer_type, tcga_id, " \
+                 "stage  FROM processing "
         # Get Status for running computations
         jobs_status = self.batch_scriptor.s.query_all_jobs()
 
@@ -164,7 +171,7 @@ class ProgressHandler(MainHandler):
                 submit_time = jobs_status[row[5]][job_id]['submit_time']
                 node = jobs_status[row[5]][job_id]['nodes']
 
-                # TODO: This should be changed to the 'comment' field which will then need to be specified somehow.
+                # TODO: Not sure what I want to do with this info yet.
                 if jobs_status[row[5]][job_id]['comment'].split("_")[1] == "DOWNLOAD":
                     pass
                 elif jobs_status[row[5]][job_id]['comment'].split("_")[1] == "VARSCAN":
@@ -201,12 +208,12 @@ class ProgressHandler(MainHandler):
         sqlstr2 = "SELECT tumor_barcode, tumor_file_size, normal_barcode, normal_file_size, cancer_type, tcga_id FROM " \
                   "queued "
         for row in self.cursor.execute(sqlstr2):
-            queued_rows = queued_rows + "<tr><td>{}</td><td>{}</td><td>{}</td><td>{}</td><td>{}</td><td>{" \
-                                        "}</td><td><button type=\"button\" onclick=\"SubmitJob(\'{}\')\">+</button></td></tr>".format(
+            queued_rows = queued_rows + "<tr><td>{}</td><td>{}</td><td>{}</td><td>{}</td><td>{}</td><td>{}</td><td><button type=\"button\" onclick=\"SubmitJob(\'{}\')\">+</button></td></tr>".format(
                 row[5], row[4], row[0], row[1],
                 row[2], row[3], row[5])
 
-        sqlstr3 = "SELECT tumor_barcode, tumor_file_size, normal_barcode, normal_file_size, cancer_type, tcga_id, stage FROM finished"
+        sqlstr3 = "SELECT tumor_barcode, tumor_file_size, normal_barcode, normal_file_size, cancer_type, tcga_id, " \
+                  "stage FROM finished "
         finished_rows = "<h2>Finished computations</h2><table><tr>" \
                         "<th>TCGA ID</th>" \
                         "<th>Cancer Type</th>" \
@@ -217,10 +224,9 @@ class ProgressHandler(MainHandler):
                         "<th>Stage</th>" \
                         "</tr>"
         for row in self.cursor.execute(sqlstr3):
-            finished_rows = finished_rows + "<tr><td>{}</td><td>{}</td><td>{}</td><td>{}</td><td>{}</td><td>{" \
-                                            "}</td><td>{}</td></tr>".format(
-                row[5], row[4], row[0], row[1],
-                row[2], row[3], row[6])
+            finished_rows = finished_rows + "<tr><td>{}</td><td>{}</td><td>{}</td><td>{}</td><td>{}</td><td>{}</td><td>{}</td></tr>".format(
+                row[5], row[4], row[0], size(row[1]),
+                row[2], size(row[3]), row[6])
         self.set_header("Content-Type", "text/plain")
         _rws = {
             "processing": rows,
@@ -504,10 +510,10 @@ class NodeStatusHandler(MainHandler):
         node_response = {}
         if "node_ids" in json_body:
             # Specific node requested
-            if json_body["node_ids"].tolower() != "all":
+            if json_body["node_ids"].lower() != "all":
                 requested_nodes = json_body["node_ids"]
         elif "node_id" in json_body:
-            if json_body["node_ids"].tolower() != "all":
+            if json_body["node_ids"].lower() != "all":
                 requested_nodes = [json_body["node_id"]]
 
         node_status = self.batch_scriptor.s.query_node_status(nodes=requested_nodes)  # Will send in None for all nodes
