@@ -102,6 +102,7 @@ gsutil cp {normal} ./ 2> download_normal.sterr
 echo "GSUTIL {normal} : "$? 
 gsutil cp {tumor} ./ 2> download_tumor.stderr
 echo "GSUTIL {tumor} : "$?
+
 gsutil cp {normal}.bai ./ 2> download_normal_bai.stderr
 echo "GSUTIL {normal}.bai : "$?
 gsutil cp {tumor}.bai ./ 2> download_tumor_bai.stderr
@@ -214,6 +215,7 @@ rm -rf {working_directory}
             cmd = ["sbatch", "--dependency={}".format(_ids), filename]
             output = subprocess.check_output(cmd)
             print('sbatch --dependency={} {}'.format(_ids, filename))
+            # return "7000000"
             # pass
         # elif self.job_type == "DOWNLOAD":
         #     output = subprocess.check_output('sbatch --dependency=afterok:{} {}'.format(self.download_id, filename))
