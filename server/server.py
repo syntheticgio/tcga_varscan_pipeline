@@ -222,10 +222,12 @@ class RemoveRunningSampleHandler(MainHandler):
         sql_statement = """
                         INSERT INTO
                         finished
-                        SELECT * FROM
+                        SELECT tumor_barcode, tumor_file, tumor_gdc_id, tumor_file_url, tumor_file_size, tumor_platform,
+                        normal_barcode, normal_file, normal_gdc_id, normal_file_url, normal_file_size, normal_platform, 
+                        cancer_type, total_size, tcga_id, stage FROM
                         processing
-                        WHERE
-                        normal_file = \'{}\' and tumor_file = \"{}\" 
+                        WHERE NOT EXISTS(SELECT * FROM finished WHERE(
+                        normal_file = \'{}\' and tumor_file = \"{}\")) 
                         """.format(json_body['Normal'], json_body['Tumor'])
         self.cursor.execute(sql_statement)
 
@@ -427,10 +429,12 @@ class SubmitJobHandler(MainHandler):
                 sql_statement = """
                                 INSERT INTO
                                 processing
-                                SELECT * FROM
+                                SELECT tumor_barcode, tumor_file, tumor_gdc_id, tumor_file_url, tumor_file_size, 
+                                tumor_platform, normal_barcode, normal_file, normal_gdc_id, normal_file_url, 
+                                normal_file_size, normal_platform, cancer_type, total_size, tcga_id, stage FROM
                                 queued
-                                WHERE
-                                tcga_id = \'{}\'
+                                WHERE NOT EXISTS(SELECT * FROM processing WHERE(
+                                tcga_id = \'{}\'))
                                 """.format(json_body['tcga_id'])
                 self.cursor.execute(sql_statement)
                 sql_statement = """
