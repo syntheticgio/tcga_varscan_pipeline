@@ -266,9 +266,9 @@ echo "transfer_clean.sh : "$?
             self.sample_id_lists[self.tcga_barcode] = {}
         if self.job_type not in self.sample_id_lists[self.tcga_barcode]:
             self.sample_id_lists[self.tcga_barcode][self.job_type] = []
-        self.sample_id_lists[self.tcga_barcode][self.job_type].append(return_ids)
+        self.sample_id_lists[self.tcga_barcode][self.job_type].append(int(return_ids))
         # Create lookup table for all job_ids w/ tcga barcode as their entry
-        self.sample_by_id_lookup[return_ids] = self.tcga_barcode
+        self.sample_by_id_lookup[int(return_ids)] = self.tcga_barcode
         if self.job_type == "CLEAN":
             print("DEBUG: {}".format(self.sample_id_lists[self.tcga_barcode]))
         return return_ids
