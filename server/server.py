@@ -185,21 +185,24 @@ class ProgressHandler(MainHandler):
                         pass
 
                 # Create Progress report
-                failed = barcode_progress["FAILED"] + barcode_progress["SUSPENDED"] + barcode_progress["CANCELLED"] + \
-                         barcode_progress["TIMEOUT"]
+                failed = barcode_progress["FAILED"] + barcode_progress["SUSPENDED"] + \
+                         barcode_progress["CANCELLED"] + barcode_progress["TIMEOUT"]
                 completed = barcode_progress["COMPLETED"] + barcode_progress["COMPLETING"]
                 progress = "<span style=\"color: green\">{}<span> | <span style=\"color: yellow\">{}<span> | <span " \
                            "style=\"color: red\">{}<span>".format(completed, barcode_progress["PENDING"], failed)
             else:
-                progress = " Unknown "
+                progress = "Not running"
+                submit_time = "Not running"
+                node = "Not running"
             rows = rows + "<tr><td>{}</td><td><a href=\"https://portal.gdc.cancer.gov/projects/TCGA-{}\" " \
                           "target=\"_blank\">{}</a></td><td><a " \
                           "href=\"https://https://portal.gdc.cancer.gov/legacy-archive/files/{}\" target=\"_blank\">{}" \
                           "</a></td><td><a href=\"https://https://portal.gdc.cancer.gov/legacy-archive/files/{}\" " \
                           "target=\"_blank\">{}</a></td>" \
-                          "<td>{}</td><td>{}</td><td>{}</td><td>{}</td></tr>".format(
-                row[5], row[4], row[4], row[6], row[0], row[7],
-                row[2], submit_time, node, row[6], progress)
+                          "<td>{}</td><td>{}</td><td>{}</td><td>{}</td></tr>".format(row[5], row[4], row[4],
+                                                                                     row[6], row[0], row[7],
+                                                                                     row[2], submit_time, node, row[6],
+                                                                                     progress)
 
         # Fetched the queued ones.
         queued_rows = "<h2>Queued computations</h2><table class=\"hover\" style=\"font-size: 12px; padding:2px;\"><tr>" \
