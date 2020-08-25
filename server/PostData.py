@@ -10,3 +10,5 @@ def PostData(wgs_url, wgs_data):
         print("POSTed data, return : {}".format(r.text))
     except requests.exceptions.ConnectionError as e:
         print("ERROR: %e", e)
+        print("Note: This is most likely due to a CTRL+C call on the server, or the server otherwise has been shut "
+              "down.")
