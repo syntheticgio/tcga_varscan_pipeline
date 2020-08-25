@@ -134,7 +134,7 @@ class ProgressHandler(MainHandler):
     def post(self):
         # Fetch the processing ones
         sqlstr = "SELECT tumor_barcode, tumor_file_size, normal_barcode, normal_file_size, cancer_type, tcga_id, " \
-                 "tumor_gdc_id, normal_gdc_id stage  FROM processing"
+                 "tumor_gdc_id, normal_gdc_id, stage FROM processing"
         # Get Status for running computations
         jobs_status = self.batch_scriptor.s.query_all_jobs()
 
@@ -172,8 +172,10 @@ class ProgressHandler(MainHandler):
                         barcode_progress["OTHER"] += 1
 
                     # Will overwrite for each job, but should all have more or less the same start time by TCGA ID
-                    submit_time = jobs_status[row[5]][job_id]['submit_time']
-                    node = jobs_status[row[5]][job_id]['nodes']
+                    if submit_time == "Un-submitted":
+                        submit_time = jobs_status[row[5]][job_id]['submit_time']
+                    if node == "Un-assigned":
+                        node = jobs_status[row[5]][job_id]['nodes']
 
                     if jobs_status[row[5]][job_id]['comment'].split("_")[1] == "DOWNLOAD":
                         download_jobs.append(job_id)
@@ -201,7 +203,7 @@ class ProgressHandler(MainHandler):
                           "target=\"_blank\">{}</a></td>" \
                           "<td>{}</td><td>{}</td><td>{}</td><td>{}</td></tr>".format(row[5], row[4], row[4],
                                                                                      row[6], row[0], row[7], row[2],
-                                                                                     submit_time, node, row[6],
+                                                                                     submit_time, node, row[8],
                                                                                      progress)
 
 
