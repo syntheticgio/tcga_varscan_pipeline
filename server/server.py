@@ -157,7 +157,7 @@ class ProgressHandler(MainHandler):
             test_jobs = []
             node = "Un-assigned"
             submit_time = "Un-submitted"
-            if jobs_status is not None:
+            try:
                 for job_id in jobs_status[row[5]]:
                     # date_fields = ['start_time', 'suspend_time', 'submit_time', 'end_time', 'eligible_time', 'resize_time']
                     # other_fields = ['run_time', 'run_time_str', 'nodes', 'job_state', 'command']
@@ -190,7 +190,7 @@ class ProgressHandler(MainHandler):
                 completed = barcode_progress["COMPLETED"] + barcode_progress["COMPLETING"]
                 progress = "<span style=\"color: green\">{}<span> | <span style=\"color: yellow\">{}<span> | <span " \
                            "style=\"color: red\">{}<span>".format(completed, barcode_progress["PENDING"], failed)
-            else:
+            except KeyError:
                 progress = "Not running"
                 submit_time = "Not running"
                 node = "Not running"
