@@ -138,7 +138,7 @@ class ProgressHandler(MainHandler):
         # Get Status for running computations
         jobs_status = self.batch_scriptor.s.query_all_jobs()
 
-        rows = "<h2>Running computations</h2><table><tr>" \
+        rows = "<h2>Running computations</h2><table class=\"hover\"><tr>" \
                "<th>TCGA ID</th>" \
                "<th>Cancer Type</th>" \
                "<th>Tumor Barcode</th>" \
@@ -196,7 +196,7 @@ class ProgressHandler(MainHandler):
                 row[2], submit_time, node, row[6], progress)
 
         # Fetched the queued ones.
-        queued_rows = "<h2>Queued computations</h2><table><tr>" \
+        queued_rows = "<h2>Queued computations</h2><table class=\"hover\" style=\"font-size: small;\"><tr>" \
                       "<th>TCGA ID</th>" \
                       "<th>Cancer Type</th>" \
                       "<th>Tumor Barcode</th>" \
@@ -208,13 +208,13 @@ class ProgressHandler(MainHandler):
         sqlstr2 = "SELECT tumor_barcode, tumor_file_size, normal_barcode, normal_file_size, cancer_type, tcga_id FROM " \
                   "queued "
         for row in self.cursor.execute(sqlstr2):
-            queued_rows = queued_rows + "<tr><td>{}</td><td>{}</td><td>{}</td><td>{}</td><td>{}</td><td>{}</td><td><button type=\"button\" onclick=\"SubmitJob(\'{}\')\">+</button></td></tr>".format(
+            queued_rows = queued_rows + "<tr><td>{}</td><td>{}</td><td>{}</td><td>{}</td><td>{}</td><td>{}</td><td><button type=\"button\" class=\"button tiny\" onclick=\"SubmitJob(\'{}\')\">+</button></td></tr>".format(
                 row[5], row[4], row[0], size(row[1]),
                 row[2], size(row[3]), row[5])
 
         sqlstr3 = "SELECT tumor_barcode, tumor_file_size, normal_barcode, normal_file_size, cancer_type, tcga_id, " \
                   "stage FROM finished "
-        finished_rows = "<h2>Finished computations</h2><table><tr>" \
+        finished_rows = "<h2>Finished computations</h2><table class=\"hover\"><tr>" \
                         "<th>TCGA ID</th>" \
                         "<th>Cancer Type</th>" \
                         "<th>Tumor Barcode</th>" \

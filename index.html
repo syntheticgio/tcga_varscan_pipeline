@@ -29,7 +29,7 @@
 <!--        </style>-->
 <!--        <link href="foundation/assets/css/foundation.css" rel="stylesheet">-->
         <link rel="stylesheet" href="static/css/foundation.css"/>
-        <link rel="stylesheet" type="text/css" href="static/css/index.css">
+        <!--<link rel="stylesheet" type="text/css" href="static/css/index.css"> -->
         <script src="static/js/vendor/modernizr.js"></script>
 <!--        <script src="static/js/script.js"></script>-->
 
@@ -40,19 +40,39 @@
 
 	</HEAD>
 	<BODY>
-
-    <div class="callout large primary">
-      <div class="row column text-center">
-        <h1>TCGA WGS Progress Monitor</h1>
-          <p>John Torcivia, Ph.D.</p>
-      </div>
-    </div>
+<!--  Navigation Bar -->
+ 	<nav class="top-bar foundation-bar" data-topbar>
+  		<ul class="title-area">
+    		<li class="name">
+     			<span data-tooltip class="has-tip" title="Generate PCR Tag Watermarks for your gene."><h1 class="show-for-small-only"><a href="#">Watermarker</a></h1></span>
+     			<span data-tooltip class="has-tip" title="Generate PCR Tag Watermarks for your gene."><h1 class="show-for-medium-only"><a href="#">Watermarker</a></h1></span>
+     			<span data-tooltip class="has-tip" title="Generate PCR Tag Watermarks for your gene."><h1 class="show-for-large-only"><a href="#">Watermarker</a></h1></span>
+    		</li>
+  		</ul>
+  		<!-- Right Nav Section -->
+  		<section class="top-bar-section">
+    		<ul class="right">
+      			<!-- <li><a  href="http://foundation.zurb.com/docs/"  target="_blank">Foundation Docs</a></li> -->
+      			<!-- <li><a  href="http://codepen.io/ZURBFoundation/full/olduj/" target="_blank">Grid Example</a></li> -->
+      			<li><a  href="http://54.235.254.95/gd/index.html" target="_blank">GeneDesign</a></li>
+      			<li class="active"><a>Watermarker</a></li>
+      			<!-- <li><a  href="http://codepen.io/ZURBFoundation/full/fcFnq" target="_blank">Interchange</a></li> -->
+    		</ul>
+  </section>
+</nav>
 
     <div class="row" id="content">
-        <div class="medium-9 columns">
-            <div id="processing"></div>
-            <div id="queued"></div>
-            <div id="finished"></div>
+    	<div class="large primary">
+      		<div class="panel row column text-center" style="width:100%;">
+        		<h1>TCGA WGS Progress Monitor</h1>
+          		<p>John Torcivia, Ph.D.</p>
+      		</div>
+    	</div>
+
+        <div class="large-10 columns">
+            <div id="processing" class="table-scroll"></div>
+            <div id="queued" class="table-scroll"></div>
+            <div id="finished" class="table-scroll"></div>
 
             <DIV id="information"></DIV>
             <div id = "recordfinished"></div>
@@ -62,11 +82,12 @@
             <div id = "varscanprocesssomaticsnps"></div>
             <div id = "varscanprocesssomaticindels"></div>
         </div>
-        <div class="medium-3 columns" data-sticky-container>
+        <div class="small-2 columns" data-sticky-container>
             <div class="sticky" data-sticky data-anchor="content">
-                <h4>Nodes</h4>
-                <div id="nodes"></div>
-                <h4>Resource Metrics</h4>
+		<br></br>
+		<h4><b>Nodes</b></h4>
+                <div id="nodes" style="font-size: small;"></div>
+                <h4><b>Metrics</b></h4>
                 <div id="metrics"></div>
             </div>
         </div>
