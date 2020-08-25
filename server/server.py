@@ -204,8 +204,9 @@ class ProgressHandler(MainHandler):
                                                                                          submit_time, node, row[6],
                                                                                          progress)
                 except KeyError:
-                    print("W: %s does not appear to have any computations running.", row[5])
+                    # print("W: %s does not appear to have any computations running.", row[5])
                     # TODO: Remove out of running?
+                    pass
 
 
 
