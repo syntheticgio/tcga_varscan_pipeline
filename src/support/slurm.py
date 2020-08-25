@@ -167,7 +167,7 @@ echo "split_by_ref.sh : "$?
 ./transfer_clean.sh {normal_file} {tumor_file} {output_location} {barcode} {working_directory}/../references/{reference} {db_address}
 echo "transfer_clean.sh : "$? 
 
-rm -rf {working_directory}
+#rm -rf {working_directory}
         
         """
 
