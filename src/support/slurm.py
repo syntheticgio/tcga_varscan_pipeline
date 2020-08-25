@@ -288,7 +288,10 @@ echo "transfer_clean.sh : "$?
                     # print("Looks like there is a job that is running which isn't tracked in our internal database.")
                     # Skip
                     continue
-                job_info[tcga_barcode] = {key: {}}
+                if tcga_barcode in not in job_info:
+                    job_info[tcga_barcode] = {key: {}}
+                else:
+                    job_info[tcga_barcode][key] = {}
 
                 for part_key in sorted(value.keys()):
                     if part_key in date_fields:
