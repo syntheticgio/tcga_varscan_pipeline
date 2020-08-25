@@ -63,17 +63,13 @@ echo "FINISHED File:"
 cat OUTPUT/finished.txt
 echo ""
 echo ""
-if [[ -n "$6" ]]
-then
-    echo "POSTing job information ..."
-    python post_json.py -u recordfinished -i "${IP}" -f OUTPUT/finished.txt
-fi
+
+echo "POSTing job information ..."
+python post_json.py -u recordfinished -i "${IP}" -f OUTPUT/finished.txt
+
 # Update Running Entry to finished
 echo "{\"Normal\":\"${NORMAL_BAM}\",\"Tumor\":\"${TUMOR_BAM}\",\"Stage\":9,\"Reference\":\"${REFERENCE_NAME}\"}" > OUTPUT/running_entry.txt
-if [[ -n "$6" ]]
-then
-    python post_json.py -u updaterunningsample -v -i "${IP}" -f OUTPUT/running_entry.txt
-fi
+python post_json.py -u updaterunningsample -v -i "${IP}" -f OUTPUT/running_entry.txt
 echo ""
 echo "FINISHED!"
 
