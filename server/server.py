@@ -189,7 +189,8 @@ class ProgressHandler(MainHandler):
                     failed = barcode_progress["FAILED"] + barcode_progress["SUSPENDED"] + \
                              barcode_progress["CANCELLED"] + barcode_progress["TIMEOUT"]
                     completed = barcode_progress["COMPLETED"] + barcode_progress["COMPLETING"]
-                    progress = "<span style=\"color: green\">{}<span> | <span style=\"color: yellow\">{}<span> | <span " \
+                    progress = "<span style=\"color: green\">{}<span><span style=\"color: black\">|</span>" \
+                               "<span style=\"color: grey\">{}<span><span style=\"color: black\">|</span><span " \
                                "style=\"color: red\">{}<span>".format(completed, barcode_progress["PENDING"], failed)
 
                     rows = rows + "<tr><td>{}</td><td><a href=\"https://portal.gdc.cancer.gov/projects/TCGA-{}\" " \
