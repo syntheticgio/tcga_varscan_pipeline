@@ -126,6 +126,10 @@ gsutil cp {tumor}.bai ./ 2> download_tumor_bai.stderr
 # ln -s {tumor}.bai ./
 echo "gsutil {tumor}.bai ./ : "$? 
 
+sleep(2)
+touch {tumor}.bai
+touch {normal}.bai
+
 echo "Copying script files ..."
 cp /home/torcivia/pipeline/tcga_varscan_pipeline/src/pipeline.sh ./
 cp /home/torcivia/pipeline/tcga_varscan_pipeline/src/post_json.py ./

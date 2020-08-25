@@ -133,8 +133,8 @@ class ProgressHandler(MainHandler):
 
     def post(self):
         # Fetch the processing ones
-        sqlstr = "SELECT tumor_barcode, tumor_file_size, normal_barcode, normal_file_size, cancer_type, tcga_id, tumor_gdc_id, normal_gdc_id " \
-                 "stage  FROM processing "
+        sqlstr = "SELECT tumor_barcode, tumor_file_size, normal_barcode, normal_file_size, cancer_type, tcga_id, " \
+                 "tumor_gdc_id, normal_gdc_id stage  FROM processing"
         # Get Status for running computations
         jobs_status = self.batch_scriptor.s.query_all_jobs()
 
@@ -160,9 +160,9 @@ class ProgressHandler(MainHandler):
             if jobs_status is not None:
                 try:
                     for job_id in jobs_status[row[5]]:
-                        # date_fields = ['start_time', 'suspend_time', 'submit_time', 'end_time', 'eligible_time', 'resize_time']
-                        # other_fields = ['run_time', 'run_time_str', 'nodes', 'job_state', 'command']
-                        # PENDING, RUNNING, SUSPENDED, COMPLETING, and COMPLETED
+                        # date_fields = ['start_time', 'suspend_time', 'submit_time', 'end_time', 'eligible_time',
+                        # 'resize_time'] other_fields = ['run_time', 'run_time_str', 'nodes', 'job_state',
+                        # 'command'] PENDING, RUNNING, SUSPENDED, COMPLETING, and COMPLETED
 
                         # Get Job States for all Job Ids per interesting TCGA ID
                         if jobs_status[row[5]][job_id]['job_state'] in barcode_progress:
@@ -195,14 +195,16 @@ class ProgressHandler(MainHandler):
                     progress = "Not running"
 
                 rows = rows + "<tr><td>{}</td><td><a href=\"https://portal.gdc.cancer.gov/projects/TCGA-{}\" " \
-                          "target=\"_blank\">{}</a></td><td><a " \
-                          "href=\"https://https://portal.gdc.cancer.gov/legacy-archive/files/{}\" target=\"_blank\">{}" \
-                          "</a></td><td><a href=\"https://https://portal.gdc.cancer.gov/legacy-archive/files/{}\" " \
-                          "target=\"_blank\">{}</a></td>" \
-                          "<td>{}</td><td>{}</td><td>{}</td><td>{}</td></tr>".format(row[5], row[4], row[4],
-                                                                                     row[6], row[0], row[7],
-                                                                                     row[2], submit_time, node, row[6],
-                                                                                     progress)
+                              "target=\"_blank\">{}</a></td><td><a " \
+                              "href=\"https://https://portal.gdc.cancer.gov/legacy-archive/files/{}\" " \
+                              "target=\"_blank\">{}</a></td><td><a " \
+                              "href=\"https://https://portal.gdc.cancer.gov/legacy-archive/files/{}\" " \
+                              "target=\"_blank\">{}</a></td>" \
+                              "<td>{}</td><td>{}</td><td>{}</td><td>{}</td></tr>".format(row[5], row[4], row[4],
+                                                                                         row[6], row[0], row[7],
+                                                                                         row[2], submit_time, node,
+                                                                                         row[6],
+                                                                                         progress)
 
         # Fetched the queued ones.
         queued_rows = "<h2>Queued computations</h2><table class=\"hover\" style=\"font-size: 12px; padding:2px;\"><tr>" \
@@ -214,8 +216,8 @@ class ProgressHandler(MainHandler):
                       "<th>Normal File Size</th>" \
                       "<th>Run</th>" \
                       "</tr>"
-        sqlstr2 = "SELECT tumor_barcode, tumor_file_size, normal_barcode, normal_file_size, cancer_type, tcga_id, tumor_gdc_id, normal_gdc_id FROM " \
-                  "queued "
+        sqlstr2 = "SELECT tumor_barcode, tumor_file_size, normal_barcode, normal_file_size, cancer_type, tcga_id, " \
+                  "tumor_gdc_id, normal_gdc_id FROM queued"
         for row in self.cursor.execute(sqlstr2):
             queued_rows = queued_rows + "<tr><td>{}</td><td><a href=\"https://portal.gdc.cancer.gov/projects/TCGA-{}" \
                                         "\" target=\"_blank\">{}</a></td><td><a " \
@@ -224,12 +226,12 @@ class ProgressHandler(MainHandler):
                                         "href=\"https://https://portal.gdc.cancer.gov/legacy-archive/files/{}\" " \
                                         "target=\"_blank\">{}</a></td><td>{}</td><td><button type=\"button\" " \
                                         "class=\"button tiny\" onclick=\"SubmitJob(\'{}" \
-                                        "\')\">+</button></td></tr>".format(
-                row[5], row[4], row[4], row[6], row[0], size(row[1]),
-                row[7], row[2], size(row[3]), row[5])
+                                        "\')\">+</button></td></tr>".format(row[5], row[4], row[4],
+                                                                            row[6], row[0], size(row[1]),
+                                                                            row[7], row[2], size(row[3]), row[5])
 
         sqlstr3 = "SELECT tumor_barcode, tumor_file_size, normal_barcode, normal_file_size, cancer_type, tcga_id, " \
-                  "stage, tumor_gdc_id, normal_gdc_id FROM finished "
+                  "stage, tumor_gdc_id, normal_gdc_id FROM finished"
         finished_rows = "<h2>Finished computations</h2><table class=\"hover\"><tr>" \
                         "<th>TCGA ID</th>" \
                         "<th>Cancer Type</th>" \
@@ -245,9 +247,9 @@ class ProgressHandler(MainHandler):
                                             "href=\"https://https://portal.gdc.cancer.gov/legacy-archive/files/{}\" " \
                                             "target=\"_blank\">{}</a></td><td>{}</td><td><a " \
                                             "href=\"https://https://portal.gdc.cancer.gov/legacy-archive/files/{}\" " \
-                                            "target=\"_blank\">{}</a></td><td>{}</td><td>{}</td></tr>".format(
-                row[5], row[4], row[4], row[7], row[0], size(row[1]),
-                row[8], row[2], size(row[3]), row[6])
+                                            "target=\"_blank\">{}</a></td><td>{}</td><td>{}" \
+                                            "</td></tr>".format(row[5], row[4], row[4], row[7], row[0], size(row[1]),
+                                                                row[8], row[2], size(row[3]), row[6])
         self.set_header("Content-Type", "text/plain")
         _rws = {
             "processing": rows,
