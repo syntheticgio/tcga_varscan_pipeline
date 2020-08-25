@@ -563,6 +563,7 @@ class SubmitJobHandler(MainHandler):
         print("Body: {}".format(json_body))
         print("Checking to see if {} is available to push to computations.".format(json_body['tcga_id']))
         try:
+            print("!!!!!!! Generating submission for : {}".format(json_body))
             if self.batch_scriptor.generate_sbatch_by_tcga_id(json_body['tcga_id']):
                 # Remove this tcga ID entry from the query table, and put it into the processing one
                 sql_statement = """
