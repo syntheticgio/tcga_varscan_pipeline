@@ -288,7 +288,7 @@ echo "transfer_clean.sh : "$?
                     # print("Looks like there is a job that is running which isn't tracked in our internal database.")
                     # Skip
                     continue
-                if tcga_barcode in not in job_info:
+                if tcga_barcode not in job_info:
                     job_info[tcga_barcode] = {key: {}}
                 else:
                     job_info[tcga_barcode][key] = {}
