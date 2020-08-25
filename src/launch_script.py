@@ -178,6 +178,7 @@ class BatchScriptor:
         # Launch download here
         # job_id = <call for job here>
         job_id = self.s.launch_job()
+        self.sample_id_lists[caller_.barcode] = {}
         self.sample_id_lists[caller_.barcode][job_type] = job_id
 
         # Set new job type
