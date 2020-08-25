@@ -154,6 +154,7 @@ class ProgressHandler(MainHandler):
             download_jobs = []
             varscan_jobs = []
             cleanup_jobs = []
+            test_jobs = []
             node = "Un-assigned"
             submit_time = "Un-submitted"
             for job_id in jobs_status[row[5]]:
@@ -171,15 +172,14 @@ class ProgressHandler(MainHandler):
                 submit_time = jobs_status[row[5]][job_id]['submit_time']
                 node = jobs_status[row[5]][job_id]['nodes']
 
-                # TODO: Not sure what I want to do with this info yet.
                 if jobs_status[row[5]][job_id]['comment'].split("_")[1] == "DOWNLOAD":
-                    pass
+                    download_jobs.append(job_id)
                 elif jobs_status[row[5]][job_id]['comment'].split("_")[1] == "VARSCAN":
-                    pass
+                    varscan_jobs.append(job_id)
                 elif jobs_status[row[5]][job_id]['comment'].split("_")[1] == "CLEAN":
-                    pass
+                    cleanup_jobs.append(job_id)
                 elif jobs_status[row[5]][job_id]['comment'].split("_")[1] == "TEST":
-                    pass
+                    test_jobs.append(job_id)
                 else:
                     pass
 
