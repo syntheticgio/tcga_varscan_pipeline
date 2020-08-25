@@ -40,7 +40,7 @@ function RequestStatus() {
                 contentType: "application/json; charset=utf-8",
                 traditional: true
             })
-        }, 1000);
+        }, 5000);
 
     };
 }
