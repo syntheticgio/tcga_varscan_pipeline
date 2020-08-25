@@ -564,13 +564,24 @@ class SubmitJobHandler(MainHandler):
         print("Checking to see if {} is available to push to computations.".format(json_body['tcga_id']))
         try:
             if self.batch_scriptor.generate_sbatch_by_tcga_id(json_body['tcga_id']):
-                # Remove this tcga ID entry from the query table, and put it into the processing one
-                sql_statement = "INSERT OR IGNORE INTO processing SELECT id, tumor_barcode, tumor_file, tumor_gdc_id, tumor_file_url, tumor_file_size, tumor_platform, normal_barcode, normal_file, normal_gdc_id, normal_file_url, normal_file_size, normal_platform, cancer_type, total_size, tcga_id, stage FROM queued WHERE tcga_id = \'{}\')".format(json_body['tcga_id'])
-                self.cursor.execute(sql_statement)
-                sql_statement = """
-                                DELETE FROM queued WHERE tcga_id = \'{}\'
-                                """.format(json_body['tcga_id'])
-                self.cursor.execute(sql_statement)
+
+                # Get info about this entry and transition it.
+                sql_statement = "SELECT * FROM queued where tcga_id = \'{}\'".format(json_body['tcga_id'])
+                res = self.cursor.execute(sql_statement)
+
+                # Insert into queued
+                for r in res:
+                    insert_statement = "INSERT OR IGNORE INTO processing (tumor_barcode,tumor_file,tumor_gdc_id," \
+                                       "tumor_file_url,tumor_file_size,tumor_platform,normal_barcode,normal_file," \
+                                       "normal_gdc_id,normal_file_url,normal_file_size,normal_platform,cancer_type," \
+                                       " total_size, tcga_id, stage) VALUES ({},{},{},{},{},{},{},{},{},{},{},{},"\
+                                       "{},{},{},{})".format(r[1], r[2], r[3], r[4], r[5],r[6], r[7], r[8], r[9], r[10],
+                                                             r[11], r[12], r[13], r[14], r[15], r[16])
+                    self.cursor.execute(insert_statement)
+
+                # Delete from queued here
+                delete_statement = "DELETE FROM queued WHERE tcga_id = \'{}\'".format(json_body['tcga_id'])
+                self.cursor.execute(delete_statement)
             else:
                 print("Failed to submit the tcga ID job: {}".format(json_body['tcga_id']))
                 self.write({"result": "failed"})
