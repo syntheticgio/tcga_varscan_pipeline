@@ -193,13 +193,8 @@ class ProgressHandler(MainHandler):
                                "style=\"color: red\">{}<span>".format(completed, barcode_progress["PENDING"], failed)
                 except KeyError:
                     progress = "Not running"
-                    submit_time = "Not running"
-                    node = "Not running"
-            else:
-                progress = "Not running"
-                submit_time = "Not running"
-                node = "Not running"
-            rows = rows + "<tr><td>{}</td><td><a href=\"https://portal.gdc.cancer.gov/projects/TCGA-{}\" " \
+
+                rows = rows + "<tr><td>{}</td><td><a href=\"https://portal.gdc.cancer.gov/projects/TCGA-{}\" " \
                           "target=\"_blank\">{}</a></td><td><a " \
                           "href=\"https://https://portal.gdc.cancer.gov/legacy-archive/files/{}\" target=\"_blank\">{}" \
                           "</a></td><td><a href=\"https://https://portal.gdc.cancer.gov/legacy-archive/files/{}\" " \
