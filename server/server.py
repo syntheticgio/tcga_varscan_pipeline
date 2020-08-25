@@ -133,7 +133,7 @@ class ProgressHandler(MainHandler):
 
     def post(self):
         # Fetch the processing ones
-        sqlstr = "SELECT tumor_barcode, tumor_file_size, normal_barcode, normal_file_size, cancer_type, tcga_id, " \
+        sqlstr = "SELECT tumor_barcode, tumor_file_size, normal_barcode, normal_file_size, cancer_type, tcga_id, tumor_gdc_id, normal_gdc_id " \
                  "stage  FROM processing "
         # Get Status for running computations
         jobs_status = self.batch_scriptor.s.query_all_jobs()
@@ -190,9 +190,9 @@ class ProgressHandler(MainHandler):
             progress = "<span style=\"color: green\">{}<span> | <span style=\"color: yellow\">{}<span> | <span " \
                        "style=\"color: red\">{}<span>".format(completed, barcode_progress["PENDING"], failed)
 
-            rows = rows + "<tr><td>{}</td><td>{}</td><td>{}</td><td>{}</td>" \
+            rows = rows + "<tr><td>{}</td><td>{}</td><td><a href=\"https://https://portal.gdc.cancer.gov/legacy-archive/files/{}\">{}</a></td><td><a href=\"https://https://portal.gdc.cancer.gov/legacy-archive/files/{}\">{}</a></td>" \
                           "<td>{}</td><td>{}</td><td>{}</td><td>{}</td></tr>".format(
-                row[5], row[4], row[0],
+                row[5], row[4], row[6], row[0], row[7],
                 row[2], submit_time, node, row[6], progress)
 
         # Fetched the queued ones.
@@ -205,15 +205,15 @@ class ProgressHandler(MainHandler):
                       "<th>Normal File Size</th>" \
                       "<th>Run</th>" \
                       "</tr>"
-        sqlstr2 = "SELECT tumor_barcode, tumor_file_size, normal_barcode, normal_file_size, cancer_type, tcga_id FROM " \
+        sqlstr2 = "SELECT tumor_barcode, tumor_file_size, normal_barcode, normal_file_size, cancer_type, tcga_id, tumor_gdc_id, normal_gdc_id FROM " \
                   "queued "
         for row in self.cursor.execute(sqlstr2):
-            queued_rows = queued_rows + "<tr><td>{}</td><td>{}</td><td>{}</td><td>{}</td><td>{}</td><td>{}</td><td><button type=\"button\" class=\"button tiny\" onclick=\"SubmitJob(\'{}\')\">+</button></td></tr>".format(
-                row[5], row[4], row[0], size(row[1]),
-                row[2], size(row[3]), row[5])
+            queued_rows = queued_rows + "<tr><td>{}</td><td>{}</td><td><a href=\"https://https://portal.gdc.cancer.gov/legacy-archive/files/{}\">{}</a></td><td>{}</td><td><a href=\"https://https://portal.gdc.cancer.gov/legacy-archive/files/{}\">{}</a></td><td>{}</td><td><button type=\"button\" class=\"button tiny\" onclick=\"SubmitJob(\'{}\')\">+</button></td></tr>".format(
+                row[5], row[4], row[6], row[0], size(row[1]),
+                row[7], row[2], size(row[3]), row[5])
 
         sqlstr3 = "SELECT tumor_barcode, tumor_file_size, normal_barcode, normal_file_size, cancer_type, tcga_id, " \
-                  "stage FROM finished "
+                  "stage, tumor_gdc_id, normal_gdc_id FROM finished "
         finished_rows = "<h2>Finished computations</h2><table class=\"hover\"><tr>" \
                         "<th>TCGA ID</th>" \
                         "<th>Cancer Type</th>" \
@@ -224,9 +224,9 @@ class ProgressHandler(MainHandler):
                         "<th>Stage</th>" \
                         "</tr>"
         for row in self.cursor.execute(sqlstr3):
-            finished_rows = finished_rows + "<tr><td>{}</td><td>{}</td><td>{}</td><td>{}</td><td>{}</td><td>{}</td><td>{}</td></tr>".format(
-                row[5], row[4], row[0], size(row[1]),
-                row[2], size(row[3]), row[6])
+            finished_rows = finished_rows + "<tr><td>{}</td><td>{}</td><td><a href=\"https://https://portal.gdc.cancer.gov/legacy-archive/files/{}\">{}</a></td><td>{}</td><td><a href=\"https://https://portal.gdc.cancer.gov/legacy-archive/files/{}\">{}</a></td><td>{}</td><td>{}</td></tr>".format(
+                row[5], row[4], row[7], row[0], size(row[1]),
+                row[8], row[2], size(row[3]), row[6])
         self.set_header("Content-Type", "text/plain")
         _rws = {
             "processing": rows,
