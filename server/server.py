@@ -157,40 +157,45 @@ class ProgressHandler(MainHandler):
             test_jobs = []
             node = "Un-assigned"
             submit_time = "Un-submitted"
-            try:
-                for job_id in jobs_status[row[5]]:
-                    # date_fields = ['start_time', 'suspend_time', 'submit_time', 'end_time', 'eligible_time', 'resize_time']
-                    # other_fields = ['run_time', 'run_time_str', 'nodes', 'job_state', 'command']
-                    # PENDING, RUNNING, SUSPENDED, COMPLETING, and COMPLETED
+            if jobs_status is not None:
+                try:
+                    for job_id in jobs_status[row[5]]:
+                        # date_fields = ['start_time', 'suspend_time', 'submit_time', 'end_time', 'eligible_time', 'resize_time']
+                        # other_fields = ['run_time', 'run_time_str', 'nodes', 'job_state', 'command']
+                        # PENDING, RUNNING, SUSPENDED, COMPLETING, and COMPLETED
 
-                    # Get Job States for all Job Ids per interesting TCGA ID
-                    if jobs_status[row[5]][job_id]['job_state'] in barcode_progress:
-                        barcode_progress[jobs_status[row[5]][job_id]['job_state']] += 1
-                    else:
-                        barcode_progress["OTHER"] += 1
+                        # Get Job States for all Job Ids per interesting TCGA ID
+                        if jobs_status[row[5]][job_id]['job_state'] in barcode_progress:
+                            barcode_progress[jobs_status[row[5]][job_id]['job_state']] += 1
+                        else:
+                            barcode_progress["OTHER"] += 1
 
-                    # Will overwrite for each job, but should all have more or less the same start time by TCGA ID
-                    submit_time = jobs_status[row[5]][job_id]['submit_time']
-                    node = jobs_status[row[5]][job_id]['nodes']
+                        # Will overwrite for each job, but should all have more or less the same start time by TCGA ID
+                        submit_time = jobs_status[row[5]][job_id]['submit_time']
+                        node = jobs_status[row[5]][job_id]['nodes']
 
-                    if jobs_status[row[5]][job_id]['comment'].split("_")[1] == "DOWNLOAD":
-                        download_jobs.append(job_id)
-                    elif jobs_status[row[5]][job_id]['comment'].split("_")[1] == "VARSCAN":
-                        varscan_jobs.append(job_id)
-                    elif jobs_status[row[5]][job_id]['comment'].split("_")[1] == "CLEAN":
-                        cleanup_jobs.append(job_id)
-                    elif jobs_status[row[5]][job_id]['comment'].split("_")[1] == "TEST":
-                        test_jobs.append(job_id)
-                    else:
-                        pass
+                        if jobs_status[row[5]][job_id]['comment'].split("_")[1] == "DOWNLOAD":
+                            download_jobs.append(job_id)
+                        elif jobs_status[row[5]][job_id]['comment'].split("_")[1] == "VARSCAN":
+                            varscan_jobs.append(job_id)
+                        elif jobs_status[row[5]][job_id]['comment'].split("_")[1] == "CLEAN":
+                            cleanup_jobs.append(job_id)
+                        elif jobs_status[row[5]][job_id]['comment'].split("_")[1] == "TEST":
+                            test_jobs.append(job_id)
+                        else:
+                            pass
 
-                # Create Progress report
-                failed = barcode_progress["FAILED"] + barcode_progress["SUSPENDED"] + \
-                         barcode_progress["CANCELLED"] + barcode_progress["TIMEOUT"]
-                completed = barcode_progress["COMPLETED"] + barcode_progress["COMPLETING"]
-                progress = "<span style=\"color: green\">{}<span> | <span style=\"color: yellow\">{}<span> | <span " \
-                           "style=\"color: red\">{}<span>".format(completed, barcode_progress["PENDING"], failed)
-            except KeyError:
+                    # Create Progress report
+                    failed = barcode_progress["FAILED"] + barcode_progress["SUSPENDED"] + \
+                             barcode_progress["CANCELLED"] + barcode_progress["TIMEOUT"]
+                    completed = barcode_progress["COMPLETED"] + barcode_progress["COMPLETING"]
+                    progress = "<span style=\"color: green\">{}<span> | <span style=\"color: yellow\">{}<span> | <span " \
+                               "style=\"color: red\">{}<span>".format(completed, barcode_progress["PENDING"], failed)
+                except KeyError:
+                    progress = "Not running"
+                    submit_time = "Not running"
+                    node = "Not running"
+            else:
                 progress = "Not running"
                 submit_time = "Not running"
                 node = "Not running"
