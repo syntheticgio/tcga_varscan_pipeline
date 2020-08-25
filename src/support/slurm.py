@@ -264,9 +264,11 @@ echo "transfer_clean.sh : "$?
         # Record a list of job ids by TCGA Barcode (might come in handy!)
         if self.tcga_barcode not in self.sample_id_lists:
             self.sample_id_lists[self.tcga_barcode] = {}
-        self.sample_id_lists[self.tcga_barcode][self.job_type] = (int(c) for c in return_ids)
+        if self.job_type not in self.sample_id_lists[self.tcga_barcode]:
+            self.sample_id_lists[self.tcga_barcode][self.job_type] = []
+        self.sample_id_lists[self.tcga_barcode][self.job_type].append(return_ids)
         # Create lookup table for all job_ids w/ tcga barcode as their entry
-        self.sample_by_id_lookup[(int(c) for c in return_ids)] = self.tcga_barcode
+        self.sample_by_id_lookup[return_ids] = self.tcga_barcode
         if self.job_type == "CLEAN":
             print("DEBUG: {}".format(self.sample_id_lists[self.tcga_barcode]))
         return return_ids

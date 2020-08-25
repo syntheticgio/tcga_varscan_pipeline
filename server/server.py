@@ -172,10 +172,8 @@ class ProgressHandler(MainHandler):
                         barcode_progress["OTHER"] += 1
 
                     # Will overwrite for each job, but should all have more or less the same start time by TCGA ID
-                    if submit_time == "Un-submitted":
-                        submit_time = jobs_status[row[5]][job_id]['submit_time']
-                    if node == "Un-assigned":
-                        node = jobs_status[row[5]][job_id]['nodes']
+                    submit_time = jobs_status[row[5]][job_id]['submit_time']
+                    node = jobs_status[row[5]][job_id]['nodes']
 
                     if jobs_status[row[5]][job_id]['comment'].split("_")[1] == "DOWNLOAD":
                         download_jobs.append(job_id)
