@@ -148,16 +148,17 @@ class ProgressHandler(MainHandler):
                "<th>Stage</th>" \
                "<th>Progress</th>" \
                "</tr>"
-        for row in self.cursor.execute(sqlstr):
-            # row[5] = tcga_id
-            barcode_progress = self.empty_progress_dict()
-            download_jobs = []
-            varscan_jobs = []
-            cleanup_jobs = []
-            test_jobs = []
-            node = "Un-assigned"
-            submit_time = "Un-submitted"
-            if jobs_status is not None:
+        if jobs_status is not None:
+            for row in self.cursor.execute(sqlstr):
+                # row[5] = tcga_id
+                barcode_progress = self.empty_progress_dict()
+                download_jobs = []
+                varscan_jobs = []
+                cleanup_jobs = []
+                test_jobs = []
+                node = "Un-assigned"
+                submit_time = "Un-submitted"
+
                 try:
                     for job_id in jobs_status[row[5]]:
                         # date_fields = ['start_time', 'suspend_time', 'submit_time', 'end_time', 'eligible_time',
@@ -191,20 +192,22 @@ class ProgressHandler(MainHandler):
                     completed = barcode_progress["COMPLETED"] + barcode_progress["COMPLETING"]
                     progress = "<span style=\"color: green\">{}<span> | <span style=\"color: yellow\">{}<span> | <span " \
                                "style=\"color: red\">{}<span>".format(completed, barcode_progress["PENDING"], failed)
-                except KeyError:
-                    progress = "Not running"
 
-                rows = rows + "<tr><td>{}</td><td><a href=\"https://portal.gdc.cancer.gov/projects/TCGA-{}\" " \
+                    rows = rows + "<tr><td>{}</td><td><a href=\"https://portal.gdc.cancer.gov/projects/TCGA-{}\" " \
                               "target=\"_blank\">{}</a></td><td><a " \
                               "href=\"https://https://portal.gdc.cancer.gov/legacy-archive/files/{}\" " \
                               "target=\"_blank\">{}</a></td><td><a " \
                               "href=\"https://https://portal.gdc.cancer.gov/legacy-archive/files/{}\" " \
                               "target=\"_blank\">{}</a></td>" \
                               "<td>{}</td><td>{}</td><td>{}</td><td>{}</td></tr>".format(row[5], row[4], row[4],
-                                                                                         row[6], row[0], row[7],
-                                                                                         row[2], submit_time, node,
-                                                                                         row[6],
+                                                                                         row[6], row[0], row[7], row[2],
+                                                                                         submit_time, node, row[6],
                                                                                          progress)
+                except KeyError:
+                    print("W: %s does not appear to have any computations running.", row[5])
+                    # TODO: Remove out of running?
+
+
 
         # Fetched the queued ones.
         queued_rows = "<h2>Queued computations</h2><table class=\"hover\" style=\"font-size: 12px; padding:2px;\"><tr>" \
