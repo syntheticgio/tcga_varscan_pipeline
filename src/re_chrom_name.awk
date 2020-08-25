@@ -36,5 +36,5 @@ BEGIN {
     print $0;
 }
 END {
-    exit header
+    exit header;
 }
