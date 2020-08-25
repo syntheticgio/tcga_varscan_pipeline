@@ -563,19 +563,9 @@ class SubmitJobHandler(MainHandler):
         print("Body: {}".format(json_body))
         print("Checking to see if {} is available to push to computations.".format(json_body['tcga_id']))
         try:
-            print("!!!!!!! Generating submission for : {}".format(json_body))
             if self.batch_scriptor.generate_sbatch_by_tcga_id(json_body['tcga_id']):
                 # Remove this tcga ID entry from the query table, and put it into the processing one
-                sql_statement = """
-                                INSERT INTO
-                                processing
-                                SELECT id, tumor_barcode, tumor_file, tumor_gdc_id, tumor_file_url, tumor_file_size, 
-                                tumor_platform, normal_barcode, normal_file, normal_gdc_id, normal_file_url, 
-                                normal_file_size, normal_platform, cancer_type, total_size, tcga_id, stage FROM
-                                queued
-                                WHERE NOT EXISTS(SELECT * FROM processing WHERE(
-                                tcga_id = \'{}\'))
-                                """.format(json_body['tcga_id'])
+                sql_statement = "INSERT OR IGNORE INTO processing SELECT id, tumor_barcode, tumor_file, tumor_gdc_id, tumor_file_url, tumor_file_size, tumor_platform, normal_barcode, normal_file, normal_gdc_id, normal_file_url, normal_file_size, normal_platform, cancer_type, total_size, tcga_id, stage FROM queued WHERE tcga_id = \'{}\')".format(json_body['tcga_id'])
                 self.cursor.execute(sql_statement)
                 sql_statement = """
                                 DELETE FROM queued WHERE tcga_id = \'{}\'
