@@ -159,54 +159,51 @@ class ProgressHandler(MainHandler):
                 node = "Un-assigned"
                 submit_time = "Un-submitted"
 
-                try:
-                    for job_id in jobs_status[row[5]]:
-                        # date_fields = ['start_time', 'suspend_time', 'submit_time', 'end_time', 'eligible_time',
-                        # 'resize_time'] other_fields = ['run_time', 'run_time_str', 'nodes', 'job_state',
-                        # 'command'] PENDING, RUNNING, SUSPENDED, COMPLETING, and COMPLETED
+                if row[5] in jobs_status:
+                    job_id = jobs_status[row[5]]
+                    # date_fields = ['start_time', 'suspend_time', 'submit_time', 'end_time', 'eligible_time',
+                    # 'resize_time'] other_fields = ['run_time', 'run_time_str', 'nodes', 'job_state',
+                    # 'command'] PENDING, RUNNING, SUSPENDED, COMPLETING, and COMPLETED
 
-                        # Get Job States for all Job Ids per interesting TCGA ID
-                        if jobs_status[row[5]][job_id]['job_state'] in barcode_progress:
-                            barcode_progress[jobs_status[row[5]][job_id]['job_state']] += 1
-                        else:
-                            barcode_progress["OTHER"] += 1
+                    # Get Job States for all Job Ids per interesting TCGA ID
+                    if jobs_status[row[5]][job_id]['job_state'] in barcode_progress:
+                        barcode_progress[jobs_status[row[5]][job_id]['job_state']] += 1
+                    else:
+                        barcode_progress["OTHER"] += 1
 
-                        # Will overwrite for each job, but should all have more or less the same start time by TCGA ID
-                        submit_time = jobs_status[row[5]][job_id]['submit_time']
-                        node = jobs_status[row[5]][job_id]['nodes']
+                    # Will overwrite for each job, but should all have more or less the same start time by TCGA ID
+                    submit_time = jobs_status[row[5]][job_id]['submit_time']
+                    node = jobs_status[row[5]][job_id]['nodes']
 
-                        if jobs_status[row[5]][job_id]['comment'].split("_")[1] == "DOWNLOAD":
-                            download_jobs.append(job_id)
-                        elif jobs_status[row[5]][job_id]['comment'].split("_")[1] == "VARSCAN":
-                            varscan_jobs.append(job_id)
-                        elif jobs_status[row[5]][job_id]['comment'].split("_")[1] == "CLEAN":
-                            cleanup_jobs.append(job_id)
-                        elif jobs_status[row[5]][job_id]['comment'].split("_")[1] == "TEST":
-                            test_jobs.append(job_id)
-                        else:
-                            pass
+                    if jobs_status[row[5]][job_id]['comment'].split("_")[1] == "DOWNLOAD":
+                        download_jobs.append(job_id)
+                    elif jobs_status[row[5]][job_id]['comment'].split("_")[1] == "VARSCAN":
+                        varscan_jobs.append(job_id)
+                    elif jobs_status[row[5]][job_id]['comment'].split("_")[1] == "CLEAN":
+                        cleanup_jobs.append(job_id)
+                    elif jobs_status[row[5]][job_id]['comment'].split("_")[1] == "TEST":
+                        test_jobs.append(job_id)
+                    else:
+                        pass
 
-                    # Create Progress report
-                    failed = barcode_progress["FAILED"] + barcode_progress["SUSPENDED"] + \
-                             barcode_progress["CANCELLED"] + barcode_progress["TIMEOUT"]
-                    completed = barcode_progress["COMPLETED"] + barcode_progress["COMPLETING"]
-                    progress = "<span style=\"color: green\">{}<span> | <span style=\"color: yellow\">{}<span> | <span " \
-                               "style=\"color: red\">{}<span>".format(completed, barcode_progress["PENDING"], failed)
+                # Create Progress report
+                failed = barcode_progress["FAILED"] + barcode_progress["SUSPENDED"] + \
+                         barcode_progress["CANCELLED"] + barcode_progress["TIMEOUT"]
+                completed = barcode_progress["COMPLETED"] + barcode_progress["COMPLETING"]
+                progress = "<span style=\"color: green\">{}<span> | <span style=\"color: yellow\">{}<span> | <span " \
+                           "style=\"color: red\">{}<span>".format(completed, barcode_progress["PENDING"], failed)
 
-                    rows = rows + "<tr><td>{}</td><td><a href=\"https://portal.gdc.cancer.gov/projects/TCGA-{}\" " \
-                              "target=\"_blank\">{}</a></td><td><a " \
-                              "href=\"https://https://portal.gdc.cancer.gov/legacy-archive/files/{}\" " \
-                              "target=\"_blank\">{}</a></td><td><a " \
-                              "href=\"https://https://portal.gdc.cancer.gov/legacy-archive/files/{}\" " \
-                              "target=\"_blank\">{}</a></td>" \
-                              "<td>{}</td><td>{}</td><td>{}</td><td>{}</td></tr>".format(row[5], row[4], row[4],
-                                                                                         row[6], row[0], row[7], row[2],
-                                                                                         submit_time, node, row[6],
-                                                                                         progress)
-                except KeyError:
-                    # print("W: %s does not appear to have any computations running.", row[5])
-                    # TODO: Remove out of running?
-                    pass
+                rows = rows + "<tr><td>{}</td><td><a href=\"https://portal.gdc.cancer.gov/projects/TCGA-{}\" " \
+                          "target=\"_blank\">{}</a></td><td><a " \
+                          "href=\"https://https://portal.gdc.cancer.gov/legacy-archive/files/{}\" " \
+                          "target=\"_blank\">{}</a></td><td><a " \
+                          "href=\"https://https://portal.gdc.cancer.gov/legacy-archive/files/{}\" " \
+                          "target=\"_blank\">{}</a></td>" \
+                          "<td>{}</td><td>{}</td><td>{}</td><td>{}</td></tr>".format(row[5], row[4], row[4],
+                                                                                     row[6], row[0], row[7], row[2],
+                                                                                     submit_time, node, row[6],
+                                                                                     progress)
+
 
 
 
