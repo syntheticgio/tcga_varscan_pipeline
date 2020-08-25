@@ -35,8 +35,6 @@ NORMAL_BAM=$(basename "$1")
 TUMOR_BAM=$(basename "$2")
 
 
-
-
 if [[ -e "${NORMAL_BAM}.bai" ]]; then
 	NORMAL_SORTED=0
 else

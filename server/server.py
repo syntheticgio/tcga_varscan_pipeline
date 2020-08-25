@@ -560,7 +560,7 @@ class SubmitJobHandler(MainHandler):
                 sql_statement = """
                                 INSERT INTO
                                 processing
-                                SELECT tumor_barcode, tumor_file, tumor_gdc_id, tumor_file_url, tumor_file_size, 
+                                SELECT id, tumor_barcode, tumor_file, tumor_gdc_id, tumor_file_url, tumor_file_size, 
                                 tumor_platform, normal_barcode, normal_file, normal_gdc_id, normal_file_url, 
                                 normal_file_size, normal_platform, cancer_type, total_size, tcga_id, stage FROM
                                 queued

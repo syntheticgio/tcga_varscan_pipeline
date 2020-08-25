@@ -107,24 +107,24 @@ mkdir -p {working_directory}
 echo "Moving to directory..."
 cd {working_directory}
 
-echo "Attempting to make bucket directory and link it..."
-mkdir -p {working_directory}/tcga_bucket/
-gcsfuse gdc-tcga-phs000178-controlled {working_directory}/tcga_bucket/
+# echo "Attempting to make bucket directory and link it..."
+# mkdir -p {working_directory}/tcga_bucket/
+# gcsfuse gdc-tcga-phs000178-controlled {working_directory}/tcga_bucket/
 
 echo "Copying BAM files and indexes..."
-#gsutil cp {normal} ./ 2> download_normal.sterr
-ln -s {normal} ./
-echo "ln -s {normal} ./ : "$? 
-#gsutil cp {tumor} ./ 2> download_tumor.stderr
-ln -s {tumor} ./
-echo "ln -s {tumor} ./ : "$?
+gsutil cp {normal} ./ 2> download_normal.sterr
+# ln -s {normal} ./
+echo "gsutil {normal} ./ : "$? 
+gsutil cp {tumor} ./ 2> download_tumor.stderr
+# ln -s {tumor} ./
+echo "gsutil {tumor} ./ : "$?
 
-#gsutil cp {normal}.bai ./ 2> download_normal_bai.stderr
-ln -s {normal}.bai ./
-echo "ln -s {normal}.bai ./ : "$?
-#gsutil cp {tumor}.bai ./ 2> download_tumor_bai.stderr
-ln -s {tumor}.bai ./
-echo "ln -s {tumor}.bai ./ : "$? 
+gsutil cp {normal}.bai ./ 2> download_normal_bai.stderr
+# ln -s {normal}.bai ./
+echo "gsutil {normal}.bai ./ : "$?
+gsutil cp {tumor}.bai ./ 2> download_tumor_bai.stderr
+# ln -s {tumor}.bai ./
+echo "gsutil {tumor}.bai ./ : "$? 
 
 echo "Copying script files ..."
 cp /home/torcivia/pipeline/tcga_varscan_pipeline/src/pipeline.sh ./
@@ -184,11 +184,11 @@ rm -rf {working_directory}
         # While some of these variables appear to not be used; they are being used in the **vars() calls below silently.
         barcode = caller.barcode
         working_directory = self.base_directory + barcode + "/"
-        # For gcsfuse -
-        normal = caller.normal_file_url.replace("gs://gdc-tcga-phs000178-controlled/", "{}tcga_bucket/".format(working_directory))
-        tumor = caller.tumor_file_url.replace("gs://gdc-tcga-phs000178-controlled/", "{}tcga_bucket/".format(working_directory))
-        # normal = caller.normal_file_url
-        # tumor = caller.tumor_file_url
+        # For gcsfuse - DOES NOT WORK FOR THESE PURPOSES!
+        # normal = caller.normal_file_url.replace("gs://gdc-tcga-phs000178-controlled/", "{}tcga_bucket/".format(working_directory))
+        # tumor = caller.tumor_file_url.replace("gs://gdc-tcga-phs000178-controlled/", "{}tcga_bucket/".format(working_directory))
+        normal = caller.normal_file_url
+        tumor = caller.tumor_file_url
         normal_file = caller.normal_file
         tumor_file = caller.tumor_file
 
