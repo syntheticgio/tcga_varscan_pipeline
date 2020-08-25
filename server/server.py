@@ -196,7 +196,7 @@ class ProgressHandler(MainHandler):
                 row[2], submit_time, node, row[6], progress)
 
         # Fetched the queued ones.
-        queued_rows = "<h2>Queued computations</h2><table class=\"hover\" style=\"font-size: small;\"><tr>" \
+        queued_rows = "<h2>Queued computations</h2><table class=\"hover\" style=\"font-size: 12px; padding:2px;\"><tr>" \
                       "<th>TCGA ID</th>" \
                       "<th>Cancer Type</th>" \
                       "<th>Tumor Barcode</th>" \
