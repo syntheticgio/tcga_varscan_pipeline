@@ -113,13 +113,14 @@ class BatchScriptor:
         self.db_address = kwargs.get("ip", "127.0.0.1:8081")
         self.nodes = self.config['nodes']
         self.references = self.config['references']
+        self.output_bucket = self.config['output_bucket']
         self.node_length = len(self.nodes)
         self.node_indx = 0
         self.wait_id = []
         for x in range(0, self.node_length):
             self.wait_id.append(-1)
         self.sample_id_lists = {}
-        self.s = slurm_submitter(self.base_directory)
+        self.s = slurm_submitter(self.base_directory, self.output_bucket)
 
     @staticmethod
     def run_test(config):
@@ -190,7 +191,7 @@ class BatchScriptor:
 
         # Do cleanup
         job_type = "CLEAN"
-        s.populate_template(caller_, node, job_type, self.db_address, "cleanup", varcall_job_ids)
+        self.s.populate_template(caller_, node, job_type, self.db_address, "cleanup", varcall_job_ids)
         self.wait_id[self.node_indx] = self.s.launch_job()
         self.sample_id_lists[caller_.barcode][job_type] = self.wait_id[self.node_indx]
 
@@ -211,6 +212,7 @@ if __name__ == "__main__":
         if ivalue > 65535:
             raise argparse.ArgumentTypeError("%s is greater than 65535. Ports must be between 0 and 65535")
         return ivalue
+
 
     parser = argparse.ArgumentParser(description='Commands for launch script.')
     parser.add_argument('--ip', '-i',
@@ -275,7 +277,9 @@ if __name__ == "__main__":
         # Get external IP address for javascript
         external_ip = get('https://api.ipify.org').text
         # Replace in javascript
-        subprocess.run(["sed -i -e 's/REPLACE_URL_HERE/{}:{}/g' server/static/update.js".format(external_ip, args.port)], shell=True)
+        subprocess.run(
+            ["sed -i -e 's/REPLACE_URL_HERE/{}:{}/g' server/static/update.js".format(external_ip, args.port)],
+            shell=True)
 
     # Get finished matches as to not run those...
     match_list = []

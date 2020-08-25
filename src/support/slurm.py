@@ -28,8 +28,9 @@ class slurm_submitter:
     sample_id_lists = {}
     sample_by_id_lookup = {}
 
-    def __init__(self, base_dir):
+    def __init__(self, base_dir, output_bucket=None):
         self.base_directory = base_dir
+        self.output_bucket = output_bucket
         self.test_template = """\
 #!/bin/bash
 
@@ -106,6 +107,11 @@ mkdir -p {working_directory}
 echo "Moving to directory..."
 cd {working_directory}
 
+# gcsfuse doesn't seem to be working with this bucket
+# echo "Attempting to make bucket directory and link it..."
+# mkdir -p {working_directory}/tcga_bucket/
+# gcsfuse gdc-tcga-phs000178-controlled {working_directory}/tcga_bucket/
+
 echo "Copying BAM files and indexes..."
 gsutil cp {normal} ./ 2> download_normal.sterr
 echo "GSUTIL {normal} : "$? 
@@ -168,8 +174,16 @@ rm -rf {working_directory}
             self.slurm_file = "test_run_{}.slurm".format(time())
             return
 
+        if self.output_bucket is None:
+            print(" ERROR!  Output Bucket is not set.  Please set in config file.  Aborting!")
+            exit(1)
+
         # While some of these variables appear to not be used; they are being used in the **vars() calls below silently.
         barcode = caller.barcode
+        working_directory = self.base_directory + barcode + "/"
+        # For gcsfuse - but not working -.-
+        # normal = caller.normal_file_url.replace("gs://gdc-tcga-phs000178-controlled/", "{}tcga_bucket/".format(working_directory))
+        # tumor = caller.tumor_file_url.replace("gs://gdc-tcga-phs000178-controlled/", "{}tcga_bucket/".format(working_directory))
         normal = caller.normal_file_url
         tumor = caller.tumor_file_url
         normal_file = caller.normal_file
@@ -178,9 +192,8 @@ rm -rf {working_directory}
         self.tcga_barcode = caller.barcode  # set here for other purposes (launching)
         # db_address = "35.231.62.194"
         # Construct output location
-        output_location = "gs://iron-eye-6998/tcga_wgs_results/" + barcode + "/"
+        output_location = self.output_bucket + barcode + "/"
         self.slurm_file = barcode + "_" + job_type + "_" + reference + ".slurm"
-        working_directory = self.base_directory + caller.barcode + "/"
 
         if job_type == "DOWNLOAD":
             # This is used in the **vars() call.
