@@ -610,12 +610,13 @@ class ManagerApplication(tornado.web.Application):
     def __init__(self, callers, batch_scriptor):
         tornado_settings = {
             "static_path": os.path.join(os.path.dirname(__file__), "static"),
-            'debug': True
+            "static_url_prefix": "/static/",
+            "debug": True
         }
-        foundation_css = os.path.join(tornado_settings["static_path"], "foundation", "assets", "css")
-        foundation_js = os.path.join(tornado_settings["static_path"], "foundation", "assets", "js")
-        foundation_svgs = os.path.join(tornado_settings["static_path"], "foundation", "assets", "svgs")
-        foundation_js_plugins = os.path.join(tornado_settings["static_path"], "foundation", "assets", "js", "plugins")
+        # foundation_css = os.path.join(tornado_settings["static_path"], "foundation", "assets", "css")
+        # foundation_js = os.path.join(tornado_settings["static_path"], "foundation", "assets", "js")
+        # foundation_svgs = os.path.join(tornado_settings["static_path"], "foundation", "assets", "svgs")
+        # foundation_js_plugins = os.path.join(tornado_settings["static_path"], "foundation", "assets", "js", "plugins")
 
         handlers = [
             (r"/", MainHandler),
@@ -635,16 +636,8 @@ class ManagerApplication(tornado.web.Application):
             (r"/test/", TestHandler),
             (r"/js/(.*)", tornado.web.StaticFileHandler,
              dict(path=tornado_settings['static_path'])),
-            (r"/(styles\.css)", tornado.web.StaticFileHandler,
+            (r"/css/(.*)", tornado.web.StaticFileHandler,
              dict(path=tornado_settings['static_path'])),
-            (r"/foundation/assets/css/(.*)", tornado.web.StaticFileHandler,
-             dict(path=foundation_css)),
-            (r"/foundation/assets/js/(.*)", tornado.web.StaticFileHandler,
-             dict(path=foundation_js)),
-            (r"/foundation/assets/svgs/(.*)", tornado.web.StaticFileHandler,
-             dict(path=foundation_svgs)),
-            (r"/foundation/assets/js/plugins/(.*)", tornado.web.StaticFileHandler,
-             dict(path=foundation_js_plugins)),
             (r"/(favicon\.ico)", tornado.web.StaticFileHandler,
              dict(path=tornado_settings['static_path'])),
             (r"/img/(.*)", tornado.web.StaticFileHandler,
