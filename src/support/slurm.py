@@ -188,6 +188,7 @@ echo "transfer_clean.sh : "$?
         # While some of these variables appear to not be used; they are being used in the **vars() calls below silently.
         barcode = caller.barcode
         working_directory = self.base_directory + barcode + "/"
+        print("!!!!!!!! WORKING DIRECTORY: {}".format(working_directory))
         # For gcsfuse - DOES NOT WORK FOR THESE PURPOSES!
         # normal = caller.normal_file_url.replace("gs://gdc-tcga-phs000178-controlled/", "{}tcga_bucket/".format(working_directory))
         # tumor = caller.tumor_file_url.replace("gs://gdc-tcga-phs000178-controlled/", "{}tcga_bucket/".format(working_directory))
