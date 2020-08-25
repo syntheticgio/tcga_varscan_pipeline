@@ -152,60 +152,57 @@ class ProgressHandler(MainHandler):
             for row in self.cursor.execute(sqlstr):
                 # row[5] = tcga_id
                 barcode_progress = self.empty_progress_dict()
-                download_jobs = []
-                varscan_jobs = []
-                cleanup_jobs = []
-                test_jobs = []
                 node = "Un-assigned"
                 submit_time = "Un-submitted"
 
                 if row[5] in jobs_status:
-                    job_id = jobs_status[row[5]]
+                    job_tcga_barcode_dict = jobs_status[row[5]]
                     # date_fields = ['start_time', 'suspend_time', 'submit_time', 'end_time', 'eligible_time',
                     # 'resize_time'] other_fields = ['run_time', 'run_time_str', 'nodes', 'job_state',
                     # 'command'] PENDING, RUNNING, SUSPENDED, COMPLETING, and COMPLETED
 
                     # Get Job States for all Job Ids per interesting TCGA ID
-                    if jobs_status[row[5]][job_id]['job_state'] in barcode_progress:
-                        barcode_progress[jobs_status[row[5]][job_id]['job_state']] += 1
-                    else:
-                        barcode_progress["OTHER"] += 1
+                    for job_id, job_id_dict in job_tcga_barcode_dict.items():
+                        if job_id_dict['job_state'] in barcode_progress:
+                            barcode_progress[jobs_status[row[5]][job_id]['job_state']] += 1
+                        else:
+                            barcode_progress["OTHER"] += 1
 
-                    # Will overwrite for each job, but should all have more or less the same start time by TCGA ID
-                    submit_time = jobs_status[row[5]][job_id]['submit_time']
-                    node = jobs_status[row[5]][job_id]['nodes']
+                        # Will overwrite for each job, but should all have more or less the same start time by TCGA ID
+                        submit_time = job_id_dict['submit_time']
+                        if job_id_dict['nodes']:
+                            node = job_id_dict['nodes']
 
-                    if jobs_status[row[5]][job_id]['comment'].split("_")[1] == "DOWNLOAD":
-                        download_jobs.append(job_id)
-                    elif jobs_status[row[5]][job_id]['comment'].split("_")[1] == "VARSCAN":
-                        varscan_jobs.append(job_id)
-                    elif jobs_status[row[5]][job_id]['comment'].split("_")[1] == "CLEAN":
-                        cleanup_jobs.append(job_id)
-                    elif jobs_status[row[5]][job_id]['comment'].split("_")[1] == "TEST":
-                        test_jobs.append(job_id)
-                    else:
-                        pass
+                        # Can capture individual information below on each type
+                        if job_id_dict['comment'] == "DOWNLOAD":
+                            pass
+                        elif job_id_dict['comment'] == "VARSCAN":
+                            pass
+                        elif job_id_dict['comment'] == "CLEAN":
+                            pass
+                        elif job_id_dict['comment'] == "TEST":
+                            pass
+                        else:
+                            pass
 
-                # Create Progress report
-                failed = barcode_progress["FAILED"] + barcode_progress["SUSPENDED"] + \
-                         barcode_progress["CANCELLED"] + barcode_progress["TIMEOUT"]
-                completed = barcode_progress["COMPLETED"] + barcode_progress["COMPLETING"]
-                progress = "<span style=\"color: green\">{}<span> | <span style=\"color: yellow\">{}<span> | <span " \
-                           "style=\"color: red\">{}<span>".format(completed, barcode_progress["PENDING"], failed)
+                    # Create Progress report
+                    failed = barcode_progress["FAILED"] + barcode_progress["SUSPENDED"] + \
+                             barcode_progress["CANCELLED"] + barcode_progress["TIMEOUT"]
+                    completed = barcode_progress["COMPLETED"] + barcode_progress["COMPLETING"]
+                    progress = "<span style=\"color: green\">{}<span> | <span style=\"color: yellow\">{}<span> | <span " \
+                               "style=\"color: red\">{}<span>".format(completed, barcode_progress["PENDING"], failed)
 
-                rows = rows + "<tr><td>{}</td><td><a href=\"https://portal.gdc.cancer.gov/projects/TCGA-{}\" " \
-                          "target=\"_blank\">{}</a></td><td><a " \
-                          "href=\"https://https://portal.gdc.cancer.gov/legacy-archive/files/{}\" " \
-                          "target=\"_blank\">{}</a></td><td><a " \
-                          "href=\"https://https://portal.gdc.cancer.gov/legacy-archive/files/{}\" " \
-                          "target=\"_blank\">{}</a></td>" \
-                          "<td>{}</td><td>{}</td><td>{}</td><td>{}</td></tr>".format(row[5], row[4], row[4],
-                                                                                     row[6], row[0], row[7], row[2],
-                                                                                     submit_time, node, row[8],
-                                                                                     progress)
-
-
-
+                    rows = rows + "<tr><td>{}</td><td><a href=\"https://portal.gdc.cancer.gov/projects/TCGA-{}\" " \
+                                  "target=\"_blank\">{}</a></td><td><a " \
+                                  "href=\"https://https://portal.gdc.cancer.gov/legacy-archive/files/{}\" " \
+                                  "target=\"_blank\">{}</a></td><td><a " \
+                                  "href=\"https://https://portal.gdc.cancer.gov/legacy-archive/files/{}\" " \
+                                  "target=\"_blank\">{}</a></td>" \
+                                  "<td>{}</td><td>{}</td><td>{}</td><td>{}</td></tr>".format(row[5], row[4], row[4],
+                                                                                             row[6], row[0], row[7],
+                                                                                             row[2],
+                                                                                             submit_time, node, row[8],
+                                                                                             progress)
 
         # Fetched the queued ones.
         queued_rows = "<h2>Queued computations</h2><table class=\"hover\" style=\"font-size: 12px; padding:2px;\"><tr>" \
@@ -576,8 +573,8 @@ class SubmitJobHandler(MainHandler):
                                        "normal_gdc_id,normal_file_url,normal_file_size,normal_platform,cancer_type," \
                                        " total_size, tcga_id, stage) VALUES (\'{}\',\'{}\',\'{}\',\'{}\',\'{}\'," \
                                        "\'{}\',\'{}\',\'{}\',\'{}\',\'{}\',\'{}\',\'{}\',\'{}\',\'{}\',\'{}\'," \
-                                       "\'{}\')".format(r[1], r[2], r[3], r[4], r[5],r[6], r[7], r[8], r[9], r[10],
-                                                             r[11], r[12], r[13], r[14], r[15], r[16])
+                                       "\'{}\')".format(r[1], r[2], r[3], r[4], r[5], r[6], r[7], r[8], r[9], r[10],
+                                                        r[11], r[12], r[13], r[14], r[15], r[16])
                     self.cursor.execute(insert_statement)
 
                 # Delete from queued here
