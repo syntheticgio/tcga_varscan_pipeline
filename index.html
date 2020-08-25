@@ -3,38 +3,9 @@
       <meta content="text/html;charset=utf-8" http-equiv="Content-Type">
       <meta content="utf-8" http-equiv="encoding">
       <link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet">
-<!--        <style>-->
-<!--            table {-->
-<!--                font-family: "Trebuchet MS", Arial, Helvetica, sans-serif;-->
-<!--                border-collapse: collapse;-->
-<!--                width: 100%;-->
-<!--            }-->
-
-<!--            table td, #customers th {-->
-<!--                border: 1px solid #ddd;-->
-<!--                padding: 8px;-->
-<!--            }-->
-
-<!--            table tr:nth-child(even){background-color: #f2f2f2;}-->
-
-<!--            table tr:hover {background-color: #ddd;}-->
-
-<!--            table th {-->
-<!--                padding-top: 12px;-->
-<!--                padding-bottom: 12px;-->
-<!--                text-align: left;-->
-<!--                background-color: #4CAF50;-->
-<!--                color: white;-->
-<!--            }-->
-<!--        </style>-->
-<!--        <link href="foundation/assets/css/foundation.css" rel="stylesheet">-->
         <link rel="stylesheet" href="static/css/foundation.css"/>
         <!--<link rel="stylesheet" type="text/css" href="static/css/index.css"> -->
         <script src="static/js/vendor/modernizr.js"></script>
-<!--        <script src="static/js/script.js"></script>-->
-
-
-<!--        <script src="foundation/assets/js/foundation.js"></script>-->
 
       <title>TCGA WGS Progress Monitor</title>
 
@@ -44,9 +15,9 @@
  	<nav class="top-bar foundation-bar" data-topbar>
   		<ul class="title-area">
     		<li class="name">
-     			<span data-tooltip class="has-tip" title="Generate PCR Tag Watermarks for your gene."><h1 class="show-for-small-only"><a href="#">Watermarker</a></h1></span>
-     			<span data-tooltip class="has-tip" title="Generate PCR Tag Watermarks for your gene."><h1 class="show-for-medium-only"><a href="#">Watermarker</a></h1></span>
-     			<span data-tooltip class="has-tip" title="Generate PCR Tag Watermarks for your gene."><h1 class="show-for-large-only"><a href="#">Watermarker</a></h1></span>
+     			<span data-tooltip class="has-tip" title="Generate PCR Tag Watermarks for your gene."><h1 class="show-for-small-only"><a href="#">WGS Caller</a></h1></span>
+     			<span data-tooltip class="has-tip" title="Generate PCR Tag Watermarks for your gene."><h1 class="show-for-medium-only"><a href="#">WGS Variant Caller</a></h1></span>
+     			<span data-tooltip class="has-tip" title="Generate PCR Tag Watermarks for your gene."><h1 class="show-for-large-only"><a href="#">WGS Variant Caller</a></h1></span>
     		</li>
   		</ul>
   		<!-- Right Nav Section -->
@@ -54,8 +25,8 @@
     		<ul class="right">
       			<!-- <li><a  href="http://foundation.zurb.com/docs/"  target="_blank">Foundation Docs</a></li> -->
       			<!-- <li><a  href="http://codepen.io/ZURBFoundation/full/olduj/" target="_blank">Grid Example</a></li> -->
-      			<li><a  href="http://54.235.254.95/gd/index.html" target="_blank">GeneDesign</a></li>
-      			<li class="active"><a>Watermarker</a></li>
+      			<li><a  href="http://54.235.254.95/gd/index.html" target="_blank">Visualizer</a></li>
+      			<li class="active"><a>Variant Caller</a></li>
       			<!-- <li><a  href="http://codepen.io/ZURBFoundation/full/fcFnq" target="_blank">Interchange</a></li> -->
     		</ul>
   </section>
@@ -68,6 +39,12 @@
           		<p>John Torcivia, Ph.D.</p>
       		</div>
     	</div>
+        <ul class="breadcrumbs">
+          <li><a href="#">Home</a></li>
+          <li><a href="#">Features</a></li>
+          <li class="unavailable"><a href="#">Gene Splicing</a></li>
+          <li class="current"><a href="#">Cloning</a></li>
+        </ul>
 
         <div class="large-10 columns">
             <div id="processing" class="table-scroll"></div>
