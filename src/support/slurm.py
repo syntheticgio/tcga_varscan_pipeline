@@ -109,7 +109,7 @@ cd {working_directory}
 
 # echo "Attempting to make bucket directory and link it..."
 # mkdir -p {working_directory}/tcga_bucket/
-# gcsfuse gdc-tcga-phs000178-controlled {working_directory}/tcga_bucket/
+# gcsfuse --implicit-dirs gdc-tcga-phs000178-controlled {working_directory}/tcga_bucket/
 
 echo "Copying BAM files and indexes..."
 gsutil cp {normal} ./ 2> download_normal.sterr
