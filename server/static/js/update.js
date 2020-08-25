@@ -40,7 +40,7 @@ function RequestStatus() {
                 contentType: "application/json; charset=utf-8",
                 traditional: true
             })
-        }, 2000);
+        }, 1000);
 
     };
 }
@@ -86,7 +86,7 @@ function NodeStatus(node_ids="all") {
                 contentType: "application/json; charset=utf-8",
                 traditional: true
             })
-        }, 5000);
+        }, 1000);
 
     };
 }
