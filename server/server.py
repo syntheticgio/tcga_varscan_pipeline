@@ -574,8 +574,9 @@ class SubmitJobHandler(MainHandler):
                     insert_statement = "INSERT OR IGNORE INTO processing (tumor_barcode,tumor_file,tumor_gdc_id," \
                                        "tumor_file_url,tumor_file_size,tumor_platform,normal_barcode,normal_file," \
                                        "normal_gdc_id,normal_file_url,normal_file_size,normal_platform,cancer_type," \
-                                       " total_size, tcga_id, stage) VALUES ({},{},{},{},{},{},{},{},{},{},{},{},"\
-                                       "{},{},{},{})".format(r[1], r[2], r[3], r[4], r[5],r[6], r[7], r[8], r[9], r[10],
+                                       " total_size, tcga_id, stage) VALUES (\'{}\',\'{}\',\'{}\',\'{}\',\'{}\'," \
+                                       "\'{}\',\'{}\',\'{}\',\'{}\',\'{}\',\'{}\',\'{}\',\'{}\',\'{}\',\'{}\'," \
+                                       "\'{}\')".format(r[1], r[2], r[3], r[4], r[5],r[6], r[7], r[8], r[9], r[10],
                                                              r[11], r[12], r[13], r[14], r[15], r[16])
                     self.cursor.execute(insert_statement)
 
