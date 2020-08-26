@@ -120,6 +120,8 @@ gsutil cp {tumor} ./ 2> download_tumor.stderr
 # ln -s {tumor} ./
 echo "gsutil {tumor} ./ : "$?
 
+touch *.bam
+
 gsutil cp {normal}.bai ./ 2> download_normal_bai.stderr
 # ln -s {normal}.bai ./
 echo "gsutil {normal}.bai ./ : "$?
@@ -133,16 +135,12 @@ touch *.bai
 echo "Copying script files ..."
 cp /home/torcivia/pipeline/tcga_varscan_pipeline/src/pipeline.sh {working_directory}
 echo "cp pipeline.sh ./ : "$?
-
 cp /home/torcivia/pipeline/tcga_varscan_pipeline/src/post_json.py {working_directory}
 echo "cp post_json.py ./ : "$?
-
 cp /home/torcivia/pipeline/tcga_varscan_pipeline/src/split_by_ref.sh {working_directory}
 echo "cp split_by_ref.sh ./ : "$?
-
 cp /home/torcivia/pipeline/tcga_varscan_pipeline/src/transfer_clean.sh {working_directory}
 echo "cp transfer_clean.sh ./ : "$?
-
 cp /home/torcivia/pipeline/tcga_varscan_pipeline/src/re_chrom_name.awk {working_directory}
 echo "cp re_chrom_name.awk ./ : "$?
 
