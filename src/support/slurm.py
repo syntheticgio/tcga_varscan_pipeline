@@ -111,6 +111,23 @@ cd {working_directory}
 # mkdir -p {working_directory}/tcga_bucket/
 # gcsfuse --implicit-dirs gdc-tcga-phs000178-controlled {working_directory}/tcga_bucket/
 
+echo "Copying script files ..."
+cp /home/torcivia/pipeline/tcga_varscan_pipeline/src/pipeline.sh {working_directory}
+echo "cp pipeline.sh ./ : "$?
+cp /home/torcivia/pipeline/tcga_varscan_pipeline/src/post_json.py {working_directory}
+echo "cp post_json.py ./ : "$?
+cp /home/torcivia/pipeline/tcga_varscan_pipeline/src/split_by_ref.sh {working_directory}
+echo "cp split_by_ref.sh ./ : "$?
+cp /home/torcivia/pipeline/tcga_varscan_pipeline/src/transfer_clean.sh {working_directory}
+echo "cp transfer_clean.sh ./ : "$?
+cp /home/torcivia/pipeline/tcga_varscan_pipeline/src/re_chrom_name.awk {working_directory}
+echo "cp re_chrom_name.awk ./ : "$?
+
+echo "Changing permissions..."
+chmod +x split_by_ref.sh
+chmod +x pipeline.sh
+chmod +x transfer_clean.sh
+
 echo "Copying BAM files and indexes..."
 gsutil cp {normal} ./ 2> download_normal.sterr
 # ln -s {normal} ./
@@ -131,23 +148,6 @@ gsutil cp {tumor}.bai ./ 2> download_tumor_bai.stderr
 echo "gsutil {tumor}.bai ./ : "$? 
 
 touch *.bai
-
-echo "Copying script files ..."
-cp /home/torcivia/pipeline/tcga_varscan_pipeline/src/pipeline.sh {working_directory}
-echo "cp pipeline.sh ./ : "$?
-cp /home/torcivia/pipeline/tcga_varscan_pipeline/src/post_json.py {working_directory}
-echo "cp post_json.py ./ : "$?
-cp /home/torcivia/pipeline/tcga_varscan_pipeline/src/split_by_ref.sh {working_directory}
-echo "cp split_by_ref.sh ./ : "$?
-cp /home/torcivia/pipeline/tcga_varscan_pipeline/src/transfer_clean.sh {working_directory}
-echo "cp transfer_clean.sh ./ : "$?
-cp /home/torcivia/pipeline/tcga_varscan_pipeline/src/re_chrom_name.awk {working_directory}
-echo "cp re_chrom_name.awk ./ : "$?
-
-echo "Changing permissions..."
-chmod +x split_by_ref.sh
-chmod +x pipeline.sh
-chmod +x transfer_clean.sh
 
 echo "Splitting by reference..."
 ./split_by_ref.sh {normal} {tumor} {db_address}
