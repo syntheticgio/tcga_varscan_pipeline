@@ -170,9 +170,10 @@ class BatchScriptor:
 
         # Setup Download
         job_type = "DOWNLOAD"
-        node = self.nodes[self.node_indx]
+        node = self.nodes[self.node_indx]  # node is slurm-child3 - for example
 
         self.s.populate_template(caller_, node, job_type, self.db_address, "download", self.wait_id[self.node_indx])
+        print("  -- New job submitted; waiting on job {} to begin.".format(self.wait_id[self.node_indx]))
         # print s.template
 
         # Launch download here
