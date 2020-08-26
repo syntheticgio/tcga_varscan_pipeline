@@ -333,6 +333,7 @@ class RemoveRunningSampleHandler(MainHandler):
         sqlstr = "DELETE FROM RunningSamples WHERE Normal = {} AND Tumor = {}".format(json_body['Normal'],
                                                                                       json_body['Tumor'])
 
+        self.cursor.execute(sqlstr)
         # Get info about this entry and transition it.
         sql_statement = "SELECT * FROM processing where tcga_id = \'{}\'".format(json_body['tcga_id'])
         res = self.cursor.execute(sql_statement)
