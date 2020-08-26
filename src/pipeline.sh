@@ -252,5 +252,3 @@ echo "=========================================================="
 echo "{\"Normal\":\"${NORMAL_BAM}\",\"Tumor\":\"${TUMOR_BAM}\",\"Stage\":7,\"Reference\":\"${REFERENCE_NAME}\"}" > OUTPUT/running_entry.txt
 
 python post_json.py -u updaterunningsample -v -i "${IP}" -f OUTPUT/running_entry.txt 2> "__update4_${REFERENCE_NAME}_post.stderr"
-
-return 0
