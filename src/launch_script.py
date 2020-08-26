@@ -278,9 +278,9 @@ if __name__ == "__main__":
         # Get external IP address for javascript
         external_ip = get('https://api.ipify.org').text
         # Replace in javascript
-        subprocess.run(
-            ["sed -i -e 's/REPLACE_URL_HERE/{}:{}/g' server/static/update.js".format(external_ip, args.port)],
-            shell=True)
+        # subprocess.run(
+        #     ["sed -i -e 's/REPLACE_URL_HERE/{}:{}/g' server/static/update.js".format(external_ip, args.port)],
+        #     shell=True)
 
     # Get finished matches as to not run those...
     match_list = []
