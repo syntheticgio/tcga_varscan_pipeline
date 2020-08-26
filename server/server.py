@@ -216,7 +216,10 @@ class ProgressHandler(MainHandler):
                       "</tr>"
         sqlstr2 = "SELECT tumor_barcode, tumor_file_size, normal_barcode, normal_file_size, cancer_type, tcga_id, " \
                   "tumor_gdc_id, normal_gdc_id FROM queued"
+        # limit output rows here:
+        output_limit = 50
         for row in self.cursor.execute(sqlstr2):
+            output_limit -= 1
             queued_rows = queued_rows + "<tr><td>{}</td><td><a href=\"https://portal.gdc.cancer.gov/projects/TCGA-{}" \
                                         "\" target=\"_blank\">{}</a></td><td><a " \
                                         "href=\"https://https://portal.gdc.cancer.gov/legacy-archive/files/{}\" " \
@@ -227,6 +230,10 @@ class ProgressHandler(MainHandler):
                                         "\')\">+</button></td></tr>".format(row[5], row[4], row[4],
                                                                             row[6], row[0], size(row[1]),
                                                                             row[7], row[2], size(row[3]), row[5])
+            if output_limit < 1:
+                # Hit our limit of rows
+                queued_rows = queued_rows + "<tr><td> ... Additional rows hidden ... </td></tr>"
+                break
 
         sqlstr3 = "SELECT tumor_barcode, tumor_file_size, normal_barcode, normal_file_size, cancer_type, tcga_id, " \
                   "stage, tumor_gdc_id, normal_gdc_id FROM finished"
