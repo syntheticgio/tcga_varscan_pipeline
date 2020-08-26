@@ -72,7 +72,7 @@ echo "test.py : "$?
 #SBATCH --nodelist={node}
 
 #SBATCH --ntasks=1
-#SBATCH --mem=1024
+#SBATCH --mem=6400
 #SBATCH --dependency=afterany:{job_ids}
 #SBATCH --chdir={working_directory}
 #SBATCH --comment={job_type}
@@ -97,6 +97,7 @@ echo "pipeline.sh : "$?
 
 #SBATCH --ntasks=1
 #SBATCH --comment={job_type}
+#SBATCH --mem=25600
 
 #SBATCH --chdir=/home/torcivia/tcga/
 {dependency_sbatch}
