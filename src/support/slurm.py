@@ -72,6 +72,7 @@ echo "test.py : "$?
 #SBATCH --nodelist={node}
 
 #SBATCH --ntasks=1
+#SBATCH --ntasks-per-core=2
 #SBATCH --mem=6400
 #SBATCH --dependency=afterany:{job_ids}
 #SBATCH --chdir={working_directory}
