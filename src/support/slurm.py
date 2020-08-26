@@ -280,7 +280,10 @@ echo "transfer_clean.sh : "$?
 
             for key, value in jobs.items():
                 try:
-                    tcga_barcode = self.sample_by_id_lookup[key]
+                    # tcga_barcode = self.sample_by_id_lookup[key]
+                    # TODO: should be checked here...
+                    # This should support even untracked progressing transactions
+                    tcga_barcode = value['command'].split("/")[4]
                 except KeyError:
                     # print("Looks like there is a job that is running which isn't tracked in our internal database.")
                     # Skip

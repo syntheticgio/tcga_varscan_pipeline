@@ -328,25 +328,27 @@ class RemoveRunningSampleHandler(MainHandler):
         json_body = tornado.escape.json_decode(self.request.body)
         sqlstr = "DELETE FROM RunningSamples WHERE Normal = {} AND Tumor = {}".format(json_body['Normal'],
                                                                                       json_body['Tumor'])
-        sql_statement = """
-                        INSERT INTO
-                        finished
-                        SELECT tumor_barcode, tumor_file, tumor_gdc_id, tumor_file_url, tumor_file_size, tumor_platform,
-                        normal_barcode, normal_file, normal_gdc_id, normal_file_url, normal_file_size, normal_platform, 
-                        cancer_type, total_size, tcga_id, stage FROM
-                        processing
-                        WHERE NOT EXISTS(SELECT * FROM finished WHERE(
-                        normal_file = \'{}\' and tumor_file = \'{}\')) 
-                        """.format(json_body['Normal'], json_body['Tumor'])
-        self.cursor.execute(sql_statement)
 
-        sqlstr2 = "DELETE FROM processing WHERE normal_file = {} AND tumor_file = {}".format(json_body['Normal'],
-                                                                                             json_body['Tumor'])
-        self.cursor.execute(sqlstr2)
-        # print(sqlstr)
-        self.cursor.execute(sqlstr)
+        # Get info about this entry and transition it.
+        sql_statement = "SELECT * FROM processing where tcga_id = \'{}\'".format(json_body['tcga_id'])
+        res = self.cursor.execute(sql_statement)
+
+        # Insert into finished
+        for r in res:
+            insert_statement = "INSERT OR IGNORE INTO finished (tumor_barcode,tumor_file,tumor_gdc_id," \
+                               "tumor_file_url,tumor_file_size,tumor_platform,normal_barcode,normal_file," \
+                               "normal_gdc_id,normal_file_url,normal_file_size,normal_platform,cancer_type," \
+                               " total_size, tcga_id, stage) VALUES (\'{}\',\'{}\',\'{}\',\'{}\',\'{}\'," \
+                               "\'{}\',\'{}\',\'{}\',\'{}\',\'{}\',\'{}\',\'{}\',\'{}\',\'{}\',\'{}\'," \
+                               "\'{}\')".format(r[1], r[2], r[3], r[4], r[5], r[6], r[7], r[8], r[9], r[10],
+                                                r[11], r[12], r[13], r[14], r[15], r[16])
+            self.cursor.execute(insert_statement)
+
+        # Delete from queued here
+        delete_statement = "DELETE FROM processing WHERE tcga_id = \'{}\'".format(json_body['tcga_id'])
+        self.cursor.execute(delete_statement)
         self.db.commit()
-        self.write("Deleted row.")
+        self.write("Deleted processing row.")
 
 
 class TestHandler(MainHandler):
