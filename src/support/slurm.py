@@ -108,6 +108,8 @@ mkdir -p {working_directory}
 echo "Moving to directory..."
 cd {working_directory}
 
+exit
+
 # echo "Attempting to make bucket directory and link it..."
 # mkdir -p {working_directory}/tcga_bucket/
 # gcsfuse --implicit-dirs gdc-tcga-phs000178-controlled {working_directory}/tcga_bucket/
