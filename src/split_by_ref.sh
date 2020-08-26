@@ -184,11 +184,8 @@ echo "=========================================================="
 # Make sure chromosome names are the same...
 /samtools/bin/samtools view -H sorted_"${TUMOR_BAM}" >header.sam
 awk -f re_chrom_name.awk header.sam >new_header.sam
-# TODO: Conditional seems to not quite have worked, but this should be fast anyway
-#if [[ $? -gt 0 ]]; then
-${SAMTOOLS} reheader -iP new_header.sam sorted_"${TUMOR_BAM}" >_tmp
+${SAMTOOLS} reheader -iP new_header.sam sorted_"${TUMOR_BAM}" > _tmp
 mv _tmp sorted_"${TUMOR_BAM}"
-#fi
 
 # BAMSTAT
 ${SAMTOOLS} flagstat -@ 8 sorted_"${TUMOR_BAM}" >OUTPUT/_"${TUMOR_BAM}"_flagstat.txt &
