@@ -134,7 +134,7 @@ class ProgressHandler(MainHandler):
     def post(self):
         # Fetch the processing ones
         sqlstr = "SELECT tumor_barcode, tumor_file_size, normal_barcode, normal_file_size, cancer_type, tcga_id, " \
-                 "tumor_gdc_id, normal_gdc_id, stage FROM processing"
+                 "tumor_gdc_id, normal_gdc_id FROM processing"
         # Get Status for running computations
         jobs_status = self.batch_scriptor.s.query_all_jobs()
 
@@ -145,7 +145,6 @@ class ProgressHandler(MainHandler):
                "<th>Normal Barcode</th>" \
                "<th>Submitted</th>" \
                "<th>Requested Node</th>" \
-               "<th>Stage</th>" \
                "<th>Progress</th>" \
                "</tr>"
         if jobs_status is not None:
@@ -201,11 +200,9 @@ class ProgressHandler(MainHandler):
                                   "target=\"_blank\">{}</a></td><td><a " \
                                   "href=\"https://https://portal.gdc.cancer.gov/legacy-archive/files/{}\" " \
                                   "target=\"_blank\">{}</a></td>" \
-                                  "<td>{}</td><td>{}</td><td>{}</td><td>{}</td></tr>".format(row[5], row[4], row[4],
-                                                                                             row[6], row[0], row[7],
-                                                                                             row[2],
-                                                                                             submit_time, node, row[8],
-                                                                                             progress)
+                                  "<td>{}</td><td>{}</td><td>{}</td></tr>".format(row[5], row[4], row[4], row[6],
+                                                                                  row[0], row[7], row[2], submit_time,
+                                                                                  node, progress)
 
         # Fetched the queued ones.
         queued_rows = "<h2>Queued computations</h2><table class=\"hover\" style=\"font-size: 12px; padding:2px;\"><tr>" \
