@@ -293,6 +293,7 @@ if __name__ == "__main__":
     except IOError:
         print("Couldn't get the previous finished matches!")
     callers = []
+    finished_callers = []
     try:
         csv_file = open(configuration['input_file'], 'r')
         print("Found {} file".format(configuration['input_file']))
@@ -311,8 +312,6 @@ if __name__ == "__main__":
                     mtch = True
                     matched_num += 1
                     break
-            if mtch:
-                continue
             new_num += 1
             caller = TCGAVariantCaller(indx)
             caller.set_index(indx)
@@ -331,6 +330,9 @@ if __name__ == "__main__":
             caller.set_normal_platform(row[13])
             caller.set_cancer_type(row[14])
             caller.set_total_size(row[15])
+            if mtch:
+                finished_callers.append(caller)
+                continue
             callers.append(caller)
             indx += 1
             if args.verbose:
@@ -351,7 +353,7 @@ if __name__ == "__main__":
         # generate_sbatch_scripts(callers, configuration, ip=args.ip, base_dir=args.base_dir, )
     else:
         settings = {}
-        http_server = tornado.httpserver.HTTPServer(ManagerApplication(callers, batch_scriptor))
+        http_server = tornado.httpserver.HTTPServer(ManagerApplication(callers, batch_scriptor, finished_callers=finished_callers))
         try:
             http_server.listen(args.port)
         except BaseException as e:

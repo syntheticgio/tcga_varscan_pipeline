@@ -128,13 +128,13 @@ class TCGAVariantCaller(object):
                                                                            self.normal_platform, self.cancer_type,
                                                                            total_size))
 
-    def add_to_db(self):
-        sqlstmt = "INSERT OR IGNORE INTO queued (" \
+    def add_to_db(self, db="queued"):
+        sqlstmt = "INSERT OR IGNORE INTO {} (" \
                   "tumor_barcode, tumor_file, tumor_gdc_id, tumor_file_url, tumor_file_size, " \
                   "tumor_platform, normal_barcode, normal_file, normal_gdc_id, normal_file_url, normal_file_size, " \
                   "normal_platform, cancer_type, total_size, tcga_id) VALUES (\"{}\",\"{}\",\"{}\",\"{}\",\"{}\"," \
                   "\"{}\",\"{}\",\"{}\",\"{}\",\"{}\",\"{}\",\"{}\",\"{}\"," \
-                  "\"{}\",\"{}\")".format(self.tumor_barcode, self.tumor_file,
+                  "\"{}\",\"{}\")".format(db, self.tumor_barcode, self.tumor_file,
                                                   self.tumor_gdc_id, self.tumor_file_url,
                                                   self.tumor_file_size,
                                                   self.tumor_platform, self.normal_barcode, self.normal_file,
