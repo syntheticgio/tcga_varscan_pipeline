@@ -311,21 +311,7 @@ if __name__ == "__main__":
             indx += 1
             caller = TCGAVariantCaller(indx)
             caller.set_index(indx)
-            caller.set_barcode(row[1])
-            caller.set_tumor_barcode(row[2])
-            caller.set_tumor_file(row[3])
-            caller.set_tumor_gdc_id(row[4])
-            caller.set_tumor_file_url(row[5])
-            caller.set_tumor_file_size(row[6])
-            caller.set_tumor_platform(row[7])
-            caller.set_normal_barcode(row[8])
-            caller.set_normal_file(row[9])
-            caller.set_normal_gdc_id(row[10])
-            caller.set_normal_file_url(row[11])
-            caller.set_normal_file_size(row[12])
-            caller.set_normal_platform(row[13])
-            caller.set_cancer_type(row[14])
-            caller.set_total_size(row[15])
+            caller.populate_caller_with_row(row)
             if row[1] in match_list:
                 matched_num += 1
                 if args.verbose:

@@ -142,3 +142,20 @@ class TCGAVariantCaller(object):
                                                   self.normal_file_url, self.normal_file_size,
                                                   self.normal_platform, self.cancer_type, self.total_size, self.barcode)
         return sqlstmt
+
+    def populate_caller_with_row(self, row):
+        self.set_barcode(row[1])
+        self.set_tumor_barcode(row[2])
+        self.set_tumor_file(row[3])
+        self.set_tumor_gdc_id(row[4])
+        self.set_tumor_file_url(row[5])
+        self.set_tumor_file_size(row[6])
+        self.set_tumor_platform(row[7])
+        self.set_normal_barcode(row[8])
+        self.set_normal_file(row[9])
+        self.set_normal_gdc_id(row[10])
+        self.set_normal_file_url(row[11])
+        self.set_normal_file_size(row[12])
+        self.set_normal_platform(row[13])
+        self.set_cancer_type(row[14])
+        self.set_total_size(row[15])
