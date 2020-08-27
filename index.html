@@ -3,48 +3,86 @@
       <meta content="text/html;charset=utf-8" http-equiv="Content-Type">
       <meta content="utf-8" http-equiv="encoding">
       <link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet">
-        <style>
-            table {
-                font-family: "Trebuchet MS", Arial, Helvetica, sans-serif;
-                border-collapse: collapse;
-                width: 100%;
-            }
-
-            table td, #customers th {
-                border: 1px solid #ddd;
-                padding: 8px;
-            }
-
-            table tr:nth-child(even){background-color: #f2f2f2;}
-
-            table tr:hover {background-color: #ddd;}
-
-            table th {
-                padding-top: 12px;
-                padding-bottom: 12px;
-                text-align: left;
-                background-color: #4CAF50;
-                color: white;
-            }
-        </style>
-
-      <script src="js/jquery.js"></script>
-      <script src="js/update.js"></script>
+        <link rel="stylesheet" href="static/css/foundation.css"/>
+        <!--<link rel="stylesheet" type="text/css" href="static/css/index.css"> -->
+        <script src="static/js/vendor/modernizr.js"></script>
 
       <title>TCGA WGS Progress Monitor</title>
 
 	</HEAD>
 	<BODY>
-    <div id="queued"></div>
-    <div id="processing"></div>
-    <div id="finished"></div>
+<!--  Navigation Bar -->
+ 	<nav class="top-bar foundation-bar" data-topbar>
+  		<ul class="title-area">
+    		<li class="name">
+     			<span data-tooltip class="has-tip" title="Generate PCR Tag Watermarks for your gene."><h1 class="show-for-small-only"><a href="#">WGS Caller</a></h1></span>
+     			<span data-tooltip class="has-tip" title="Generate PCR Tag Watermarks for your gene."><h1 class="show-for-medium-only"><a href="#">WGS Variant Caller</a></h1></span>
+     			<span data-tooltip class="has-tip" title="Generate PCR Tag Watermarks for your gene."><h1 class="show-for-large-only"><a href="#">WGS Variant Caller</a></h1></span>
+    		</li>
+  		</ul>
+  		<!-- Right Nav Section -->
+  		<section class="top-bar-section">
+    		<ul class="right">
+      			<!-- <li><a  href="http://foundation.zurb.com/docs/"  target="_blank">Foundation Docs</a></li> -->
+      			<!-- <li><a  href="http://codepen.io/ZURBFoundation/full/olduj/" target="_blank">Grid Example</a></li> -->
+      			<li><a  href="http://54.235.254.95/gd/index.html" target="_blank">Visualizer</a></li>
+      			<li class="active"><a>Variant Caller</a></li>
+      			<!-- <li><a  href="http://codepen.io/ZURBFoundation/full/fcFnq" target="_blank">Interchange</a></li> -->
+    		</ul>
+  </section>
+</nav>
 
-	<DIV id="information"></DIV>
-    <div id = "recordfinished"></div>
-    <div id = "samtoolssort"></div>
-    <div id = "mpileup"></div>
-    <div id = "varscansomatic"></div>
-    <div id = "varscanprocesssomaticsnps"></div>
-    <div id = "varscanprocesssomaticindels"></div>
+    <div class="row" id="content">
+    	<div class="large primary">
+      		<div class="row column text-center" style="width:100%;">
+        		<h1>TCGA WGS Progress Monitor</h1>
+            </div>
+            <div class="column text-left" style="width:50%;">
+                <blockquote>
+                    Somewhere, something incredible is waiting to be known.
+                    <cite>
+                        Carl Sagan
+                    </cite>
+                </blockquote>
+      		</div>
+
+    	</div>
+        <div class="row column" style="width:100%;">
+            <ul class="breadcrumbs" style="border-style:none;">
+              <li><a href="#">Home</a></li>
+              <li><a href="#">Tools</a></li>
+              <li class="unavailable"><a href="#">Variant Tools</a></li>
+              <li class="current"><a href="#">TCGA Variant Caller</a></li>
+            </ul>
+        </div>
+
+        <div class="large-10 columns">
+            <div id="processing" class="table-scroll"></div>
+            <div id="queued" class="table-scroll"></div>
+            <div id="finished" class="table-scroll"></div>
+
+            <DIV id="information"></DIV>
+            <div id = "recordfinished"></div>
+            <div id = "samtoolssort"></div>
+            <div id = "mpileup"></div>
+            <div id = "varscansomatic"></div>
+            <div id = "varscanprocesssomaticsnps"></div>
+            <div id = "varscanprocesssomaticindels"></div>
+        </div>
+        <div class="small-2 columns" data-sticky-container>
+            <div class="sticky" data-sticky data-anchor="content">
+                <br/>
+		    <h4 style="border-bottom: #cccccc; border-bottom-style: solid; border-bottom-width: thin;"><b>Nodes</b></h4>
+                <div id="nodes" style="font-size: small;"></div>
+            <h4 style="border-bottom: #cccccc; border-bottom-style: solid; border-bottom-width: thin;"><b>Metrics</b></h4>
+                <div id="metrics"></div>
+            </div>
+        </div>
+
+    </div>
+
+    <script src="static/js/vendor/jquery.js"></script>
+    <script src="static/js/foundation.min.js"></script>
+    <script src="static/js/update.js"></script>
 	</BODY>
 </HTML>

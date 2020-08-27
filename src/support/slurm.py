@@ -3,6 +3,8 @@ import os.path
 # import commands
 import subprocess
 from time import time
+import pyslurm
+from time import gmtime, strftime
 
 
 class slurm_submitter:
@@ -23,8 +25,12 @@ class slurm_submitter:
     download_id = 0
     indx = 0
 
-    def __init__(self, base_dir):
+    sample_id_lists = {}
+    sample_by_id_lookup = {}
+
+    def __init__(self, base_dir, output_bucket=None):
         self.base_directory = base_dir
+        self.output_bucket = output_bucket
         self.test_template = """\
 #!/bin/bash
 
@@ -40,6 +46,7 @@ class slurm_submitter:
 #SBATCH --ntasks=1
 #SBATCH --mem=1024
 #SBATCH --chdir={working_directory}
+#SBATCH --comment="TEST"
 
 echo "Moving to directory..."
 cd {working_directory}
@@ -65,9 +72,11 @@ echo "test.py : "$?
 #SBATCH --nodelist={node}
 
 #SBATCH --ntasks=1
-#SBATCH --mem=1024
+#SBATCH --ntasks-per-core=2
+#SBATCH --mem=6400
 #SBATCH --dependency=afterany:{job_ids}
 #SBATCH --chdir={working_directory}
+#SBATCH --comment={job_type}
 
 cd {working_directory}
 
@@ -88,8 +97,11 @@ echo "pipeline.sh : "$?
 #SBATCH --nodelist={node}
 
 #SBATCH --ntasks=1
+#SBATCH --comment={job_type}
+#SBATCH --mem=25600
+
 #SBATCH --chdir=/home/torcivia/tcga/
-{download_job_id}
+{dependency_sbatch}
 
 echo "Attempting to make directory..."
 mkdir -p {working_directory}
@@ -97,28 +109,47 @@ mkdir -p {working_directory}
 echo "Moving to directory..."
 cd {working_directory}
 
-echo "Copying BAM files and indexes..."
-gsutil cp {normal} ./ 2> download_normal.sterr
-echo "GSUTIL {normal} : "$? 
-gsutil cp {tumor} ./ 2> download_tumor.stderr
-echo "GSUTIL {tumor} : "$?
-
-gsutil cp {normal}.bai ./ 2> download_normal_bai.stderr
-echo "GSUTIL {normal}.bai : "$?
-gsutil cp {tumor}.bai ./ 2> download_tumor_bai.stderr
-echo "GSUTIL {tumor}.bai : "$? 
+# echo "Attempting to make bucket directory and link it..."
+# mkdir -p {working_directory}/tcga_bucket/
+# gcsfuse --implicit-dirs gdc-tcga-phs000178-controlled {working_directory}/tcga_bucket/
 
 echo "Copying script files ..."
-cp /home/torcivia/pipeline/tcga_varscan_pipeline/src/pipeline.sh ./
-cp /home/torcivia/pipeline/tcga_varscan_pipeline/src/post_json.py ./
-cp /home/torcivia/pipeline/tcga_varscan_pipeline/src/split_by_ref.sh ./
-cp /home/torcivia/pipeline/tcga_varscan_pipeline/src/transfer_clean.sh ./
-cp /home/torcivia/pipeline/tcga_varscan_pipeline/src/re_chrom_name.awk ./
+cp /home/torcivia/pipeline/tcga_varscan_pipeline/src/pipeline.sh {working_directory}
+echo "cp pipeline.sh ./ : "$?
+cp /home/torcivia/pipeline/tcga_varscan_pipeline/src/post_json.py {working_directory}
+echo "cp post_json.py ./ : "$?
+cp /home/torcivia/pipeline/tcga_varscan_pipeline/src/split_by_ref.sh {working_directory}
+echo "cp split_by_ref.sh ./ : "$?
+cp /home/torcivia/pipeline/tcga_varscan_pipeline/src/transfer_clean.sh {working_directory}
+echo "cp transfer_clean.sh ./ : "$?
+cp /home/torcivia/pipeline/tcga_varscan_pipeline/src/re_chrom_name.awk {working_directory}
+echo "cp re_chrom_name.awk ./ : "$?
 
 echo "Changing permissions..."
 chmod +x split_by_ref.sh
 chmod +x pipeline.sh
 chmod +x transfer_clean.sh
+
+echo "Copying BAM files and indexes..."
+gsutil cp {normal} ./ 2> download_normal.sterr
+# ln -s {normal} ./
+echo "gsutil {normal} ./ : "$? 
+
+gsutil cp {tumor} ./ 2> download_tumor.stderr
+# ln -s {tumor} ./
+echo "gsutil {tumor} ./ : "$?
+
+touch *.bam
+
+gsutil cp {normal}.bai ./ 2> download_normal_bai.stderr
+# ln -s {normal}.bai ./
+echo "gsutil {normal}.bai ./ : "$?
+
+gsutil cp {tumor}.bai ./ 2> download_tumor_bai.stderr
+# ln -s {tumor}.bai ./
+echo "gsutil {tumor}.bai ./ : "$? 
+
+touch *.bai
 
 echo "Splitting by reference..."
 ./split_by_ref.sh {normal} {tumor} {db_address}
@@ -140,6 +171,7 @@ echo "split_by_ref.sh : "$?
 #SBATCH --ntasks=1
 #SBATCH --mem=1024
 #SBATCH --chdir={working_directory}
+#SBATCH --comment={job_type}
 
 ./transfer_clean.sh {normal_file} {tumor_file} {output_location} {barcode} {working_directory}/../references/{reference} {db_address}
 echo "transfer_clean.sh : "$? 
@@ -158,8 +190,16 @@ rm -rf {working_directory}
             self.slurm_file = "test_run_{}.slurm".format(time())
             return
 
+        if self.output_bucket is None:
+            print(" ERROR!  Output Bucket is not set.  Please set in config file.  Aborting!")
+            exit(1)
+
         # While some of these variables appear to not be used; they are being used in the **vars() calls below silently.
         barcode = caller.barcode
+        working_directory = self.base_directory + barcode + "/"
+        # For gcsfuse - DOES NOT WORK FOR THESE PURPOSES!
+        # normal = caller.normal_file_url.replace("gs://gdc-tcga-phs000178-controlled/", "{}tcga_bucket/".format(working_directory))
+        # tumor = caller.tumor_file_url.replace("gs://gdc-tcga-phs000178-controlled/", "{}tcga_bucket/".format(working_directory))
         normal = caller.normal_file_url
         tumor = caller.tumor_file_url
         normal_file = caller.normal_file
@@ -168,16 +208,15 @@ rm -rf {working_directory}
         self.tcga_barcode = caller.barcode  # set here for other purposes (launching)
         # db_address = "35.231.62.194"
         # Construct output location
-        output_location = "gs://iron-eye-6998/tcga_wgs_results/" + barcode + "/"
+        output_location = self.output_bucket + barcode + "/"
         self.slurm_file = barcode + "_" + job_type + "_" + reference + ".slurm"
-        working_directory = self.base_directory + caller.barcode + "/"
 
         if job_type == "DOWNLOAD":
             # This is used in the **vars() call.
             if job_ids != -1:
-                download_job_id = "#SBATCH --dependency=afterany:{}".format(job_ids)
+                dependency_sbatch = "#SBATCH --dependency=afterany:{}".format(job_ids)
             else:
-                download_job_id = ""
+                dependency_sbatch = ""
             self.template = self.download_template.format(**vars())
         elif job_type == "VARCALL":
             # These are used in the **vars() call.
@@ -215,17 +254,79 @@ rm -rf {working_directory}
             cmd = ["sbatch", "--dependency={}".format(_ids), filename]
             output = subprocess.check_output(cmd)
             print('sbatch --dependency={} {}'.format(_ids, filename))
-            # return "7000000"
-            # pass
-        # elif self.job_type == "DOWNLOAD":
-        #     output = subprocess.check_output('sbatch --dependency=afterok:{} {}'.format(self.download_id, filename))
-        #     # self.download_id = output.split()[3]
-        #     print('sbatch --dependency=afterok:{} {}'.format(self.download_id, filename))
-        #     # print("output: {}".format(output))
         else:
             output = subprocess.check_output(['sbatch', filename])
             print('sbatch {}'.format(filename))
 
-        # output = 555  # temporary
-        print("OUTPUT: {}".format(output))
-        return output.split()[3].decode('UTF-8')
+        return_ids = output.split()[3].decode('UTF-8')
+        # Record a list of job ids by TCGA Barcode (might come in handy!)
+        if self.tcga_barcode not in self.sample_id_lists:
+            self.sample_id_lists[self.tcga_barcode] = {}
+        if self.job_type not in self.sample_id_lists[self.tcga_barcode]:
+            self.sample_id_lists[self.tcga_barcode][self.job_type] = []
+        self.sample_id_lists[self.tcga_barcode][self.job_type].append(int(return_ids))
+        # Create lookup table for all job_ids w/ tcga barcode as their entry
+        self.sample_by_id_lookup[int(return_ids)] = self.tcga_barcode
+        if self.job_type == "CLEAN":
+            print("DEBUG: {}".format(self.sample_id_lists[self.tcga_barcode]))
+        return return_ids
+
+    def query_all_jobs(self):
+        jobs = pyslurm.job().get()
+
+        if jobs:
+            job_info = {}
+            date_fields = ['start_time', 'suspend_time', 'submit_time', 'end_time', 'eligible_time', 'resize_time']
+            other_fields = ['run_time', 'run_time_str', 'nodes', 'job_state', 'command', 'comment']
+
+            for key, value in jobs.items():
+                try:
+                    # tcga_barcode = self.sample_by_id_lookup[key]
+                    # TODO: should be checked here...
+                    # This should support even untracked progressing transactions
+                    tcga_barcode = value['command'].split("/")[4]
+                except KeyError:
+                    # print("Looks like there is a job that is running which isn't tracked in our internal database.")
+                    # Skip
+                    continue
+                if tcga_barcode not in job_info:
+                    job_info[tcga_barcode] = {key: {}}
+                else:
+                    job_info[tcga_barcode][key] = {}
+
+                for part_key in sorted(value.keys()):
+                    if part_key in date_fields:
+                        if value[part_key] == 0:
+                            job_info[tcga_barcode][key][part_key] = "NA"
+                        else:
+                            ddate = gmtime(value[part_key])
+                            ddate = strftime("%a %b %d %H:%M:%S %Y", ddate)
+                            job_info[tcga_barcode][key][part_key] = ddate
+                    elif part_key in other_fields:
+                        job_info[tcga_barcode][key][part_key] = value[part_key]
+            return job_info
+        return None
+
+    # TODO: Not sure if this is needed or not...placeholder
+    def query_by_barcode(self, barcode):
+        job_id_dict = self.sample_id_lists[barcode]
+
+    def query_node_status(self, nodes=None):
+        # nodes is a list of requested nodes to send back
+        node_dict = pyslurm.node().get()
+        node_list = {}
+        if len(node_dict) > 0:
+            # CPU_LOAD = Load AVG
+            # FREE_MEM = Free memory in Megabytes
+            fetch_list = ['state', 'free_mem', 'cpu_load', 'cores', 'real_memory']
+            for key, value in node_dict.items():
+                # key = slurm-child3, for example
+                # value is a bunch of other info:
+
+                # TODO: Check to make sure this works ... think key in nodes could be an error?
+                if nodes is None or key in nodes:
+                    node_list[key] = {}
+                    for part_key in sorted(value.keys()):
+                        if part_key in fetch_list:
+                            node_list[key][part_key] = value[part_key]
+        return node_list

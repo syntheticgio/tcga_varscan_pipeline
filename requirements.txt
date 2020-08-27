@@ -1,3 +1,5 @@
 requests
 tornado
 django-commands
+hurry.filesize
+pyslurm

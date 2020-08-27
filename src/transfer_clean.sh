@@ -43,38 +43,32 @@ IP=$6
 # 2. Copy appropriate files into that directory 
 
 echo "Compressing VCF files...."
-tar -zcf ${BASE_OUTPUT_NAME}.vcf.tar.gz *.vcf
+tar -zcf "${BASE_OUTPUT_NAME}".vcf.tar.gz *.vcf
 
 # How to move into GS bucket?
 # Where to move into bucket?
 
 echo ""
 echo "Copying files into the appropriate output location..."
-gsutil cp ${BASE_OUTPUT_NAME}.vcf.tar.gz ${OUTPUT_LOCATION}varscan_results/
-gsutil -m cp OUTPUT/* ${OUTPUT_LOCATION}varscan_results/OUTPUT/
-gsutil cp ../*.std* ${OUTPUT_LOCATION}varscan_results/OUTPUT/
+gsutil cp "${BASE_OUTPUT_NAME}".vcf.tar.gz "${OUTPUT_LOCATION}"varscan_results/
+gsutil -m cp OUTPUT/* "${OUTPUT_LOCATION}"varscan_results/OUTPUT/
+gsutil cp ../*.std* "${OUTPUT_LOCATION}"varscan_results/OUTPUT/
 
 
 ERROR_FILES="${OUTPUT_LOCATION}varscan_results/OUTPUT/"
 JSON_FINISHED="{\"Normal\":\"${NORMAL_BAM}\",\"Tumor\":\"${TUMOR_BAM}\",\"errorfiles\":\"${ERROR_FILES}\"}"
 echo "============================================="
-echo ${JSON_FINISHED} > OUTPUT/finished.txt
+echo "${JSON_FINISHED}" > OUTPUT/finished.txt
 echo "FINISHED File:"
 cat OUTPUT/finished.txt
 echo ""
 echo ""
-if [[ ! -z "$6" ]]
-then
-    echo "POSTing job information ..."
-    python post_json.py -u recordfinished -i ${IP} -f OUTPUT/finished.txt
-fi
+
+echo "POSTing job information ..."
+python post_json.py -u recordfinished -i "${IP}" -f OUTPUT/finished.txt
+
 # Update Running Entry to finished
 echo "{\"Normal\":\"${NORMAL_BAM}\",\"Tumor\":\"${TUMOR_BAM}\",\"Stage\":9,\"Reference\":\"${REFERENCE_NAME}\"}" > OUTPUT/running_entry.txt
-if [[ ! -z "$6" ]]
-then
-    python post_json.py -u updaterunningsample -v -i ${IP} -f OUTPUT/running_entry.txt
-fi
+python post_json.py -u removerunningsample -v -i "${IP}" -f OUTPUT/running_entry.txt
 echo ""
 echo "FINISHED!"
-
-return 0

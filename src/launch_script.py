@@ -10,6 +10,8 @@ import json
 import argparse
 import csv
 import socket
+from requests import get
+import subprocess
 
 
 def extract_matches(config):
@@ -111,11 +113,14 @@ class BatchScriptor:
         self.db_address = kwargs.get("ip", "127.0.0.1:8081")
         self.nodes = self.config['nodes']
         self.references = self.config['references']
+        self.output_bucket = self.config['output_bucket']
         self.node_length = len(self.nodes)
         self.node_indx = 0
         self.wait_id = []
         for x in range(0, self.node_length):
             self.wait_id.append(-1)
+        self.sample_id_lists = {}
+        self.s = slurm_submitter(self.base_directory, self.output_bucket)
 
     @staticmethod
     def run_test(config):
@@ -161,31 +166,36 @@ class BatchScriptor:
         #       then cleaned up (removed) from node
         #   3. On completion of all jobs, the downloaded files are cleaned up behind
 
-        s = slurm_submitter(self.base_directory)
+        # s = slurm_submitter(self.base_directory)
 
         # Setup Download
         job_type = "DOWNLOAD"
-        node = self.nodes[self.node_indx]
+        node = self.nodes[self.node_indx]  # node is slurm-child3 - for example
 
-        s.populate_template(caller_, node, job_type, self.db_address, "download", self.wait_id[self.node_indx])
+        self.s.populate_template(caller_, node, job_type, self.db_address, "download", self.wait_id[self.node_indx])
+        print("  -- New job submitted; waiting on job {} to begin.".format(self.wait_id[self.node_indx]))
         # print s.template
 
         # Launch download here
         # job_id = <call for job here>
-        job_id = s.launch_job()
+        job_id = self.s.launch_job()
+        self.sample_id_lists[caller_.barcode] = {}
+        self.sample_id_lists[caller_.barcode][job_type] = job_id
 
         # Set new job type
         job_type = "VARCALL"
         varcall_job_ids = []
         for ref in self.references:
-            s.populate_template(caller_, node, job_type, self.db_address, ref, job_id)
-            _job_id = s.launch_job()
+            self.s.populate_template(caller_, node, job_type, self.db_address, ref, job_id)
+            _job_id = self.s.launch_job()
             varcall_job_ids.append(_job_id)
+        self.sample_id_lists[caller_.barcode][job_type] = varcall_job_ids
 
         # Do cleanup
         job_type = "CLEAN"
-        s.populate_template(caller_, node, job_type, self.db_address, "cleanup", varcall_job_ids)
-        self.wait_id[self.node_indx] = s.launch_job()
+        self.s.populate_template(caller_, node, job_type, self.db_address, "cleanup", varcall_job_ids)
+        self.wait_id[self.node_indx] = self.s.launch_job()
+        self.sample_id_lists[caller_.barcode][job_type] = self.wait_id[self.node_indx]
 
         self.node_indx += 1
         if self.node_indx > self.node_length - 1:
@@ -197,10 +207,24 @@ class BatchScriptor:
 
 
 if __name__ == "__main__":
+    def port(value):
+        ivalue = int(value)
+        if ivalue < 0:
+            raise argparse.ArgumentTypeError("%s is less than 0. Ports must be between 0 and 65535")
+        if ivalue > 65535:
+            raise argparse.ArgumentTypeError("%s is greater than 65535. Ports must be between 0 and 65535")
+        return ivalue
+
+
     parser = argparse.ArgumentParser(description='Commands for launch script.')
     parser.add_argument('--ip', '-i',
                         help='The IP address (and port) of the server, in format xxx.xxx.xxx.xxx.  If not specified '
                              'the program will try to generate it.')
+    parser.add_argument('--port', '-p',
+                        type=port,
+                        default=8081,
+                        help='The port of the server, If not specified '
+                             'the default of 8081 is used.')
     parser.add_argument('--verbose', '-v',
                         dest='verbose',
                         action='store_true',
@@ -230,9 +254,9 @@ if __name__ == "__main__":
         BatchScriptor.run_test(configuration)
         print("Launched test: exiting program.  Use SQUEUE to see results or examine the output files in the working "
               "directory {} on the node being used {}.".format(
-                                                            configuration["base_directory"],
-                                                            configuration["nodes"][0])
-                                                        )
+            configuration["base_directory"],
+            configuration["nodes"][0])
+        )
         exit(0)
 
     if not args.ip:
@@ -243,13 +267,21 @@ if __name__ == "__main__":
         hostname = socket.gethostname()
         # getting the IP address using socket.gethostbyname() method
         ip_address = socket.gethostbyname(hostname)
-        print("Setting the host to: {}:8081 (the current master node)".format(ip_address))
-        args.ip = "{}:8081".format(ip_address)
+        print("Setting the host to: {}:{} (the current master node)".format(ip_address, args.port))
+        args.ip = "{}:{}".format(ip_address, args.port)
     else:
-        print("Using {} for the server IP.".format(args.ip))
+        print("Using {}:{} for the server IP and port.".format(args.ip, args.port))
         print("NOTE: If this does not include the port, this will not work unless the port is on 80!  (This is not "
               "the default, the default port is 8081 and the ip and port should be specified as follows <ip "
               "address>:<port>.")
+
+    if not args.bypass_server:
+        # Get external IP address for javascript
+        external_ip = get('https://api.ipify.org').text
+        # Replace in javascript
+        # subprocess.run(
+        #     ["sed -i -e 's/REPLACE_URL_HERE/{}:{}/g' server/static/update.js".format(external_ip, args.port)],
+        #     shell=True)
 
     # Get finished matches as to not run those...
     match_list = []
@@ -274,7 +306,8 @@ if __name__ == "__main__":
             mtch = False
             for match in match_list:
                 if match == row[1]:
-                    print("There was a match of {} .... skipping.".format(match))
+                    if args.verbose:
+                        print("There was a match of {} .... skipping.".format(match))
                     mtch = True
                     matched_num += 1
                     break
@@ -319,5 +352,10 @@ if __name__ == "__main__":
     else:
         settings = {}
         http_server = tornado.httpserver.HTTPServer(ManagerApplication(callers, batch_scriptor))
-        http_server.listen(8081)
+        try:
+            http_server.listen(args.port)
+        except BaseException as e:
+            print("[ error ] could not open on port %s because of error: %s", str(args.port), e)
+            print("Failed to open server.  Aborting program.")
+            exit(2)
         tornado.ioloop.IOLoop.instance().start()
