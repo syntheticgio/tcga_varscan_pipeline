@@ -242,6 +242,10 @@ if __name__ == "__main__":
                         dest='test',
                         action='store_true',
                         help="Runs test and exits.")
+    parser.add_argument('--add_finished', '-a',
+                        dest='add_finished',
+                        action='store_true',
+                        help="Add filtered matches to the finished database.")
 
     args = parser.parse_args()
 
@@ -300,19 +304,11 @@ if __name__ == "__main__":
         csv_reader = csv.reader(csv_file, delimiter=',')
         if configuration["header"]:
             next(csv_reader)
-        indx = 1
+        indx = 0
         matched_num = 0
         new_num = 0
         for row in csv_reader:
-            mtch = False
-            for match in match_list:
-                if match == row[1]:
-                    if args.verbose:
-                        print("There was a match of {} .... skipping.".format(match))
-                    mtch = True
-                    matched_num += 1
-                    break
-            new_num += 1
+            indx += 1
             caller = TCGAVariantCaller(indx)
             caller.set_index(indx)
             caller.set_barcode(row[1])
@@ -330,11 +326,15 @@ if __name__ == "__main__":
             caller.set_normal_platform(row[13])
             caller.set_cancer_type(row[14])
             caller.set_total_size(row[15])
-            if mtch:
-                finished_callers.append(caller)
+            if row[1] in match_list:
+                matched_num += 1
+                if args.verbose:
+                    print("There was a match of {} .... skipping.".format(row[1]))
+                if args.add_finished:
+                    finished_callers.append(caller)
                 continue
+            new_num += 1
             callers.append(caller)
-            indx += 1
             if args.verbose:
                 print(caller)
         print("Matched entries: {}".format(matched_num))
