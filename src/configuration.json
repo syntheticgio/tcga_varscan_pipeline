@@ -1,5 +1,6 @@
 {
   "nodes": [
+    "slurm-child1",
     "slurm-child3"
   ],
   "references" : [
