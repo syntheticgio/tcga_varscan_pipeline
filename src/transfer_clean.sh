@@ -69,6 +69,6 @@ python post_json.py -u recordfinished -i "${IP}" -f OUTPUT/finished.txt
 
 # Update Running Entry to finished
 echo "{\"Normal\":\"${NORMAL_BAM}\",\"Tumor\":\"${TUMOR_BAM}\",\"Stage\":9,\"Reference\":\"${REFERENCE_NAME}\"}" > OUTPUT/running_entry.txt
-python post_json.py -u updaterunningsample -v -i "${IP}" -f OUTPUT/running_entry.txt
+python post_json.py -u removerunningsample -v -i "${IP}" -f OUTPUT/running_entry.txt
 echo ""
 echo "FINISHED!"
