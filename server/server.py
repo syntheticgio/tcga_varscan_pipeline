@@ -329,6 +329,8 @@ class RemoveRunningSampleHandler(MainHandler):
 
     def post(self):
         json_body = tornado.escape.json_decode(self.request.body)
+        print("In the remove running sampler handler - this is where we should add the call for {} " \
+              " into the database.".format(json.dumps(json_body, indent=4)))
         sqlstr = "DELETE FROM RunningSamples WHERE Normal = {} AND Tumor = {}".format(json_body['Normal'],
                                                                                       json_body['Tumor'])
 
@@ -346,6 +348,7 @@ class RemoveRunningSampleHandler(MainHandler):
                                "\'{}\',\'{}\',\'{}\',\'{}\',\'{}\',\'{}\',\'{}\',\'{}\',\'{}\',\'{}\'," \
                                "\'{}\')".format(r[1], r[2], r[3], r[4], r[5], r[6], r[7], r[8], r[9], r[10],
                                                 r[11], r[12], r[13], r[14], r[15], r[16])
+            print("Attempting to insert: {}".format(insert_statement))
             self.cursor.execute(insert_statement)
 
         # Delete from queued here
