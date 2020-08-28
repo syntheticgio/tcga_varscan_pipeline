@@ -333,7 +333,7 @@ class RemoveRunningSampleHandler(MainHandler):
         json_body = tornado.escape.json_decode(self.request.body)
         print("In the remove running sampler handler - this is where we should add the call for {} " \
               " into the database.".format(json.dumps(json_body, indent=4)))
-        sqlstr = "DELETE FROM RunningSamples WHERE Normal = {} AND Tumor = {}".format(json_body['Normal'],
+        sqlstr = "DELETE FROM RunningSamples WHERE Normal = \'{}\' AND Tumor = \'{}\'".format(json_body['Normal'],
                                                                                       json_body['Tumor'])
 
         self.cursor.execute(sqlstr)
