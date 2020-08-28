@@ -161,7 +161,7 @@ class BatchScriptor:
         # TODO: Might need to remove the caller from the self.callers if successful
         for caller_ in self.callers:
             if caller_.barcode == tcga_id:
-               logging.info("Matched, submitting job.")
+                logging.info("Matched, submitting job.")
                 return self.generate_sbatch_script(caller_)
         return False
 
