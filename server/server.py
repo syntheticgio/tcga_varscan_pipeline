@@ -336,7 +336,10 @@ class RemoveRunningSampleHandler(MainHandler):
 
         self.cursor.execute(sqlstr)
         # Get info about this entry and transition it.
-        sql_statement = "SELECT * FROM processing where tcga_id = \'{}\'".format(json_body['tcga_id'])
+        tcga_id = json_body['Normal'].split("-")[0]
+        tcga_id = tcga_id + "-" + json_body['Normal'].split("-")[1]
+        tcga_id = tcga_id + "-" + json_body['Normal'].split("-")[2]
+        sql_statement = "SELECT * FROM processing where tcga_id = \'{}\'".format(tcga_id)
         res = self.cursor.execute(sql_statement)
 
         # Insert into finished
@@ -352,7 +355,7 @@ class RemoveRunningSampleHandler(MainHandler):
             self.cursor.execute(insert_statement)
 
         # Delete from queued here
-        delete_statement = "DELETE FROM processing WHERE tcga_id = \'{}\'".format(json_body['tcga_id'])
+        delete_statement = "DELETE FROM processing WHERE tcga_id = \'{}\'".format(tcga_id)
         self.cursor.execute(delete_statement)
         self.db.commit()
         self.write("Deleted processing row.")
