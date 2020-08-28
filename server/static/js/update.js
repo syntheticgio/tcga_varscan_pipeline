@@ -65,6 +65,7 @@ function NodeStatus(node_ids="all") {
                         html_element += "<div id=\"" + node_name + "\">";
                         html_element += response[node_name]["name"];
                         html_element += response[node_name]["status"];
+                        html_element += response[node_name]["jobs_requested"];
                         html_element += response[node_name]["free_mem"];
                         html_element += response[node_name]["cpu_load"];
                         html_element += response[node_name]["real_mem"];
