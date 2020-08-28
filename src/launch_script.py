@@ -13,13 +13,26 @@ import socket
 from requests import get
 import subprocess
 
+import logging
+# Imports the Cloud Logging client library
+import google.cloud.logging
+
+# Instantiates a client
+client = google.cloud.logging.Client()
+# Retrieves a Cloud Logging handler based on the environment
+# you're running in and integrates the handler with the
+# Python logging module. By default this captures all logs
+# at INFO level and higher
+client.get_default_handler()
+client.setup_logging()
+
 
 def extract_matches(config):
     VAR_INDEX = 0
     VAR_CALLERS = []
     with open(config['tcga-sample-list'], 'rb') as csvfile:
         if config['verbose']:
-            print("[ debug ] Opening source file {} to ingest tumor / normal pair data.".format(
+            logging.debug("[ debug ] Opening source file {} to ingest tumor / normal pair data.".format(
                 config['tcga-sample-list']))
         tcga_reader = csv.reader(csvfile, delimiter=',')
         i = 0
@@ -131,7 +144,7 @@ class BatchScriptor:
         try:
             nodes = config['nodes']
         except KeyError:
-            print("[ error ] 'nodes' field must be provided in config file to specify which slurm nodes (by name) are "
+            logging.error("[ error ] 'nodes' field must be provided in config file to specify which slurm nodes (by name) are "
                   "available.")
             exit(1)
         assert len(nodes) > 0
@@ -142,12 +155,13 @@ class BatchScriptor:
         # Launch test here
         # job_id = <call for job here>
         job_id = s.launch_job()
+        logging.info("Test job has the id {}".format(job_id))
 
     def generate_sbatch_by_tcga_id(self, tcga_id):
         # TODO: Might need to remove the caller from the self.callers if successful
         for caller_ in self.callers:
             if caller_.barcode == tcga_id:
-                print("Matched, submitting job.")
+               logging.info("Matched, submitting job.")
                 return self.generate_sbatch_script(caller_)
         return False
 
@@ -173,7 +187,7 @@ class BatchScriptor:
         node = self.nodes[self.node_indx]  # node is slurm-child3 - for example
 
         self.s.populate_template(caller_, node, job_type, self.db_address, "download", self.wait_id[self.node_indx])
-        print("  -- New job submitted; waiting on job {} to begin.".format(self.wait_id[self.node_indx]))
+        logging.info("  -- New job submitted; waiting on job {} to begin.".format(self.wait_id[self.node_indx]))
         # print s.template
 
         # Launch download here
@@ -256,7 +270,7 @@ if __name__ == "__main__":
     if args.test:
         # Run test and exit
         BatchScriptor.run_test(configuration)
-        print("Launched test: exiting program.  Use SQUEUE to see results or examine the output files in the working "
+        logging.info("Launched test: exiting program.  Use SQUEUE to see results or examine the output files in the working "
               "directory {} on the node being used {}.".format(
             configuration["base_directory"],
             configuration["nodes"][0])
@@ -265,17 +279,17 @@ if __name__ == "__main__":
 
     if not args.ip:
         if args.bypass_server:
-            print("[ error ] The IP address will need to be set if not running locally!")
+            logging.error("[ error ] The IP address will need to be set if not running locally!")
             exit(0)
         # getting the hostname by socket.gethostname() method
         hostname = socket.gethostname()
         # getting the IP address using socket.gethostbyname() method
         ip_address = socket.gethostbyname(hostname)
-        print("Setting the host to: {}:{} (the current master node)".format(ip_address, args.port))
+        logging.info("Setting the host to: {}:{} (the current master node)".format(ip_address, args.port))
         args.ip = "{}:{}".format(ip_address, args.port)
     else:
-        print("Using {}:{} for the server IP and port.".format(args.ip, args.port))
-        print("NOTE: If this does not include the port, this will not work unless the port is on 80!  (This is not "
+        logging.info("Using {}:{} for the server IP and port.".format(args.ip, args.port))
+        logging.info("NOTE: If this does not include the port, this will not work unless the port is on 80!  (This is not "
               "the default, the default port is 8081 and the ip and port should be specified as follows <ip "
               "address>:<port>.")
 
@@ -295,12 +309,12 @@ if __name__ == "__main__":
             for row in matches_reader:
                 match_list.append(row[0])
     except IOError:
-        print("Couldn't get the previous finished matches!")
+        logging.warning("Couldn't get the previous finished matches!")
     callers = []
     finished_callers = []
     try:
         csv_file = open(configuration['input_file'], 'r')
-        print("Found {} file".format(configuration['input_file']))
+        logging.info("Found {} file".format(configuration['input_file']))
         csv_reader = csv.reader(csv_file, delimiter=',')
         if configuration["header"]:
             next(csv_reader)
@@ -314,20 +328,18 @@ if __name__ == "__main__":
             caller.populate_caller_with_row(row)
             if row[1] in match_list:
                 matched_num += 1
-                if args.verbose:
-                    print("There was a match of {} .... skipping.".format(row[1]))
+                logging.debug("There was a match of {} .... skipping.".format(row[1]))
                 if args.add_finished:
                     finished_callers.append(caller)
                 continue
             new_num += 1
             callers.append(caller)
-            if args.verbose:
-                print(caller)
-        print("Matched entries: {}".format(matched_num))
-        print("New entries: {}".format(new_num))
+            logging.debug(caller)
+        logging.info("Matched entries: {}".format(matched_num))
+        logging.debug("New entries: {}".format(new_num))
     except IOError:
-        print("{} file does not appear to exist.".format(configuration['input_file']))
-        print("Generating {}".format(configuration['input_file']))
+        logging.warning("{} file does not appear to exist.".format(configuration['input_file']))
+        logging.info("Generating {}".format(configuration['input_file']))
         callers = extract_matches(configuration)
         with open(configuration['input_file'], 'w') as f:
             for caller in callers:
@@ -343,7 +355,7 @@ if __name__ == "__main__":
         try:
             http_server.listen(args.port)
         except BaseException as e:
-            print("[ error ] could not open on port %s because of error: %s", str(args.port), e)
-            print("Failed to open server.  Aborting program.")
+            logging.error("could not open on port %s because of error: %s", str(args.port), e)
+            logging.error("Failed to open server.  Aborting program.")
             exit(2)
         tornado.ioloop.IOLoop.instance().start()

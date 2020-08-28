@@ -9,6 +9,8 @@ import json
 from src.support.tcga import TCGAVariantCaller
 from hurry.filesize import size
 
+import logging
+
 
 class MainHandler(tornado.web.RequestHandler):
     def data_received(self, chunk: bytes) -> Optional[Awaitable[None]]:
@@ -53,8 +55,8 @@ class MainHandler(tornado.web.RequestHandler):
 
     @staticmethod
     def construct_sql(table_name, json_object):
-        print("In the construct sql method...")
-        print("Table name: {}".format(table_name))
+        logging.debug("In the construct sql method...")
+        logging.debug("Table name: {}".format(table_name))
         columns = ''
         values = ''
         for key, value in json_object.items():
@@ -273,7 +275,7 @@ class RawDataHandler(MainHandler):
     def post(self):
         json_body = tornado.escape.json_decode(self.request.body)
         table = json_body["table"]
-        print("TABLE: {}".format(table))
+        logging.debug("TABLE: {}".format(table))
         self.cursor.execute("SELECT * FROM {}".format(table))
         r = [dict((self.cursor.description[i][0], value) \
                   for i, value in enumerate(row)) for row in self.cursor.fetchall()]
