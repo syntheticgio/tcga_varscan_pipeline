@@ -321,12 +321,20 @@ rm -rf {working_directory}
             fetch_list = ['state', 'free_mem', 'cpu_load', 'cores', 'real_memory']
             for key, value in node_dict.items():
                 # key = slurm-child3, for example
+
                 # value is a bunch of other info:
 
                 # TODO: Check to make sure this works ... think key in nodes could be an error?
                 if nodes is None or key in nodes:
                     node_list[key] = {}
+                    node_list[key]["jobs_requested"] = 0
                     for part_key in sorted(value.keys()):
                         if part_key in fetch_list:
                             node_list[key][part_key] = value[part_key]
+
+            jobs_dict = pyslurm.job().get()
+            for key, value in jobs_dict.items():
+                for node in value["req_nodes"]:
+                    node_list[node]["jobs_requested"] += 1
+
         return node_list
