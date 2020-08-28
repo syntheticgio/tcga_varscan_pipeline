@@ -557,6 +557,7 @@ class NodeStatusHandler(MainHandler):
             node_response[node] = {
                 "name": "<h5><i class=\"fi-graph-bar\"></i>{}</h5>".format(node),
                 "status": "{}<br></br>".format(self.node_label_color(node_status[node]['state'])),
+                "jobs_requested": "Jobs: {} <br />".format(node_status[node]['jobs_requested']),
                 "free_mem": "Free Mem: {} MB<br />".format(node_status[node]['free_mem']),
                 "cpu_load": "Avg. CPU: {}<br />".format(node_status[node]['cpu_load']),
                 "real_mem": "Real Mem: {} MB<br />".format(node_status[node]['real_memory']),
