@@ -172,10 +172,12 @@ class BatchScriptor:
         # Get the node with the least jobs.
         # Have the node
         node = self.s.node_with_fewest_jobs()
+        print(" -- Submitting on node {}".format(node))
         assert node is not None, "No smallest node was returned!"
 
         # Get the self.node_indx for this one
         node_indx = self.nodes.index(node)
+        print(" -- Node index is {}".format(node_indx))
         # node = self.nodes[self.node_indx]  # node is slurm-child3 - for example
 
         self.s.populate_template(caller_, node, job_type, self.db_address, "download", self.wait_id[node_indx])
