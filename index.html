@@ -76,13 +76,15 @@
                 <div id="metrics" style="font-size: small;"></div>
             <h4 style="border-bottom: #cccccc; border-bottom-style: solid; border-bottom-width: thin;"><b>Bulk Submit</b></h4>
                 <div id="bulk_submit" style="font-size: small;">
-<!--                    <button href="#" data-dropdown="drop1" aria-controls="drop1" aria-expanded="false" class="small secondary radius button dropdown">Batch Submit</button><br>-->
-                    <a href="#" data-dropdown="batch_options" class="small decondary radius button dropdown">Batch Submit</a><br>
-                    <ul id="batch_options" data-dropdown-content class="f-dropdown" aria-hidden="true">
-                      <li><a id="submit10" onclick="BatchSubmit(10);return false;" href="javascript:void(0);">Submit 10</a></li>
-                      <li><a id="submit50" onclick="BatchSubmit(50);return false;" href="javascript:void(0);">Submit 50</a></li>
-                      <li><a id="submit100" onclick="BatchSubmit(100);return false;" href="javascript:void(0);">Submit 100</a></li>
-                    </ul>
+                    <button href="#" class="small secondary radius button dropdown" onclick="BatchSubmit(10);return false;" href="javascript:void(0);">Submit 10</button><br>
+                    <button href="#" class="small secondary radius button dropdown" onclick="BatchSubmit(50);return false;" href="javascript:void(0);">Submit 50</button><br>
+                    <button href="#" class="small secondary radius button dropdown" onclick="BatchSubmit(100);return false;" href="javascript:void(0);">Submit 100</button><br>
+                    <!--                    <a href="#" data-dropdown="batch_options" class="small decondary radius button dropdown">Batch Submit</a><br>-->
+<!--                    <ul id="batch_options" data-dropdown-content class="f-dropdown" aria-hidden="true">-->
+<!--                      <li><a id="submit10" onclick="BatchSubmit(10);return false;" href="javascript:void(0);">Submit 10</a></li>-->
+<!--                      <li><a id="submit50" onclick="BatchSubmit(50);return false;" href="javascript:void(0);">Submit 50</a></li>-->
+<!--                      <li><a id="submit100" onclick="BatchSubmit(100);return false;" href="javascript:void(0);">Submit 100</a></li>-->
+<!--                    </ul>-->
                 </div>
             <h4 style="border-bottom: #cccccc; border-bottom-style: solid; border-bottom-width: thin;"><b>Nodes</b></h4>
                 <div id="nodes" style="font-size: small;"></div>
