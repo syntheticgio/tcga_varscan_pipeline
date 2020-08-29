@@ -611,6 +611,7 @@ class SubmitXHandler(MainHandler):
         k = 0
         for r in res:
             try:
+                print("Attempting to push {}".format(r[15]))
                 if self.batch_scriptor.generate_sbatch_by_tcga_id(r[15]):
                     insert_statement = "INSERT OR IGNORE INTO processing (tumor_barcode,tumor_file,tumor_gdc_id," \
                                "tumor_file_url,tumor_file_size,tumor_platform,normal_barcode,normal_file," \
@@ -620,15 +621,16 @@ class SubmitXHandler(MainHandler):
                                "\'{}\')".format(r[1], r[2], r[3], r[4], r[5], r[6], r[7], r[8], r[9], r[10],
                                                 r[11], r[12], r[13], r[14], r[15], r[16])
                     self.cursor.execute(insert_statement)
+                    print(" == Insert statement {}".format(insert_statement))
 
                     # Delete from queued here
                     delete_statement = "DELETE FROM queued WHERE tcga_id = \'{}\'".format(r[15])
+                    print(" === Delete Statement {}".format(delete_statement))
                     self.cursor.execute(delete_statement)
                     k += 1
                 else:
                     print("Failed to submit the tcga ID job: {}".format(r[15]))
                     self.write({"result": "failed"})
-
             except KeyError:
                 print("There was no TCGA ID sent!")
                 self.write({"result": "failed"})
