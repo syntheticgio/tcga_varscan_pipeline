@@ -333,13 +333,20 @@ if __name__ == "__main__":
             for caller in callers:
                 caller.dump_caller_info_csv(f)
 
+    count_dict = {
+        "phase1-finished": len(matched_num),
+        "waiting_count": len(callers),
+        "running": 0,
+        "finished": 0
+    }
+
     batch_scriptor = BatchScriptor(callers, configuration, ip=args.ip, base_dir=configuration["base_directory"])
     if args.bypass_server:
         batch_scriptor.generate_sbatch_scripts()
         # generate_sbatch_scripts(callers, configuration, ip=args.ip, base_dir=args.base_dir, )
     else:
         settings = {}
-        http_server = tornado.httpserver.HTTPServer(ManagerApplication(callers, batch_scriptor, finished_callers=finished_callers))
+        http_server = tornado.httpserver.HTTPServer(ManagerApplication(callers, batch_scriptor, finished_callers=finished_callers, count_dict=count_dict))
         try:
             http_server.listen(args.port)
         except BaseException as e:

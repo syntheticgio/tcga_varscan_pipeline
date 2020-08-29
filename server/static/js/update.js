@@ -5,6 +5,9 @@
 
 const URL = "http://34.67.6.46:8081"
 // const URL = "http://127.0.0.1:8081"
+
+let counts = {}
+
 function RequestStatus() {
     this.poll = false;
     this.activatePoll = function () {
@@ -24,6 +27,11 @@ function RequestStatus() {
                     document.getElementById("queued").innerHTML = response["queued"];
                     document.getElementById("processing").innerHTML = response["processing"];
                     document.getElementById("finished").innerHTML = response["finished"];
+                    let count_html = "<p>Counts<br/>Verified: " + response["counts"]["phase1-finished"] + "<br/>";
+                    count_html += "Finished: " + response["counts"]["finished"] + "<br/>";
+                    count_html += "Running: " + response["counts"]["running"] + "<br/>";
+                    count_html += "Waiting: " + response["counts"]["waiting_count"] + "<br/>";
+                    document.getElementById("metrics").innerHTML = count_html;
                     //console.log(response)
                     //console.log(response["results"])
                 },

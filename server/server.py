@@ -82,6 +82,10 @@ class MainHandler(tornado.web.RequestHandler):
         return self.application.callers
 
     @property
+    def count_dict(self):
+        return self.application.count_dict
+
+    @property
     def red_label(self):
         return ["DOWN", "DRAINED", "DRAINING", "FAIL", "FAILING", "POWER_DOWN", "POWERING_DOWN", "RESERVED",
                 "PERFCTRS"]
@@ -207,6 +211,7 @@ class ProgressHandler(MainHandler):
                                                                                   row[0], row[7], row[2], submit_time,
                                                                                   node, progress)
                     row_count += 1
+        self.count_dict["running"] = row_count
         # Fetched the queued ones.
         queued_rows = "<h2>Queued computations</h2><table class=\"hover\" style=\"font-size: 12px; padding:2px;\"><tr>" \
                       "<th>#</th>" \
@@ -238,8 +243,11 @@ class ProgressHandler(MainHandler):
             queued_row_count += 1
             if output_limit < 1:
                 # Hit our limit of rows
-                queued_rows = queued_rows + "<tr><td> ... Additional rows hidden ... </td></tr>"
+                queued_rows = queued_rows + "<tr> ... Additional rows hidden ... </tr>"
                 break
+        queued_count_stmnt = "SELECT COUNT(*) FROM queued"
+        self.cursor.execute(queued_count_stmnt)
+        self.count_dict["waiting_count"] = self.cursor.fetchone()[0]
 
         sqlstr3 = "SELECT tumor_barcode, tumor_file_size, normal_barcode, normal_file_size, cancer_type, tcga_id, " \
                   "stage, tumor_gdc_id, normal_gdc_id FROM finished"
@@ -264,11 +272,13 @@ class ProgressHandler(MainHandler):
                                             "</td></tr>".format(finished_row_count, row[5], row[4], row[4], row[7], row[0], size(row[1]),
                                                                 row[8], row[2], size(row[3]), row[6])
             finished_row_count += 1
+        self.count_dict["finished"] = finished_row_count
         self.set_header("Content-Type", "text/plain")
         _rws = {
             "processing": rows,
             "queued": queued_rows,
-            "finished": finished_rows
+            "finished": finished_rows,
+            "counts": self.count_dict
         }
         self.write(_rws)
 
@@ -657,7 +667,7 @@ class Application(tornado.web.Application):
 
 
 class ManagerApplication(tornado.web.Application):
-    def __init__(self, callers, batch_scriptor, finished_callers=None):
+    def __init__(self, callers, batch_scriptor, finished_callers=None, count_dict=None):
         tornado_settings = {
             "static_path": os.path.join(os.path.dirname(__file__), "static"),
             "static_url_prefix": "/static/",
@@ -701,6 +711,7 @@ class ManagerApplication(tornado.web.Application):
         self.cursor = self.db.cursor()
         self.callers = callers
         self.batch_scriptor = batch_scriptor
+        self.count_dict = count_dict
         print(os.getcwd())
         print("Adding callers to database.")
         # Add callers to database
