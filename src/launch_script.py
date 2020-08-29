@@ -171,9 +171,11 @@ class BatchScriptor:
         job_type = "DOWNLOAD"
         # Get the node with the least jobs.
         # Have the node
-        node = self.s.node_with_fewest_jobs()
+        node = self.s.node_with_fewest_jobs(self.nodes)
         print(" -- Submitting on node {}".format(node))
-        assert node is not None, "No smallest node was returned!"
+        if node is None:
+            node = self.nodes[0]
+        # assert node is not None, "No smallest node was returned!"
 
         # Get the self.node_indx for this one
         node_indx = self.nodes.index(node)

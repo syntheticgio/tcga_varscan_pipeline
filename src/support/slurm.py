@@ -339,16 +339,16 @@ rm -rf {working_directory}
 
         return node_list
 
-    def node_with_fewest_jobs(self):
+    def node_with_fewest_jobs(self, nodes):
         jobs = pyslurm.job().get()
         rn = {}
+        for node in nodes:
+            rn[node] = 0
         if jobs:
             for key, value in jobs.items():
                 for req_node in value["req_nodes"]:
-                    if req_node in rn:
-                        rn[req_node] += 1
-                    else:
-                        rn[req_node] = 1
+                    rn[req_node] += 1
+
         lowest = 9999999
         lowest_node = None
         for key, value in rn.items():
