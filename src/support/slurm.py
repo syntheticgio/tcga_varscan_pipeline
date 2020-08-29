@@ -277,7 +277,7 @@ rm -rf {working_directory}
         if jobs:
             job_info = {}
             date_fields = ['start_time', 'suspend_time', 'submit_time', 'end_time', 'eligible_time', 'resize_time']
-            other_fields = ['run_time', 'run_time_str', 'nodes', 'job_state', 'command', 'comment']
+            other_fields = ['run_time', 'run_time_str', 'nodes', 'job_state', 'command', 'comment', 'req_nodes']
 
             for key, value in jobs.items():
                 try:

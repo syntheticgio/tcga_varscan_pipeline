@@ -149,6 +149,7 @@ class ProgressHandler(MainHandler):
                "<th>Normal Barcode</th>" \
                "<th>Submitted</th>" \
                "<th>Requested Node</th>" \
+               "<th>Running Node</th>" \
                "<th>Progress</th>" \
                "</tr>"
 
@@ -159,7 +160,7 @@ class ProgressHandler(MainHandler):
                 barcode_progress = self.empty_progress_dict()
                 node = "Un-assigned"
                 submit_time = "Un-submitted"
-
+                requested_node = ["Unknown"]
                 if row[5] in jobs_status:
                     job_tcga_barcode_dict = jobs_status[row[5]]
                     # date_fields = ['start_time', 'suspend_time', 'submit_time', 'end_time', 'eligible_time',
@@ -177,6 +178,7 @@ class ProgressHandler(MainHandler):
                         submit_time = job_id_dict['submit_time']
                         if job_id_dict['nodes']:
                             node = job_id_dict['nodes']
+                        requested_node = job_id_dict['req_nodes']
 
                         # Can capture individual information below on each type
                         if job_id_dict['comment'] == "DOWNLOAD":
@@ -193,7 +195,7 @@ class ProgressHandler(MainHandler):
                     # Create Progress report
                     failed = barcode_progress["FAILED"] + barcode_progress["SUSPENDED"] + \
                              barcode_progress["CANCELLED"] + barcode_progress["TIMEOUT"]
-                    completed = barcode_progress["COMPLETED"] + barcode_progress["COMPLETING"]
+                    # completed = barcode_progress["COMPLETED"] + barcode_progress["COMPLETING"]
                     progress = "<span style=\"color: green\">{}<span><span style=\"color: black\"> | </span>" \
                                "<span style=\"color: grey\">{}<span><span style=\"color: black\"> | </span><span " \
                                "style=\"color: red\">{}<span>".format(barcode_progress["RUNNING"],
@@ -206,10 +208,12 @@ class ProgressHandler(MainHandler):
                                   "target=\"_blank\">{}</a></td><td><a " \
                                   "href=\"https://https://portal.gdc.cancer.gov/legacy-archive/files/{}\" " \
                                   "target=\"_blank\">{}</a></td>" \
-                                  "<td>{}</td><td>{}</td><td>{}</td></tr>".format(row_count, row[5], row[4], row[4],
-                                                                                  row[6],
-                                                                                  row[0], row[7], row[2], submit_time,
-                                                                                  node, progress)
+                                  "<td>{}</td><td>{}</td><td>{}</td><td>{}</td></tr>".format(row_count, row[5], row[4],
+                                                                                             row[4], row[6],
+                                                                                             row[0], row[7], row[2],
+                                                                                             submit_time,
+                                                                                             ", ".join(requested_node),
+                                                                                             node, progress)
                     row_count += 1
         self.count_dict["running"] = row_count
         # Fetched the queued ones.
@@ -269,7 +273,8 @@ class ProgressHandler(MainHandler):
                                             "target=\"_blank\">{}</a></td><td>{}</td><td><a " \
                                             "href=\"https://https://portal.gdc.cancer.gov/legacy-archive/files/{}\" " \
                                             "target=\"_blank\">{}</a></td><td>{}</td><td>{}" \
-                                            "</td></tr>".format(finished_row_count, row[5], row[4], row[4], row[7], row[0], size(row[1]),
+                                            "</td></tr>".format(finished_row_count, row[5], row[4], row[4], row[7],
+                                                                row[0], size(row[1]),
                                                                 row[8], row[2], size(row[3]), row[6])
             finished_row_count += 1
         self.count_dict["finished"] = finished_row_count
@@ -352,7 +357,7 @@ class RemoveRunningSampleHandler(MainHandler):
         print("In the remove running sampler handler - this is where we should add the call for {} " \
               " into the database.".format(json.dumps(json_body, indent=4)))
         sqlstr = "DELETE FROM RunningSamples WHERE Normal = \'{}\' AND Tumor = \'{}\'".format(json_body['Normal'],
-                                                                                      json_body['Tumor'])
+                                                                                              json_body['Tumor'])
 
         self.cursor.execute(sqlstr)
         # Get info about this entry and transition it.
