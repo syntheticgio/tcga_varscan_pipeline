@@ -334,7 +334,7 @@ if __name__ == "__main__":
                 caller.dump_caller_info_csv(f)
 
     count_dict = {
-        "phase1-finished": len(matched_num),
+        "phase1-finished": matched_num,
         "waiting_count": len(callers),
         "running": 0,
         "finished": 0
