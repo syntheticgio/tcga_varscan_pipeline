@@ -592,6 +592,44 @@ class NodeStatusHandler(MainHandler):
         self.write(node_response)
 
 
+class SubmitXHandler(MainHandler):
+    def get(self):
+        pass
+
+    def post(self):
+        json_body = tornado.escape.json_decode(self.request.body)
+        print("Requesting submission of {}".format(json_body["req_number"]))
+
+        sql_statement = "SELECT * FROM queued LIMIT {}".format(json_body["req_number"])
+        res = self.cursor.execute(sql_statement)
+        k = 0
+        for r in res:
+            try:
+                if self.batch_scriptor.generate_sbatch_by_tcga_id(r[15]):
+                    insert_statement = "INSERT OR IGNORE INTO processing (tumor_barcode,tumor_file,tumor_gdc_id," \
+                               "tumor_file_url,tumor_file_size,tumor_platform,normal_barcode,normal_file," \
+                               "normal_gdc_id,normal_file_url,normal_file_size,normal_platform,cancer_type," \
+                               " total_size, tcga_id, stage) VALUES (\'{}\',\'{}\',\'{}\',\'{}\',\'{}\'," \
+                               "\'{}\',\'{}\',\'{}\',\'{}\',\'{}\',\'{}\',\'{}\',\'{}\',\'{}\',\'{}\'," \
+                               "\'{}\')".format(r[1], r[2], r[3], r[4], r[5], r[6], r[7], r[8], r[9], r[10],
+                                                r[11], r[12], r[13], r[14], r[15], r[16])
+                    self.cursor.execute(insert_statement)
+
+                    # Delete from queued here
+                    delete_statement = "DELETE FROM queued WHERE tcga_id = \'{}\'".format(json_body['tcga_id'])
+                    self.cursor.execute(delete_statement)
+                    k += 1
+                else:
+                    print("Failed to submit the tcga ID job: {}".format(json_body['tcga_id']))
+                    self.write({"result": "failed"})
+
+            except KeyError:
+                print("There was no TCGA ID sent!")
+                self.write({"result": "failed"})
+        print("Submitted {} jobs!".format(k))
+        self.db.commit()
+        self.write({"result": "ok"})
+
 class SubmitJobHandler(MainHandler):
     def get(self):
         pass
@@ -699,6 +737,7 @@ class ManagerApplication(tornado.web.Application):
             (r"/removerunningsample/", RemoveRunningSampleHandler),
             (r"/rawdata/", RawDataHandler),
             (r"/test/", TestHandler),
+            (r"/submitx/", SubmitXHandler),
             (r"/js/(.*)", tornado.web.StaticFileHandler,
              dict(path=tornado_settings['static_path'])),
             (r"/css/(.*)", tornado.web.StaticFileHandler,

@@ -114,10 +114,25 @@ function SubmitJob(tcga_id) {
     })
 }
 
+function BatchSubmit(req_num) {
+    $.ajax({
+        url: URL + "/submitx/",
+        success: function (response) {
+            // TODO: Should have response here where we can update something dynamically
+            console.log(response)
+        },
+        dataType: "json",
+        data: JSON.stringify({"req_number": req_num}),
+        type: "post",
+        contentType: "application/json; charset=utf-8",
+        traditional: true
+    })
+}
 
 $(document).ready(function () {
     let request = new RequestStatus();
     request.activatePoll();
     let nodes = new NodeStatus();
     nodes.activatePoll();
+
 });
