@@ -346,13 +346,14 @@ rm -rf {working_directory}
             rn[node] = 0
         if jobs:
             for key, value in jobs.items():
-                for req_node in value["req_nodes"]:
-                    rn[req_node] += 1
+                for n in value["req_nodes"]:
+                    rn[n] += 1
 
         lowest = 9999999
         lowest_node = None
         for key, value in rn.items():
             if value < lowest:
                 lowest_node = key
+                lowest = value
         return lowest_node
 
