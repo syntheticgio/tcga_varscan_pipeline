@@ -622,11 +622,11 @@ class SubmitXHandler(MainHandler):
                     self.cursor.execute(insert_statement)
 
                     # Delete from queued here
-                    delete_statement = "DELETE FROM queued WHERE tcga_id = \'{}\'".format(json_body['tcga_id'])
+                    delete_statement = "DELETE FROM queued WHERE tcga_id = \'{}\'".format(r[15])
                     self.cursor.execute(delete_statement)
                     k += 1
                 else:
-                    print("Failed to submit the tcga ID job: {}".format(json_body['tcga_id']))
+                    print("Failed to submit the tcga ID job: {}".format(r[15]))
                     self.write({"result": "failed"})
 
             except KeyError:
