@@ -27,7 +27,7 @@ function RequestStatus() {
                     document.getElementById("queued").innerHTML = response["queued"];
                     document.getElementById("processing").innerHTML = response["processing"];
                     document.getElementById("finished").innerHTML = response["finished"];
-                    let count_html = "<h5><i class="fi-graph-bar"></i>Counts</h5><br/>Verified: " + response["counts"]["phase1-finished"] + "<br/>";
+                    let count_html = "<h5><i class=\"fi-graph-bar\"></i>Counts</h5><br/>Verified: " + response["counts"]["phase1-finished"] + "<br/>";
                     count_html += "Finished: " + response["counts"]["finished"] + "<br/>";
                     count_html += "Running: " + response["counts"]["running"] + "<br/>";
                     count_html += "Waiting: " + response["counts"]["waiting_count"] + "<br/>";
