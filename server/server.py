@@ -96,7 +96,11 @@ class MainHandler(tornado.web.RequestHandler):
 
     @property
     def green_label(self):
-        return ["ALLOCATED", "ALLOCATED+", "COMPLETING", "IDLE", "MIXED"]
+        return ["ALLOCATED", "ALLOCATED+", "COMPLETING", "MIXED"]
+
+    @property
+    def blue_label(self):
+        return ["IDLE"]
 
     def node_label_color(self, node_status):
         if node_status in self.red_label:
@@ -105,6 +109,8 @@ class MainHandler(tornado.web.RequestHandler):
             return "<span class=\"label warning\"><i class=\"fi-alert\"></i> " + node_status + "</span>"
         elif node_status in self.green_label:
             return "<span class=\"label success\"><i class=\"fi-check\"></i> " + node_status + "</span>"
+        elif node_status in self.blue_label:
+            return "<span class=\"label primary\"><i class=\"fi-check\"></i> " + node_status + "</span>"
         return "<span class=\"label secondary\"><i class=\"fi-info\"></i> " + node_status + "</span>"
 
     @property
