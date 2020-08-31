@@ -159,7 +159,7 @@ class ProgressHandler(MainHandler):
                "<th>Progress</th>" \
                "</tr>"
 
-        row_count = 1
+        row_count = 0
         if jobs_status is not None:
             for row in self.cursor.execute(sqlstr):
                 # row[5] = tcga_id
@@ -237,7 +237,7 @@ class ProgressHandler(MainHandler):
                   "tumor_gdc_id, normal_gdc_id FROM queued"
         # limit output rows here:
         output_limit = 50
-        queued_row_count = 1
+        queued_row_count = 0
         for row in self.cursor.execute(sqlstr2):
             output_limit -= 1
             queued_rows = queued_rows + "<tr><td>{}</td><td>{}</td><td><a href=\"https://portal.gdc.cancer.gov/projects/TCGA-{}" \
@@ -271,7 +271,7 @@ class ProgressHandler(MainHandler):
                         "<th>Normal File Size</th>" \
                         "<th>Stage</th>" \
                         "</tr>"
-        finished_row_count = 1
+        finished_row_count = 0
         for row in self.cursor.execute(sqlstr3):
             finished_rows = finished_rows + "<tr><td>{}</td><td>{}</td><td><a href=\"https://portal.gdc.cancer.gov/projects/TCGA" \
                                             "-{}\" target=\"_blank\">{}</a></td><td><a " \
@@ -621,7 +621,7 @@ class SubmitXHandler(MainHandler):
                                "\'{}\')".format(r[1], r[2], r[3], r[4], r[5], r[6], r[7], r[8], r[9], r[10],
                                                 r[11], r[12], r[13], r[14], r[15], r[16])
                     self.cursor.execute(insert_statement)
-                    print(" == Insert statement {}".format(insert_statement))
+                    print(" === Insert statement {}".format(insert_statement))
 
                     # Delete from queued here
                     delete_statement = "DELETE FROM queued WHERE tcga_id = \'{}\'".format(r[15])
