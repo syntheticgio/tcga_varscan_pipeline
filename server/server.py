@@ -765,6 +765,8 @@ class ManagerApplication(tornado.web.Application):
         print(os.getcwd())
         print("Adding callers to database.")
         # Add callers to database
+        sql = "DELETE FROM queued"
+        self.cursor.execute(sql)
         for x, caller in enumerate(self.callers):
             print('Processing caller {}\r'.format(x), end="")
             statement = caller.add_to_db(db="queued")
