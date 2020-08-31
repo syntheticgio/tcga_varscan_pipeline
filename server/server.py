@@ -612,6 +612,7 @@ class SubmitXHandler(MainHandler):
         for r in res:
             # try:
             print("Attempting to push {}".format(r[15]))
+            print("SQL result {}: {}".format(k + 1, r))
             if self.batch_scriptor.generate_sbatch_by_tcga_id(r[15]):
                 insert_statement = "INSERT OR IGNORE INTO processing (tumor_barcode,tumor_file,tumor_gdc_id," \
                            "tumor_file_url,tumor_file_size,tumor_platform,normal_barcode,normal_file," \
