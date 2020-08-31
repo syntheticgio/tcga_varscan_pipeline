@@ -623,11 +623,6 @@ class SubmitXHandler(MainHandler):
                                             r[11], r[12], r[13], r[14], r[15], r[16])
                 self.cursor.execute(insert_statement)
                 print(" === Insert statement {}".format(insert_statement))
-
-                # Delete from queued here
-                delete_statement = "DELETE FROM queued WHERE tcga_id = \'{}\'".format(r[15])
-                print(" === Delete Statement {}".format(delete_statement))
-                self.cursor.execute(delete_statement)
                 k += 1
             else:
                 print("Failed to submit the tcga ID job: {}".format(r[15]))
@@ -635,6 +630,11 @@ class SubmitXHandler(MainHandler):
             # except KeyError:
             #     print("There was no TCGA ID sent!")
             #     self.write({"result": "failed"})
+        for r in res:
+            # Delete from queued here
+            delete_statement = "DELETE FROM queued WHERE tcga_id = \'{}\'".format(r[15])
+            print(" === Delete Statement {}".format(delete_statement))
+            self.cursor.execute(delete_statement)
         print("Submitted {} jobs!".format(k))
         self.db.commit()
         self.write({"result": "ok"})
