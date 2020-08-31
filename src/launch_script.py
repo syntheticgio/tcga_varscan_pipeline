@@ -115,7 +115,6 @@ class BatchScriptor:
         self.references = self.config['references']
         self.output_bucket = self.config['output_bucket']
         self.node_length = len(self.nodes)
-        self.node_indx = 0
         self.wait_id = []
         for x in range(0, self.node_length):
             self.wait_id.append(-1)
@@ -170,10 +169,21 @@ class BatchScriptor:
 
         # Setup Download
         job_type = "DOWNLOAD"
-        node = self.nodes[self.node_indx]  # node is slurm-child3 - for example
+        # Get the node with the least jobs.
+        # Have the node
+        node = self.s.node_with_fewest_jobs(self.nodes)
+        print(" -- Submitting on node {}".format(node))
+        if node is None:
+            node = self.nodes[0]
+        # assert node is not None, "No smallest node was returned!"
 
-        self.s.populate_template(caller_, node, job_type, self.db_address, "download", self.wait_id[self.node_indx])
-        print("  -- New job submitted; waiting on job {} to begin.".format(self.wait_id[self.node_indx]))
+        # Get the self.node_indx for this one
+        node_indx = self.nodes.index(node)
+        print(" -- Node index is {}".format(node_indx))
+        # node = self.nodes[self.node_indx]  # node is slurm-child3 - for example
+
+        self.s.populate_template(caller_, node, job_type, self.db_address, "download", self.wait_id[node_indx])
+        print("  -- New job submitted; waiting on job {}.".format(self.wait_id[node_indx]))
         # print s.template
 
         # Launch download here
@@ -194,14 +204,12 @@ class BatchScriptor:
         # Do cleanup
         job_type = "CLEAN"
         self.s.populate_template(caller_, node, job_type, self.db_address, "cleanup", varcall_job_ids)
-        self.wait_id[self.node_indx] = self.s.launch_job()
-        self.sample_id_lists[caller_.barcode][job_type] = self.wait_id[self.node_indx]
+        self.wait_id[node_indx] = self.s.launch_job()
+        self.sample_id_lists[caller_.barcode][job_type] = self.wait_id[node_indx]
 
-        self.node_indx += 1
-        if self.node_indx > self.node_length - 1:
-            self.node_indx = 0
-        # else:
-        #    wait_id.append(-1)
+        # self.node_indx += 1
+        # if self.node_indx > self.node_length - 1:
+        #     self.node_indx = 0
 
         return True
 
