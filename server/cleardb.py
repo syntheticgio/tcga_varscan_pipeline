@@ -4,6 +4,7 @@ import argparse
 parser = argparse.ArgumentParser(description='Recycling database.')
 parser.add_argument(dest='database', help='Database name.')
 parser.add_argument("--finished", "-f", action="store_true", help="Optionally purge the finished table.")
+parser.add_argument("--all", "-a", action="store_true", help="Purge all databes including metrics tables.")
 args = parser.parse_args()
 
 
@@ -11,32 +12,33 @@ db = sqlite3.connect(args.database)
 cursor = db.cursor()
 
 sqlstr = "DELETE FROM FinishedSamples"
-print("Deleting FinishedSamples...")
-cursor.execute(sqlstr)
-
-sqlstr = "DELETE FROM MpileUp"
-print("Deleting MpileUp...")
+print("(deprecated) Deleting FinishedSamples...")
 cursor.execute(sqlstr)
 
 sqlstr = "DELETE FROM RunningSamples"
-print("Deleting RunningSamples...")
+print("(deprecated) Deleting RunningSamples...")
 cursor.execute(sqlstr)
 
-sqlstr = "DELETE FROM SamtoolsSort"
-print("Deleting SamtoolsSort...")
-cursor.execute(sqlstr)
+if args.all:
+    sqlstr = "DELETE FROM MpileUp"
+    print("Deleting MpileUp...")
+    cursor.execute(sqlstr)
 
-sqlstr = "DELETE FROM VarscanProcessIndels"
-print("Deleting VarscanProcessIndels...")
-cursor.execute(sqlstr)
+    sqlstr = "DELETE FROM SamtoolsSort"
+    print("Deleting SamtoolsSort...")
+    cursor.execute(sqlstr)
 
-sqlstr = "DELETE FROM VarscanProcessSnps"
-print("Deleting VarscanProcessSnps...")
-cursor.execute(sqlstr)
+    sqlstr = "DELETE FROM VarscanProcessIndels"
+    print("Deleting VarscanProcessIndels...")
+    cursor.execute(sqlstr)
 
-sqlstr = "DELETE FROM VarscanSomatic"
-print("Deleting VarscanSomatic...")
-cursor.execute(sqlstr)
+    sqlstr = "DELETE FROM VarscanProcessSnps"
+    print("Deleting VarscanProcessSnps...")
+    cursor.execute(sqlstr)
+
+    sqlstr = "DELETE FROM VarscanSomatic"
+    print("Deleting VarscanSomatic...")
+    cursor.execute(sqlstr)
 
 sqlstr = "DELETE FROM queued"
 print("Deleting queued...")
