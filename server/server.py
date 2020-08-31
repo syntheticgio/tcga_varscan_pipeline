@@ -610,11 +610,18 @@ class SubmitXHandler(MainHandler):
         print(" ++++ SQL Statement for fetch: {}".format(sql_statement))
         res = self.cursor.execute(sql_statement)
         k = 0
+        row_info = {}
         for r in res:
+            row_info[r[15]] = []
+            for j in r:
+                row_info[r[15]].append(j)
+
+        for key, r in row_info.items():
             # try:
-            print("Attempting to push {}".format(r[15]))
+            print("Attempting to push {}".format(key))
             print("SQL result {}: {}".format(k + 1, r))
-            if self.batch_scriptor.generate_sbatch_by_tcga_id(r[15]):
+
+            if self.batch_scriptor.generate_sbatch_by_tcga_id(key):
                 insert_statement = "INSERT OR IGNORE INTO processing (tumor_barcode,tumor_file,tumor_gdc_id," \
                            "tumor_file_url,tumor_file_size,tumor_platform,normal_barcode,normal_file," \
                            "normal_gdc_id,normal_file_url,normal_file_size,normal_platform,cancer_type," \
@@ -628,12 +635,10 @@ class SubmitXHandler(MainHandler):
             else:
                 print("Failed to submit the tcga ID job: {}".format(r[15]))
                 self.write({"result": "failed"})
-            # except KeyError:
-            #     print("There was no TCGA ID sent!")
-            #     self.write({"result": "failed"})
-        for r in res:
+
+        for key, r in row_info.items():
             # Delete from queued here
-            delete_statement = "DELETE FROM queued WHERE tcga_id = \'{}\'".format(r[15])
+            delete_statement = "DELETE FROM queued WHERE tcga_id = \'{}\'".format(key)
             print(" === Delete Statement {}".format(delete_statement))
             self.cursor.execute(delete_statement)
         print("Submitted {} jobs!".format(k))
