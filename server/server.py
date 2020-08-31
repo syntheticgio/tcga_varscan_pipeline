@@ -607,6 +607,7 @@ class SubmitXHandler(MainHandler):
         print("Requesting submission of {}".format(json_body["req_number"]))
 
         sql_statement = "SELECT * FROM queued LIMIT {}".format(json_body["req_number"])
+        print(" ++++ SQL Statement for fetch: {}".format(sql_statement))
         res = self.cursor.execute(sql_statement)
         k = 0
         for r in res:
