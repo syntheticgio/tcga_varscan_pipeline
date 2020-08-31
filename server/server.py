@@ -159,7 +159,7 @@ class ProgressHandler(MainHandler):
                "<th>Progress</th>" \
                "</tr>"
 
-        row_count = 0
+        row_count = 1
         if jobs_status is not None:
             for row in self.cursor.execute(sqlstr):
                 # row[5] = tcga_id
@@ -221,7 +221,7 @@ class ProgressHandler(MainHandler):
                                                                                              ", ".join(requested_node),
                                                                                              node, progress)
                     row_count += 1
-        self.count_dict["running"] = row_count
+        self.count_dict["running"] = row_count - 1
         # Fetched the queued ones.
         queued_rows = "<h2>Queued computations</h2><table class=\"hover\" style=\"font-size: 12px; padding:2px;\"><tr>" \
                       "<th>#</th>" \
@@ -237,7 +237,7 @@ class ProgressHandler(MainHandler):
                   "tumor_gdc_id, normal_gdc_id FROM queued"
         # limit output rows here:
         output_limit = 50
-        queued_row_count = 0
+        queued_row_count = 1
         for row in self.cursor.execute(sqlstr2):
             output_limit -= 1
             queued_rows = queued_rows + "<tr><td>{}</td><td>{}</td><td><a href=\"https://portal.gdc.cancer.gov/projects/TCGA-{}" \
@@ -271,7 +271,7 @@ class ProgressHandler(MainHandler):
                         "<th>Normal File Size</th>" \
                         "<th>Stage</th>" \
                         "</tr>"
-        finished_row_count = 0
+        finished_row_count = 1
         for row in self.cursor.execute(sqlstr3):
             finished_rows = finished_rows + "<tr><td>{}</td><td>{}</td><td><a href=\"https://portal.gdc.cancer.gov/projects/TCGA" \
                                             "-{}\" target=\"_blank\">{}</a></td><td><a " \
@@ -283,7 +283,7 @@ class ProgressHandler(MainHandler):
                                                                 row[0], size(row[1]),
                                                                 row[8], row[2], size(row[3]), row[6])
             finished_row_count += 1
-        self.count_dict["finished"] = finished_row_count
+        self.count_dict["finished"] = finished_row_count - 1
         self.set_header("Content-Type", "text/plain")
         _rws = {
             "processing": rows,
