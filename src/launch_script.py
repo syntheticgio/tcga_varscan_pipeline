@@ -143,11 +143,13 @@ class BatchScriptor:
         job_id = s.launch_job()
 
     def generate_sbatch_by_tcga_id(self, tcga_id):
-        # TODO: Might need to remove the caller from the self.callers if successful
+        count = 0
         for caller_ in self.callers:
+            count += 1
             if caller_.barcode == tcga_id:
                 print("Matched, submitting job.")
                 return self.generate_sbatch_script(caller_)
+        print("[ warning ] Checked {} callers for {} but didn't find one!".format(count, tcga_id))
         return False
 
     def generate_sbatch_scripts(self):
