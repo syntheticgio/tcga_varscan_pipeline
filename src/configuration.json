@@ -1,15 +1,6 @@
 {
   "nodes": [
-    "slurm-child1",
-    "slurm-child2",
-    "slurm-child3",
-    "slurm-child4",
-    "slurm-child5",
-    "slurm-child6",
-    "slurm-child7",
-    "slurm-child8",
-    "slurm-child9",
-    "slurm-child10"
+    "slurm-child11"
   ],
   "references" : [
     "chr1.fa",
