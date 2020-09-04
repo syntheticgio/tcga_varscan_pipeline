@@ -111,13 +111,13 @@ class BatchScriptor:
         self.config = config
         self.base_directory = kwargs.get("base_dir", "./")
         self.db_address = kwargs.get("ip", "127.0.0.1:8081")
-        self.nodes = self.config['nodes']
+        self.nodes = [] # self.config['nodes']
         self.references = self.config['references']
         self.output_bucket = self.config['output_bucket']
-        self.node_length = len(self.nodes)
+        # self.node_length = len(self.nodes)
         self.wait_id = []
-        for x in range(0, self.node_length):
-            self.wait_id.append(-1)
+        # for x in range(0, self.node_length):
+        #     self.wait_id.append(-1)
         self.sample_id_lists = {}
         self.s = slurm_submitter(self.base_directory, self.output_bucket)
 
@@ -173,23 +173,28 @@ class BatchScriptor:
         job_type = "DOWNLOAD"
         # Get the node with the least jobs.
         # Have the node
-        node = self.s.node_with_fewest_jobs(self.nodes)
+        node = self.s.node_with_fewest_jobs()
         print(" -- Submitting on node {}".format(node))
-        if node is None:
-            node = self.nodes[0]
-        # assert node is not None, "No smallest node was returned!"
-
+        if node is None: 
+            if len(self.nodes) != 0:
+                node = self.nodes[0]
+            else:
+                print("Error, there are no running nodes it seems.  Aborting")
+                return False
+        
         # Get the self.node_indx for this one
+        if node not in self.nodes:
+            self.nodes.append(node)
+            self.wait_id.append(-1)
+        
         node_indx = self.nodes.index(node)
         print(" -- Node index is {}".format(node_indx))
         # node = self.nodes[self.node_indx]  # node is slurm-child3 - for example
 
         self.s.populate_template(caller_, node, job_type, self.db_address, "download", self.wait_id[node_indx])
-        print("  -- New job submitted; waiting on job {}.".format(self.wait_id[node_indx]))
-        # print s.template
-
+        print(" -- New job submitted; waiting on job {}.".format(self.wait_id[node_indx]))
+        
         # Launch download here
-        # job_id = <call for job here>
         job_id = self.s.launch_job()
         self.sample_id_lists[caller_.barcode] = {}
         self.sample_id_lists[caller_.barcode][job_type] = job_id
