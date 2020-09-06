@@ -67,7 +67,6 @@ while IFS='' read -r TCGA_ID || [[ -n "$TCGA_ID" ]]; do
         --p-value 0.07
     # Get total counts for indels and SNPs - can be used in QA with the above barplots
     echo -ne "Working on ${TCGA_ID}: Finished\r"
-
     wc -l $(ls -1 *.vcf) | awk 'BEGIN{FS=" "; print"Count,File";}{print $1","$2;}' > ${TCGA_ID}_total_counts.txt
     cd ..
 
