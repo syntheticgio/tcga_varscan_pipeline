@@ -53,12 +53,12 @@ while IFS='' read -r TCGA_ID || [[ -n "$TCGA_ID" ]]; do
     # Get chr passed counts
     snp_chr_passed_=`ls -l *snp.vcf | awk 'BEGIN{a=0}{if($5>100000){a++;}}END{print a}'`
     indel_chr_passed_=`ls -l *indel.vcf | awk 'BEGIN{a=0}{if($5>100000){a++;}}END{print a}'`
-    if [[ ${snp_chr_passed_} -gt ${SNP_VALID_CHR_COUNT} ]]; do
+    if [[ ${snp_chr_passed_} -gt ${SNP_VALID_CHR_COUNT} ]]; then
         snp_chr_passed_=$((snp_chr_passed+1))
-    done
-    if [[ ${indel_chr_passed_} -gt ${INDEL_VALID_CHR_COUNT} ]]; do
+    fi
+    if [[ ${indel_chr_passed_} -gt ${INDEL_VALID_CHR_COUNT} ]]; then
         indel_chr_passed_=$((indel_chr_passed+1))
-    done
+    fi
     # Generate rough SNP counts
     wc -l $(ls -1 *.snp.vcf) | awk '{gsub("_", " "); print $0;}' | awk 'BEGIN{FS=" "; print"Count,TCGA,Chrom";}{gsub(".snp.vcf", " "); if($2 != "total"){gsub("chr", "", $3); print $1","$2","$3;}}' | sort -k 3,3 -n -t "," > snps_by_chrom.csv
     wc -l $(ls -1 *.indel.vcf) | awk '{gsub("_", " "); print $0;}' | awk 'BEGIN{FS=" "; print"Count,TCGA,Chrom";}{gsub(".indel.vcf", " "); if($2 != "total"){gsub("chr", "", $3); print $1","$2","$3;}}' | sort -k 3,3 -n -t "," > indels_by_chrom.csv
