@@ -1,7 +1,14 @@
 #!/bin/bash
 
+SNP_VALID_CHR_COUNT=22
+INDEL_VALID_CHR_COUNT=20
+
 echo "This script will perform some quality assurance and final post-processing steps for the variant call pipeline."
 echo "This shoudl be run from the src/ directory within the project."
+echo ""
+echo "This script currently assumes ${SNP_VALID_CHR_COUNT} valid (greater than 100000 bytes) SNP files for a chromosome are valid."
+echo "This script currently assumes ${INDEL_VALID_CHR_COUNT} valid (greater than 100000 bytes) Indel file for a chromosome are valid."
+echo "These settings can be set at the top of the script if they should be changed."
 echo ""
 echo "Creating Quality Assurance Directory"
 rm -rf ./QA
@@ -27,8 +34,8 @@ echo ""
 echo "Retrieved all IDs, beginning post processing."
 
 # Check to see if all chromosomes are represented
-chr_passed=0
-chr_failed=0
+snp_chr_passed=0
+indel_chr_passed=0
 
 # General pass / fail
 passed=0
@@ -41,9 +48,18 @@ while IFS='' read -r TCGA_ID || [[ -n "$TCGA_ID" ]]; do
     pushd .
     cd ${TCGA_ID}
     gsutil cp gs://iron-eye-6998/tcga_wgs_results/${TCGA_ID}/varscan_results/*.gz .
-    
     tar zxvf *.gz
     rm *.gz
+    # Get chr passed counts
+    snp_chr_passed_=`ls -l *snp.vcf | awk 'BEGIN{a=0}{if($5>100000){a++;}}END{print a}'`
+    indel_chr_passed_=`ls -l *indel.vcf | awk 'BEGIN{a=0}{if($5>100000){a++;}}END{print a}'`
+    if [[ ${snp_chr_passed_} -gt ${SNP_VALID_CHR_COUNT} ]]; do
+        snp_chr_passed_=$((snp_chr_passed+1))
+    done
+    if [[ ${indel_chr_passed_} -gt ${INDEL_VALID_CHR_COUNT} ]]; do
+        indel_chr_passed_=$((indel_chr_passed+1))
+    done
+    # Generate rough SNP counts
     wc -l $(ls -1 *.snp.vcf) | awk '{gsub("_", " "); print $0;}' | awk 'BEGIN{FS=" "; print"Count,TCGA,Chrom";}{gsub(".snp.vcf", " "); if($2 != "total"){gsub("chr", "", $3); print $1","$2","$3;}}' | sort -k 3,3 -n -t "," > snps_by_chrom.csv
     wc -l $(ls -1 *.indel.vcf) | awk '{gsub("_", " "); print $0;}' | awk 'BEGIN{FS=" "; print"Count,TCGA,Chrom";}{gsub(".indel.vcf", " "); if($2 != "total"){gsub("chr", "", $3); print $1","$2","$3;}}' | sort -k 3,3 -n -t "," > indels_by_chrom.csv
     echo -ne "Working on ${TCGA_ID}: Generating Bargraphs\r"
@@ -71,3 +87,7 @@ while IFS='' read -r TCGA_ID || [[ -n "$TCGA_ID" ]]; do
     cd ..
 
 done < "finished_tcga_ids.txt"
+
+echo "Finished post-processing."
+echo "-- Passing SNP Samples:   ${snp_chr_passed}"
+echo "-- Passing Indel Samples: ${indel_chr_passed}"
