@@ -20,14 +20,19 @@ echo "Currently: "`pwd`
 
 gsutil ls gs://iron-eye-6998/tcga_wgs_results | awk 'BEGIN{FS="/";}{if (NR > 1) {print $5;}}' > get_ids.txt
 
+passed=0
+failed=0
+
 while IFS='' read -r TCGA || [[ -n "$TCGA" ]]; do
 	b=`gsutil ls -l gs://iron-eye-6998/tcga_wgs_results/${TCGA}/varscan_results/TCGA* | awk '{FS="("; if(NR > 1) {print $2;}}' | awk '{FS=" "; gsub(")",""); print $2;}'`
 	if [[ "${b}" == "MiB" ]] || [[ "${b}" == "GiB" ]]; then
 		echo "${TCGA}" >> finished_tcga_ids.txt
+        $((passed+1))
 	else
         echo "${TCGA}" >> failed_ids.txt
+        $((failed+1))
 	fi 
-#echo -ne "P: ${passed} / F: ${failed}"\\r
+    echo -ne "P: ${passed} / F: ${failed}"\\r
 done < "get_ids.txt"
 
 echo ""
@@ -37,9 +42,6 @@ echo "Retrieved all IDs, beginning post processing."
 snp_chr_passed=0
 indel_chr_passed=0
 
-# General pass / fail
-passed=0
-failed=0
 
 while IFS='' read -r TCGA_ID || [[ -n "$TCGA_ID" ]]; do
     echo -ne "Working on ${TCGA_ID}: Beginning\r"
