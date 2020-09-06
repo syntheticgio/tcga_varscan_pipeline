@@ -65,6 +65,7 @@ while IFS='' read -r TCGA_ID || [[ -n "$TCGA_ID" ]]; do
     wc -l $(ls -1 *.indel.vcf) | awk '{gsub("_", " "); print $0;}' | awk 'BEGIN{FS=" "; print"Count,TCGA,Chrom";}{gsub(".indel.vcf", " "); if($2 != "total"){gsub("chr", "", $3); print $1","$2","$3;}}' > indels_by_chrom.csv
     echo -ne "Working on ${TCGA_ID}: Generating Bargraphs\r"
     Rscript generate_bar_graphs.rscript
+    gsutil cp *.png gs://iron-eye-6998/tcga_wgs_results/${TCGA_ID}/varscan_results/
     rm generate_bar_graphs.rscript
     echo -ne "Working on ${TCGA_ID}: Generating VCFs\r"
     vcf-concat $(ls -1 *.snp.vcf | perl -pe 's/\n/ /g') > ${TCGA_ID}.all.snp.vcf
