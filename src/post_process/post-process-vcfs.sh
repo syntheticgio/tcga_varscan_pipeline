@@ -4,7 +4,7 @@ SNP_VALID_CHR_COUNT=22
 INDEL_VALID_CHR_COUNT=20
 
 echo "This script will perform some quality assurance and final post-processing steps for the variant call pipeline."
-echo "This shoudl be run from the src/ directory within the project."
+echo "This shoudl be run from the post-processing/ directory within the project."
 echo ""
 echo "This script currently assumes ${SNP_VALID_CHR_COUNT} valid (greater than 100000 bytes) SNP files for a chromosome are valid."
 echo "This script currently assumes ${INDEL_VALID_CHR_COUNT} valid (greater than 100000 bytes) Indel file for a chromosome are valid."
