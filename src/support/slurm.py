@@ -340,7 +340,7 @@ rm -rf {working_directory}
         return node_list
 
     def node_with_fewest_jobs(self):
-        nodes_ = pyslurm.nodes().get()
+        nodes_ = pyslurm.node().get()
 
         jobs = pyslurm.job().get()
         rn = {}
