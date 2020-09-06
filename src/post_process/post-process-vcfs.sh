@@ -26,8 +26,16 @@ done < "get_ids.txt"
 echo ""
 echo "Retrieved all IDs, beginning post processing."
 
+# Check to see if all chromosomes are represented
+chr_passed=0
+chr_failed=0
+
+# General pass / fail
+passed=0
+failed=0
+
 while IFS='' read -r TCGA_ID || [[ -n "$TCGA_ID" ]]; do
-    echo "Beginning working on ${TCGA_ID}"
+    echo -ne "Working on ${TCGA_ID}: Beginning\r"
     mkdir -p ${TCGA_ID}
     cp generate_bar_graphs.rscript ${TCGA_ID}/
     pushd .
@@ -38,27 +46,28 @@ while IFS='' read -r TCGA_ID || [[ -n "$TCGA_ID" ]]; do
     rm *.gz
     wc -l $(ls -1 *.snp.vcf) | awk '{gsub("_", " "); print $0;}' | awk 'BEGIN{FS=" "; print"Count,TCGA,Chrom";}{gsub(".snp.vcf", " "); if($2 != "total"){gsub("chr", "", $3); print $1","$2","$3;}}' | sort -k 3,3 -n -t "," > snps_by_chrom.csv
     wc -l $(ls -1 *.indel.vcf) | awk '{gsub("_", " "); print $0;}' | awk 'BEGIN{FS=" "; print"Count,TCGA,Chrom";}{gsub(".indel.vcf", " "); if($2 != "total"){gsub("chr", "", $3); print $1","$2","$3;}}' | sort -k 3,3 -n -t "," > indels_by_chrom.csv
-    echo -e "\tGenerating bargraphs ..."
+    echo -ne "Working on ${TCGA_ID}: Generating Bargraphs\r"
     Rscript generate_bar_graphs.rscript
     rm generate_bar_graphs.rscript
-    echo -e "\tGenerating combined VCF files"
+    echo -ne "Working on ${TCGA_ID}: Generating VCFs\r"
     vcf-concat $(ls -1 *.snp.vcf | perl -pe 's/\n/ /g') > ${TCGA_ID}.all.snp.vcf
     vcf-concat $(ls -1 *.indel.vcf | perl -pe 's/\n/ /g') > ${TCGA_ID}.all.indel.vcf
     rm *chr*.vcf ## Leave us just with the all snp and indel vcfs
-    echo -e "\tVarScan processSomatic call.. (SNPs)"
+    echo -ne "Working on ${TCGA_ID}: VarScan processSomatic (SNPs)\r"
     java -jar /varscan/varscan/VarScan.jar processSomatic \
         "${TCGA_ID}".all.snp.vcf \
         --min-tumor-freq 0.10 \
         --max-normal-freq 0.05 \
         --p-value 0.07
-    echo -e "\tVarScan processSomatic call.. (Indels)"
+    echo -ne "Working on ${TCGA_ID}: VarScan processSomatic (Indels)\r"
     java -jar /varscan/varscan/VarScan.jar processSomatic \
         "${TCGA_ID}".all.indel.vcf \
         --min-tumor-freq 0.10 \
         --max-normal-freq 0.05 \
         --p-value 0.07
     # Get total counts for indels and SNPs - can be used in QA with the above barplots
-    echo -e "\tFinal Counts"
+    echo -ne "Working on ${TCGA_ID}: Finished\r"
+
     wc -l $(ls -1 *.vcf) | awk 'BEGIN{FS=" "; print"Count,File";}{print $1","$2;}' > ${TCGA_ID}_total_counts.txt
     cd ..
 
