@@ -5,7 +5,7 @@ indel_data <- read.csv("indels_by_chrom.csv")
 tcga_id = toString(snp_data[1,2])
 
 png(sprintf("%s_snv_barchart.png", tcga_id))
-barplot(snp_data$Count, names.arg=snp_data$Chrom, xlab = "Chromosome", ylab = "SNV Count", main=sprintf("SNV Counts for %s", tcga_id). las=2)
+barplot(snp_data$Count, names.arg=snp_data$Chrom, xlab = "Chromosome", ylab = "SNV Count", main=sprintf("SNV Counts for %s", tcga_id), las=2)
 dev.off()
 
 png(sprintf("%s_indel_barchart.png", tcga_id))
