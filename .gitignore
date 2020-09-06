@@ -1,3 +1,6 @@
+src/get_ids.txt
+.DS_Store
+server/static/img/.gitkeep
 server/.idea/
 server/_trial_temp/
 server/database.pyc
