@@ -345,7 +345,7 @@ rm -rf {working_directory}
         jobs = pyslurm.job().get()
         rn = {}
         for node, value in nodes_.items():
-            if value["state"] == "DOWN":
+            if value["state"] == "DOWN" or value["state"] == "DOWN*":
                 continue
             rn[node] = 0
         if jobs:
