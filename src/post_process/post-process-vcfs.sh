@@ -61,8 +61,8 @@ while IFS='' read -r TCGA_ID || [[ -n "$TCGA_ID" ]]; do
         indel_chr_passed_=$((indel_chr_passed+1))
     fi
     # Generate rough SNP counts
-    wc -l $(ls -1 *.snp.vcf) | awk '{gsub("_", " "); print $0;}' | awk 'BEGIN{FS=" "; print"Count,TCGA,Chrom";}{gsub(".snp.vcf", " "); if($2 != "total"){gsub("chr", "", $3); print $1","$2","$3;}}' | sort -k 3,3 -n -t "," > snps_by_chrom.csv
-    wc -l $(ls -1 *.indel.vcf) | awk '{gsub("_", " "); print $0;}' | awk 'BEGIN{FS=" "; print"Count,TCGA,Chrom";}{gsub(".indel.vcf", " "); if($2 != "total"){gsub("chr", "", $3); print $1","$2","$3;}}' | sort -k 3,3 -n -t "," > indels_by_chrom.csv
+    wc -l $(ls -1 *.snp.vcf) | awk '{gsub("_", " "); print $0;}' | awk 'BEGIN{FS=" "; print"Count,TCGA,Chrom";}{gsub(".snp.vcf", " "); if($2 != "total"){gsub("chr", "", $3); print $1","$2","$3;}}' > snps_by_chrom.csv
+    wc -l $(ls -1 *.indel.vcf) | awk '{gsub("_", " "); print $0;}' | awk 'BEGIN{FS=" "; print"Count,TCGA,Chrom";}{gsub(".indel.vcf", " "); if($2 != "total"){gsub("chr", "", $3); print $1","$2","$3;}}' > indels_by_chrom.csv
     echo -ne "Working on ${TCGA_ID}: Generating Bargraphs\r"
     Rscript generate_bar_graphs.rscript
     rm generate_bar_graphs.rscript
