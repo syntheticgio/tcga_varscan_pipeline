@@ -13,7 +13,6 @@ echo ""
 echo "Creating Quality Assurance Directory"
 rm -rf ./QA
 mkdir -p QA
-cp post_process/generate_bar_graphs.rscrpt QA/
 echo "Moving into QA Directory!"
 cd QA
 echo "Currently: "`pwd`
@@ -46,7 +45,7 @@ indel_chr_passed=0
 while IFS='' read -r TCGA_ID || [[ -n "$TCGA_ID" ]]; do
     echo -ne "Working on ${TCGA_ID}: Beginning\r"
     mkdir -p ${TCGA_ID}
-    cp generate_bar_graphs.rscript ${TCGA_ID}/
+    cp ../generate_bar_graphs.rscript ${TCGA_ID}/
     pushd .
     cd ${TCGA_ID}
     gsutil cp gs://iron-eye-6998/tcga_wgs_results/${TCGA_ID}/varscan_results/*.gz .
