@@ -26,10 +26,10 @@ while IFS='' read -r TCGA || [[ -n "$TCGA" ]]; do
 	b=`gsutil ls -l gs://iron-eye-6998/tcga_wgs_results/${TCGA}/varscan_results/TCGA* | awk '{FS="("; if(NR > 1) {print $2;}}' | awk '{FS=" "; gsub(")",""); print $2;}'`
 	if [[ "${b}" == "MiB" ]] || [[ "${b}" == "GiB" ]]; then
 		echo "${TCGA}" >> finished_tcga_ids.txt
-        $((passed+1))
+        passed=$((passed+1))
 	else
         echo "${TCGA}" >> failed_ids.txt
-        $((failed+1))
+        failed=$((failed+1))
 	fi 
     echo -ne "P: ${passed} / F: ${failed}"\\r
 done < "get_ids.txt"
