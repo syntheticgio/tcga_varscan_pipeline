@@ -1,12 +1,15 @@
 #!/bin/bash
 
+echo "This script will perform some quality assurance and final post-processing steps for the variant call pipeline."
+echo "This shoudl be run from the src/ directory within the project."
+echo ""
+echo "Creating Quality Assurance Directory"
 rm -rf ./QA
 mkdir -p QA
 cp post_process/generate_bar_graphs.rscrpt QA/
+echo "Moving into QA Directory!"
 cd QA
-
-rm -f finished_tcga_ids.txt
-rm -f failed_ids.txt
+echo "Currently: "`pwd`
 
 gsutil ls gs://iron-eye-6998/tcga_wgs_results | awk 'BEGIN{FS="/";}{if (NR > 1) {print $5;}}' > get_ids.txt
 
