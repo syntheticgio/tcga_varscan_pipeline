@@ -23,6 +23,8 @@ passed=0
 failed=0
 
 while IFS='' read -r TCGA || [[ -n "$TCGA" ]]; do
+    # Skip if local directory alread exists
+    if [[ -d "${TCGA}" ]] && continue
 	b=`gsutil ls -l gs://iron-eye-6998/tcga_wgs_results/${TCGA}/varscan_results/TCGA* | awk '{FS="("; if(NR > 1) {print $2;}}' | awk '{FS=" "; gsub(")",""); print $2;}'`
 	if [[ "${b}" == "MiB" ]] || [[ "${b}" == "GiB" ]]; then
 		echo "${TCGA}" >> finished_tcga_ids.txt
