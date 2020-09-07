@@ -11,7 +11,7 @@ echo "This script currently assumes ${INDEL_VALID_CHR_COUNT} valid (greater than
 echo "These settings can be set at the top of the script if they should be changed."
 echo ""
 echo "Creating Quality Assurance Directory"
-rm -rf ./QA
+#rm -rf ./QA
 mkdir -p QA
 echo "Moving into QA Directory!"
 cd QA
@@ -21,10 +21,15 @@ gsutil ls gs://iron-eye-6998/tcga_wgs_results | awk 'BEGIN{FS="/";}{if (NR > 1) 
 
 passed=0
 failed=0
+skipped=0
 
 while IFS='' read -r TCGA || [[ -n "$TCGA" ]]; do
     # Skip if local directory alread exists
-    if [[ -d "${TCGA}" ]] && continue
+    if [[ -d "${TCGA}" ]]; then
+        skipped=$((skipped+1))
+		echo -ne "P: ${passed} | F: ${failed} | S: ${skipped}"\\r
+		continue
+	fi
 	b=`gsutil ls -l gs://iron-eye-6998/tcga_wgs_results/${TCGA}/varscan_results/TCGA* | awk '{FS="("; if(NR > 1) {print $2;}}' | awk '{FS=" "; gsub(")",""); print $2;}'`
 	if [[ "${b}" == "MiB" ]] || [[ "${b}" == "GiB" ]]; then
 		echo "${TCGA}" >> finished_tcga_ids.txt
@@ -33,8 +38,10 @@ while IFS='' read -r TCGA || [[ -n "$TCGA" ]]; do
         echo "${TCGA}" >> failed_ids.txt
         failed=$((failed+1))
 	fi 
-    echo -ne "P: ${passed} / F: ${failed}"\\r
+    echo -ne "P: ${passed} / F: ${failed} | S: ${skipped}"\\r
 done < "get_ids.txt"
+
+#exit 0
 
 echo ""
 echo "Retrieved all IDs, beginning post processing."
