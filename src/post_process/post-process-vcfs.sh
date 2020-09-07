@@ -79,7 +79,7 @@ while IFS='' read -r TCGA_ID || [[ -n "$TCGA_ID" ]]; do
     echo -ne "Working on ${TCGA_ID}: Generating VCFs\r"
     vcf-concat $(ls -1 *.snp.vcf | perl -pe 's/\n/ /g') > ${TCGA_ID}.all.snp.vcf
     vcf-concat $(ls -1 *.indel.vcf | perl -pe 's/\n/ /g') > ${TCGA_ID}.all.indel.vcf
-    rm *chr*.vcf ## Leave us just with the all snp and indel vcfs
+    # rm *chr*.vcf ## Leave us just with the all snp and indel vcfs
     echo -ne "Working on ${TCGA_ID}: VarScan processSomatic (SNPs)\r"
     java -jar /varscan/varscan/VarScan.jar processSomatic \
         "${TCGA_ID}".all.snp.vcf \
