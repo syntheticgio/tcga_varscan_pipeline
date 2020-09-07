@@ -725,7 +725,7 @@ class Application(tornado.web.Application):
 
 
 class ManagerApplication(tornado.web.Application):
-    def __init__(self, callers, batch_scriptor, finished_callers=None, count_dict=None):
+    def __init__(self, callers, batch_scriptor, finished_callers=None, count_dict=None, failed_callers=None):
         tornado_settings = {
             "static_path": os.path.join(os.path.dirname(__file__), "static"),
             "static_url_prefix": "/static/",
@@ -783,6 +783,10 @@ class ManagerApplication(tornado.web.Application):
 
         for cal in finished_callers:
             statement = cal.add_to_db(db="finished")
+            self.cursor.execute(statement)
+        
+        for fcal in failed_callers:
+            statement = fcal.add_to_db(db="failed")
             self.cursor.execute(statement)
 
         self.db.commit()

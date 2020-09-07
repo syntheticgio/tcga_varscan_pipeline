@@ -12,11 +12,11 @@ gsutil ls gs://iron-eye-6998/tcga_wgs_results | awk 'BEGIN{FS="/";}{if (NR > 1) 
 while IFS='' read -r TCGA || [[ -n "$TCGA" ]]; do
 	b=`gsutil ls -l gs://iron-eye-6998/tcga_wgs_results/${TCGA}/varscan_results/TCGA* | awk '{FS="("; if(NR > 1) {print $2;}}' | awk '{FS=" "; gsub(")",""); print $2;}'`
 	if [[ "${b}" == "MiB" ]] || [[ "${b}" == "GiB" ]]; then
-		echo "${TCGA}" >> finished_tcga_ids.txt
 		passed=$((passed+1))
+		echo "${TCGA}" >> finished_tcga_ids.txt
 	else
 		failed=$((failed+1))
-                echo "${TCGA}" >> failed_ids.txt
+        echo "${TCGA}" >> failed_ids.txt
 	fi 
 i=$((i+1))
 echo -ne "P: ${passed} / F: ${failed}"\\r

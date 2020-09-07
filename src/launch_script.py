@@ -311,8 +311,19 @@ if __name__ == "__main__":
                 match_list.append(row[0])
     except IOError:
         print("Couldn't get the previous finished matches!")
+
+    failed_list = []
+    try:
+        with open(configuration['failed_list'], "r") as f:
+            matches_reader = csv.reader(f, delimiter=",")
+            for row in matches_reader:
+                failed_list.append(row[0])
+    except IOError:
+        print("Couldn't get the previous failed matches!")
+
     callers = []
     finished_callers = []
+    failed_callers = []
     try:
         csv_file = open(configuration['input_file'], 'r')
         print("Found {} file".format(configuration['input_file']))
@@ -322,6 +333,7 @@ if __name__ == "__main__":
         indx = 0
         matched_num = 0
         new_num = 0
+        failed_num = 0
         for row in csv_reader:
             indx += 1
             caller = TCGAVariantCaller(indx)
@@ -330,10 +342,16 @@ if __name__ == "__main__":
             if row[1] in match_list:
                 matched_num += 1
                 if args.verbose:
-                    print("There was a match of {} .... skipping.".format(row[1]))
+                    print("There was a finished match of {} .... skipping.".format(row[1]))
                 if args.add_finished:
                     finished_callers.append(caller)
                 continue
+            if row[1] in failed_list:
+                failed_num += 1
+                if args.verbose:
+                    print("There was a failed match of {} .... skipping".format(row[1]))
+                # Always try to add the failed callers to the database
+                failed_callers.append(caller)
             new_num += 1
             callers.append(caller)
             if args.verbose:
@@ -361,7 +379,7 @@ if __name__ == "__main__":
         # generate_sbatch_scripts(callers, configuration, ip=args.ip, base_dir=args.base_dir, )
     else:
         settings = {}
-        http_server = tornado.httpserver.HTTPServer(ManagerApplication(callers, batch_scriptor, finished_callers=finished_callers, count_dict=count_dict))
+        http_server = tornado.httpserver.HTTPServer(ManagerApplication(callers, batch_scriptor, finished_callers=finished_callers, count_dict=count_dict, failed_callers=failed_callers))
         try:
             http_server.listen(args.port)
         except BaseException as e:
