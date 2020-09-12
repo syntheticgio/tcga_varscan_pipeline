@@ -773,11 +773,20 @@ class ManagerApplication(tornado.web.Application):
         self.count_dict = count_dict
         print(os.getcwd())
         print("Adding callers to database.")
+        # Get in progress callers
+        sql_in_progress = "SELECT tcga_id FROM processing"
+        in_progress_ids = []
+        for row in self.cursor.execute(sql_in_progress):
+            in_progress_ids.append(row[0])
+
         # Add callers to database
         sql = "DELETE FROM queued"
         self.cursor.execute(sql)
         for x, caller in enumerate(self.callers):
             print('Processing caller {}\r'.format(x), end="")
+            if caller.barcode in in_progress_ids:
+                print("Skipping {} since it is in progress.".format(caller.barcode))
+                continue
             statement = caller.add_to_db(db="queued")
             self.cursor.execute(statement)
 
