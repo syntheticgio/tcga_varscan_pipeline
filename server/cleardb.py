@@ -4,20 +4,21 @@ import argparse
 parser = argparse.ArgumentParser(description='Recycling database.')
 parser.add_argument(dest='database', help='Database name.')
 parser.add_argument("--finished", "-f", action="store_true", help="Optionally purge the finished table.")
-parser.add_argument("--all", "-a", action="store_true", help="Purge all databes including metrics tables.")
+parser.add_argument("--all", "-a", action="store_true", help="Purge all databases including metrics tables.")
+parser.add_argument("--only_finished", "-o", action="store_true", help="Only purge the finished database.")
 args = parser.parse_args()
 
 
 db = sqlite3.connect(args.database)
 cursor = db.cursor()
+if not args.only_finished:
+    sqlstr = "DELETE FROM FinishedSamples"
+    print("(deprecated) Deleting FinishedSamples...")
+    cursor.execute(sqlstr)
 
-sqlstr = "DELETE FROM FinishedSamples"
-print("(deprecated) Deleting FinishedSamples...")
-cursor.execute(sqlstr)
-
-sqlstr = "DELETE FROM RunningSamples"
-print("(deprecated) Deleting RunningSamples...")
-cursor.execute(sqlstr)
+    sqlstr = "DELETE FROM RunningSamples"
+    print("(deprecated) Deleting RunningSamples...")
+    cursor.execute(sqlstr)
 
 if args.all:
     sqlstr = "DELETE FROM MpileUp"
@@ -40,15 +41,16 @@ if args.all:
     print("Deleting VarscanSomatic...")
     cursor.execute(sqlstr)
 
-sqlstr = "DELETE FROM queued"
-print("Deleting queued...")
-cursor.execute(sqlstr)
+if not args.only_finished:
+    sqlstr = "DELETE FROM queued"
+    print("Deleting queued...")
+    cursor.execute(sqlstr)
 
-sqlstr = "DELETE FROM processing"
-print("Deleting processing...")
-cursor.execute(sqlstr)
+    sqlstr = "DELETE FROM processing"
+    print("Deleting processing...")
+    cursor.execute(sqlstr)
 
-if args.finished:
+if args.finished or args.only_finished:
     sqlstr = "DELETE FROM finished"
     print("Deleting queued...")
     cursor.execute(sqlstr)
