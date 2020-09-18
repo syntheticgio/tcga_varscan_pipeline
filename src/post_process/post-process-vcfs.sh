@@ -25,7 +25,7 @@ skipped=0
 
 while IFS='' read -r TCGA || [[ -n "$TCGA" ]]; do
     # Skip if local directory alread exists
-    if [[ -d "${TCGA}" ]]; then
+    if [[ -d "${TCGA}" ]] || [[ -d "${TCGA}.zip" ]]; then
         skipped=$((skipped+1))
 		echo -ne "P: ${passed} | F: ${failed} | S: ${skipped}"\\r
 		continue
