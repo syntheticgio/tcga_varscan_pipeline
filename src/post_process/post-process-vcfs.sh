@@ -23,6 +23,9 @@ passed=0
 failed=0
 skipped=0
 
+rm -rf finished_tcga_ids.txt
+rm -rf failed_ids.txt
+
 while IFS='' read -r TCGA || [[ -n "$TCGA" ]]; do
     # Skip if local directory alread exists
     if [[ -d "${TCGA}" ]] || [[ -d "${TCGA}.zip" ]]; then
