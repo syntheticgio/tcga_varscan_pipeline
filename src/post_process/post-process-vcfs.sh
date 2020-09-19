@@ -28,12 +28,13 @@ rm -rf failed_ids.txt
 
 while IFS='' read -r TCGA || [[ -n "$TCGA" ]]; do
     # Skip if local directory alread exists
-    if [[ -d "${TCGA}" ]] || [[ -d "${TCGA}.zip" ]]; then
+    if [[ -d "${TCGA}" ]] || [[ -f "${TCGA}.zip" ]]; then
         skipped=$((skipped+1))
-		echo -ne "P: ${passed} | F: ${failed} | S: ${skipped}"\\r
+		#echo -ne "P: ${passed} | F: ${failed} | S: ${skipped}"\\r
+		echo "P: ${passed} | F: ${failed} | S: ${skipped}"
 		continue
 	fi
-	b=`gsutil ls -l gs://iron-eye-6998/tcga_wgs_results/${TCGA}/varscan_results/TCGA* | awk '{FS="("; if(NR > 1) {print $2;}}' | awk '{FS=" "; gsub(")",""); print $2;}'`
+	b=`gsutil ls -l gs://iron-eye-6998/tcga_wgs_results/${TCGA}/varscan_results/TCGA*.vcf.tar.gz | awk '{FS="("; if(NR > 1) {print $2;}}' | awk '{FS=" "; gsub(")",""); print $2;}'`
 	if [[ "${b}" == "MiB" ]] || [[ "${b}" == "GiB" ]]; then
 		echo "${TCGA}" >> finished_tcga_ids.txt
         passed=$((passed+1))
@@ -41,7 +42,8 @@ while IFS='' read -r TCGA || [[ -n "$TCGA" ]]; do
         echo "${TCGA}" >> failed_ids.txt
         failed=$((failed+1))
 	fi 
-    echo -ne "P: ${passed} | F: ${failed} | S: ${skipped}"\\r
+    #echo -ne "P: ${passed} | F: ${failed} | S: ${skipped}"\\r
+    echo "P: ${passed} | F: ${failed} | S: ${skipped}"
 done < "get_ids.txt"
 
 #exit 0
@@ -79,24 +81,28 @@ while IFS='' read -r TCGA_ID || [[ -n "$TCGA_ID" ]]; do
     Rscript generate_bar_graphs.rscript
     gsutil cp *.png gs://iron-eye-6998/tcga_wgs_results/${TCGA_ID}/varscan_results/
     rm generate_bar_graphs.rscript
-    echo -ne "Working on ${TCGA_ID}: Generating VCFs\r"
+    #echo -ne "Working on ${TCGA_ID}: Generating VCFs\r"
+    echo "Working on ${TCGA_ID}: Generating VCFs"
     vcf-concat $(ls -1 *_chr*.snp.vcf | perl -pe 's/\n/ /g') > ${TCGA_ID}.all.snp.vcf
     vcf-concat $(ls -1 *_chr*.indel.vcf | perl -pe 's/\n/ /g') > ${TCGA_ID}.all.indel.vcf
     rm *chr*.vcf ## Leave us just with the all snp and indel vcfs
-    echo -ne "Working on ${TCGA_ID}: VarScan processSomatic (SNPs)\r"
+    #echo -ne "Working on ${TCGA_ID}: VarScan processSomatic (SNPs)\r"
+    echo "Working on ${TCGA_ID}: VarScan processSomatic (SNPs)"
     java -jar /varscan/varscan/VarScan.jar processSomatic \
         "${TCGA_ID}".all.snp.vcf \
         --min-tumor-freq 0.10 \
         --max-normal-freq 0.05 \
         --p-value 0.07
-    echo -ne "Working on ${TCGA_ID}: VarScan processSomatic (Indels)\r"
+    #echo -ne "Working on ${TCGA_ID}: VarScan processSomatic (Indels)\r"
+    echo "Working on ${TCGA_ID}: VarScan processSomatic (Indels)"
     java -jar /varscan/varscan/VarScan.jar processSomatic \
         "${TCGA_ID}".all.indel.vcf \
         --min-tumor-freq 0.10 \
         --max-normal-freq 0.05 \
         --p-value 0.07
     # Get total counts for indels and SNPs - can be used in QA with the above barplots
-    echo -ne "Working on ${TCGA_ID}: Finished\r"
+    #echo -ne "Working on ${TCGA_ID}: Finished\r"
+    echo "Working on ${TCGA_ID}: Finished"
     wc -l $(ls -1 *.vcf) | awk 'BEGIN{FS=" "; print"Count,File";}{print $1","$2;}' > ${TCGA_ID}_total_counts.txt
     cd ..
 
