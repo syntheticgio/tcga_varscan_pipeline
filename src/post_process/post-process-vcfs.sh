@@ -44,7 +44,7 @@ while IFS='' read -r TCGA || [[ -n "$TCGA" ]]; do
 	fi 
     #echo -ne "P: ${passed} | F: ${failed} | S: ${skipped}"\\r
     echo "P: ${passed} | F: ${failed} | S: ${skipped}"
-done < "get_ids.txt"
+done < "finished_tcg_ids.txt"
 
 #exit 0
 
